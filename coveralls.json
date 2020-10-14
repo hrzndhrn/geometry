@@ -1,0 +1,12 @@
+{
+  "coverage_options": {
+    "treat_no_relevant_lines_as_covered": true,
+    "minimum_coverage": 99
+  },
+  "skip_files": [
+    "lib/geometry/guards.ex",
+    "lib/geometry/wkt/parser.ex",
+    "lib/geometry/wkt/parser_helper.ex",
+    "test/support/"
+  ]
+}
