@@ -36,14 +36,15 @@ defmodule Geometry.MixProject do
       "coveralls.detail": :test,
       "coveralls.post": :test,
       "coveralls.html": :test,
-      "coveralls.travis": :test
+      "coveralls.travis": :test,
+      "geometry.gen": :test
     ]
   end
 
   defp aliases do
     [
       carp: ["test --seed 0 --max-failures 1"],
-      "geometry.gen": ["run script/gen_from_zm.exs"]
+      "geometry.gen": ["run script/gen_from_zm.exs", "test"]
     ]
   end
 

@@ -1,5 +1,5 @@
 defmodule Geometry.PolygonZMTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Geometry.{PointZM, PolygonZM}
 

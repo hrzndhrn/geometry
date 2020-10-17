@@ -1,5 +1,5 @@
 defmodule Geometry.MultiPolygonZMTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Geometry.{
     MultiPolygonZM,

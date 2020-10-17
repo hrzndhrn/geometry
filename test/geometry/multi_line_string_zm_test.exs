@@ -1,5 +1,5 @@
 defmodule Geometry.MultiLineStringZMTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Geometry.{LineStringZM, MultiLineStringZM, PointZM}
 

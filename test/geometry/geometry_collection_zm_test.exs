@@ -1,5 +1,5 @@
 defmodule Geometry.GeometryCollectionZMTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Geometry.{
     GeometryCollectionZM,

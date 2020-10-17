@@ -39,18 +39,61 @@ defmodule GenFromZM do
   @types [:xy, :xym, :xyz]
 
   def main do
-    Shell.IO.info("Generate geometry files ...")
+    Shell.IO.info("Generate geometry modules/tests")
     Enum.each(@geometries, &generate/1)
   end
 
   defp generate(geometry) do
-    code = read_lib!(geometry)
-    test_code = read_test!(geometry)
+    if !check_lib!(geometry) do
+      code = read_lib!(geometry)
 
-    Enum.each(@types, fn type ->
-      write_lib!(geometry, type, gen(code, type))
-      write_test!(geometry, type, gen_test(test_code, type))
+      Enum.each(@types, fn type ->
+        write_lib!(geometry, type, gen(code, type))
+      end)
+    end
+
+    if !check_test!(geometry) do
+      test_code = read_test!(geometry)
+
+      Enum.each(@types, fn type ->
+        write_test!(geometry, type, gen_test(test_code, type))
+      end)
+    end
+  end
+
+  # returns true if the template (zm) is older as all the generated files
+  defp check_lib!(geometry) do
+    src_time =
+      @lib_path
+      |> Path.join("#{Macro.underscore(geometry)}_zm.ex")
+      |> change_time()
+
+    Enum.all?(@types, fn type ->
+      filename = "#{filename(geometry)}#{filename_extension(type)}.ex"
+      dest_time = @lib_path |> Path.join(filename) |> change_time()
+      src_time < dest_time
     end)
+  end
+
+  # returns true if the template (zm) is older as all the generated files
+  defp check_test!(geometry) do
+    src_time =
+      @test_path
+      |> Path.join("#{Macro.underscore(geometry)}_zm_test.exs")
+      |> change_time()
+
+    Enum.all?(@types, fn type ->
+      filename = "#{filename(geometry)}#{filename_extension(type)}_test.exs"
+      dest_time = @test_path |> Path.join(filename) |> change_time()
+      src_time < dest_time
+    end)
+  end
+
+  defp change_time(file) do
+    case File.stat(file, time: :posix) do
+      {:ok, %File.Stat{ctime: time}} -> time
+      _error -> 0
+    end
   end
 
   defp read_lib!(geometry) do
@@ -69,7 +112,7 @@ defmodule GenFromZM do
     filename = "#{filename(geometry)}#{filename_extension(type)}.ex"
     file = Path.join(@lib_path, filename)
 
-    Shell.IO.info("... write: #{file}")
+    Shell.IO.info("Write #{file}")
 
     File.write!(file, code)
   end
@@ -78,7 +121,7 @@ defmodule GenFromZM do
     filename = "#{filename(geometry)}#{filename_extension(type)}_test.exs"
     file = Path.join(@test_path, filename)
 
-    Shell.IO.info("... write: #{file}")
+    Shell.IO.info("Write #{file}")
 
     File.write!(file, code)
   end

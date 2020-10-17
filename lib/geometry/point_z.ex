@@ -282,7 +282,7 @@ defmodule Geometry.PointZ do
       @blank,
       to_string(y)::binary(),
       @blank,
-      to_string(z)::binary()
+      to_string(z)::binary(),
     >>
   end
 
@@ -293,7 +293,7 @@ defmodule Geometry.PointZ do
     <<
       to_wkb_number(x, endian)::binary(),
       to_wkb_number(y, endian)::binary(),
-      to_wkb_number(z, endian)::binary()
+      to_wkb_number(z, endian)::binary(),
     >>
   end
 
