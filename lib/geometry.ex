@@ -4,10 +4,11 @@ defmodule Geometry do
   """
 
   # TODO LIST
-  # [open] add Geometry.Feature (GeoJson)
-  # [open] add Geometry.FeatureCollection (GeoJson)
+  # [open] add protocolls enumerable and collectable
   # [open] add benchee to rewrite wkt/parser, maybe wkb/parser
   #
+  # [done] add Geometry.Feature (GeoJson)
+  # [done] add Geometry.FeatureCollection (GeoJson)
   # [done] add Geometry.GeometryCollection
   # [done] add tests for empty geometries from wkt
   # [done] check labels in wkt/parser
@@ -15,6 +16,8 @@ defmodule Geometry do
   # [wont] (don't do this) check new inputs in multi
 
   alias Geometry.{
+    Feature,
+    FeatureCollection,
     GeoJson,
     GeometryCollection,
     GeometryCollectionM,
@@ -77,6 +80,11 @@ defmodule Geometry do
     PointM,
     PointZ,
     PointZM
+  ]
+
+  @geo_json [
+    Feature,
+    FeatureCollection
   ]
 
   @typedoc """
@@ -230,7 +238,10 @@ defmodule Geometry do
       true
   """
   @spec empty?(t()) :: boolean
-  def empty?(%module{} = geometry) when module in @geometries, do: module.empty?(geometry)
+  def empty?(%module{} = geometry)
+      when module in @geometries or module in @geo_json do
+    module.empty?(geometry)
+  end
 
   @doc """
   Returns the WKB representation of a geometry. An optional `:srid` can be set
@@ -271,7 +282,7 @@ defmodule Geometry do
   def from_wkb(wkb), do: WKB.Parser.parse(wkb)
 
   @doc """
-  The same as `from_wkb/1, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
   """
   @spec from_wkb!(wkb()) :: t() | {t(), srid()}
   def from_wkb!(wkb) do
@@ -339,12 +350,15 @@ defmodule Geometry do
 
       iex> Geometry.to_geo_json(PointZ.new(1.2, 3.4, 5.6))
       %{"type" => "Point", "coordinates" => [1.2, 3.4, 5.6]}
+
       iex> Geometry.to_geo_json(LineString.new([Point.new(1, 2), Point.new(3, 4)]))
       %{"type" => "LineString", "coordinates" => [[1, 2], [3, 4]]}
   """
-  @spec to_geo_json(t()) :: geo_json_term
-  def to_geo_json(%module{} = geometry) when module in @geometries,
-    do: module.to_geo_json(geometry)
+  @spec to_geo_json(t() | Feature.t() | FeatureCollection.t()) :: geo_json_term
+  def to_geo_json(%module{} = geometry)
+      when module in @geometries or module in @geo_json do
+    module.to_geo_json(geometry)
+  end
 
   @doc """
   Returns an `:ok` tuple with the geometry from the given GeoJSON term.
@@ -365,15 +379,16 @@ defmodule Geometry do
       iex> |> Geometry.from_geo_json(type: :zm)
       {:ok, %PointZM{x: 1, y: 2, z: 3, m: 4}}
   """
-  @spec from_geo_json(geo_json_term(), opts) :: {:ok, t()} | geo_json_error
+  @spec from_geo_json(geo_json_term(), opts) ::
+          {:ok, t() | Feature.t() | FeatureCollection.t()} | geo_json_error
         when opts: [type: :z | :m | :zm]
   def from_geo_json(json, opts \\ []), do: GeoJson.to_geometry(json, opts)
 
   @doc """
-  The same as `from_geo_josn/1, but raises a `Geometry.Error` exception if it
+  The same as `from_geo_josn/1`, but raises a `Geometry.Error` exception if it
   fails.
   """
-  @spec from_geo_json!(geo_json_term(), opts) :: t()
+  @spec from_geo_json!(geo_json_term(), opts) :: t() | Feature.t() | FeatureCollection.t()
         when opts: [type: :z | :m | :zm]
   def from_geo_json!(json, opts \\ []) do
     case GeoJson.to_geometry(json, opts) do

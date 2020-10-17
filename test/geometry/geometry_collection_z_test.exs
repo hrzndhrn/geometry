@@ -173,9 +173,7 @@ defmodule Geometry.GeometryCollectionZTest do
     end
 
     test "returns a GeometryCollectionZ with an SRID" do
-      assert GeometryCollectionZ.from_wkt(
-               "SRID=123;GeometryCollection Z (Point Z (1.1 2.2 3.3))"
-             ) ==
+      assert GeometryCollectionZ.from_wkt("SRID=123;GeometryCollection Z (Point Z (1.1 2.2 3.3))") ==
                {
                  :ok,
                  %GeometryCollectionZ{

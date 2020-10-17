@@ -4,6 +4,8 @@ defmodule GeometryTest do
   import Prove
 
   alias Geometry.{
+    Feature,
+    FeatureCollection,
     GeometryCollection,
     GeometryCollectionM,
     GeometryCollectionZ,
@@ -824,6 +826,62 @@ defmodule GeometryTest do
                 %GeometryCollectionZM{
                   geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
                 }}
+    end
+
+    test "returns Feature" do
+      geo_json =
+        Jason.decode!("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
+          "properties": {"facility": "Hotel"}
+        }
+        """)
+
+      assert Geometry.from_geo_json(geo_json, type: :z) ==
+               {:ok,
+                %Feature{
+                  geometry: %PointZ{x: 1, y: 2, z: 3},
+                  properties: %{"facility" => "Hotel"}
+                }}
+    end
+
+    test "returns FeatureCollection" do
+      geo_json =
+        Jason.decode!("""
+        {
+           "type": "FeatureCollection",
+           "features": [
+             {
+               "type": "Feature",
+               "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
+               "properties": {"facility": "Hotel"}
+             }, {
+               "type": "Feature",
+               "geometry": {"type": "Point", "coordinates": [4, 3, 2]},
+               "properties": {"facility": "School"}
+             }
+          ]
+        }
+        """)
+
+      assert Geometry.from_geo_json(geo_json, type: :z) ==
+               {
+                 :ok,
+                 %FeatureCollection{
+                   features:
+                     MapSet.new([
+                       %Feature{
+                         geometry: %Geometry.PointZ{x: 1, y: 2, z: 3},
+                         properties: %{"facility" => "Hotel"}
+                       },
+                       %Feature{
+                         geometry: %Geometry.PointZ{x: 4, y: 3, z: 2},
+                         properties: %{"facility" => "School"}
+                       }
+                     ])
+                 }
+               }
     end
 
     test "returns an error for invalid data" do

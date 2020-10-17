@@ -184,7 +184,7 @@ defmodule Geometry.MultiLineStringZTest do
 
   describe "to_wkb/2" do
     test "returns a MultiLineStringZ (xdr)" do
-      wkb_start =  "0080000005000000020080000002"
+      wkb_start = "0080000005000000020080000002"
 
       multi_line_string = %MultiLineStringZ{
         line_strings:

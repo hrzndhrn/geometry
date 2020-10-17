@@ -280,7 +280,7 @@ defmodule Geometry.Point do
     <<
       to_string(x)::binary(),
       @blank,
-      to_string(y)::binary(),
+      to_string(y)::binary()
     >>
   end
 
@@ -290,7 +290,7 @@ defmodule Geometry.Point do
       when is_coordinate(x, y) do
     <<
       to_wkb_number(x, endian)::binary(),
-      to_wkb_number(y, endian)::binary(),
+      to_wkb_number(y, endian)::binary()
     >>
   end
 

@@ -90,6 +90,10 @@ defmodule Geometry.MixProject do
         "Geometries collection 3D": [
           Geometry.GeometryCollectionZ,
           Geometry.GeometryCollectionZM
+        ],
+        GeoJson: [
+          Geometry.Feature,
+          Geometry.FeatureCollection
         ]
       ]
     ]

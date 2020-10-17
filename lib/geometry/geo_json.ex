@@ -2,6 +2,8 @@ defmodule Geometry.GeoJson do
   @moduledoc false
 
   alias Geometry.{
+    Feature,
+    FeatureCollection,
     GeometryCollection,
     GeometryCollectionM,
     GeometryCollectionZ,
@@ -108,7 +110,12 @@ defmodule Geometry.GeoJson do
   end)
 
   @spec to_geometry_collection(Geometry.geo_json_term(), module(), keyword()) ::
-          {:ok, GeometryCollection.t()} | Geometry.geo_json_error()
+          {:ok, geometry_collection} | Geometry.geo_json_error()
+        when geometry_collection:
+               GeometryCollection.t()
+               | GeometryCollectionM.t()
+               | GeometryCollectionZ.t()
+               | GeometryCollectionZM.t()
   def to_geometry_collection(json, module, opts \\ [])
 
   def to_geometry_collection(%{"type" => "GeometryCollection"} = json, module, opts) do
@@ -127,6 +134,26 @@ defmodule Geometry.GeoJson do
 
   def to_geometry_collection(_json, _module, _opts), do: {:error, :type_not_found}
 
+  @spec to_feature(Geometry.geo_json_term(), keyword()) ::
+          {:ok, Feature.t()} | Geometry.geo_json_error()
+  def to_feature(%{"type" => "Feature"} = json, opts) do
+    with {:ok, geometry} <- to_feature_geometry(json, opts) do
+      {:ok, %Feature{geometry: geometry, properties: Map.get(json, "properties")}}
+    end
+  end
+
+  def to_feature(_json, _opts), do: {:error, :type_not_found}
+
+  @spec to_feature_collection(Geometry.geo_json_term(), keyword()) ::
+          {:ok, FeatureCollection.t()} | Geometry.geo_json_error()
+  def to_feature_collection(%{"type" => "FeatureCollection"} = json, opts) do
+    with features when is_list(features) <- to_feature_collection_features(json, opts) do
+      {:ok, %FeatureCollection{features: MapSet.new(features)}}
+    end
+  end
+
+  def to_feature_collection(_json, _opts), do: {:error, :type_not_found}
+
   @spec to_geometry(Geometry.geo_json_term(), keyword()) ::
           {:ok, line_string()} | Geometry.geo_json_error()
   def to_geometry(%{"type" => type} = json, opts) do
@@ -139,6 +166,8 @@ defmodule Geometry.GeoJson do
         "MultiLineString" -> to_multi_line_string(json, module)
         "MultiPolygon" -> to_multi_polygon(json, module)
         "GeometryCollection" -> to_geometry_collection(json, module, opts)
+        "Feature" -> to_feature(json, opts)
+        "FeatureCollection" -> to_feature_collection(json, opts)
         _not_found -> {:error, :unknown_type}
       end
     end
@@ -157,9 +186,39 @@ defmodule Geometry.GeoJson do
   end
 
   @compile {:inline, module: 2}
+  defp module("Feature", _opts), do: {:ok, Feature}
+
+  defp module("FeatureCollection", _opts), do: {:ok, FeatureCollection}
+
   defp module(type, opts) do
     with :error <- Map.fetch(@modules, {type, Keyword.get(opts, :type, :xy)}) do
       {:error, :unknown_type}
     end
+  end
+
+  @compile {:inline, to_feature_geometry: 2}
+  defp to_feature_geometry(json, opts) do
+    case Map.get(json, "geometry") do
+      nil -> {:ok, nil}
+      geometry -> to_geometry(geometry, opts)
+    end
+  end
+
+  @compile {:inline, to_feature_collection_features: 2}
+  defp to_feature_collection_features(json, opts) do
+    case Map.get(json, "features") do
+      nil -> {:ok, []}
+      features -> to_feature_collection_reduce(features, opts)
+    end
+  end
+
+  @compile {:inline, to_feature_collection_reduce: 2}
+  defp to_feature_collection_reduce(features, opts) do
+    Enum.reduce_while(features, [], fn feature, acc ->
+      case to_feature(feature, opts) do
+        {:ok, feature} -> {:cont, [feature | acc]}
+        error -> {:halt, error}
+      end
+    end)
   end
 end
