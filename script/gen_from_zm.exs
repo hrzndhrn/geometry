@@ -30,7 +30,8 @@ defmodule GenFromZM do
     "Polygon",
     "MultiPoint",
     "MultiLineString",
-    "MultiPolygon"
+    "MultiPolygon",
+    "GeometryCollection"
   ]
   @geometries_m Enum.map(@geometries, fn geometry -> "#{geometry}M" end)
   @geometries_z Enum.map(@geometries, fn geometry -> "#{geometry}Z" end)
@@ -104,6 +105,7 @@ defmodule GenFromZM do
     |> replace(wkt_tag(type))
     |> replace(point_test(type))
     |> replace(point(type))
+    |> replace(geometry_collection(type))
     |> replace(coordinate_type(type))
     |> replace(wkb_code(type))
     |> replace(hint(:code))
@@ -126,6 +128,7 @@ defmodule GenFromZM do
     |> replace(multi_point_test(type))
     |> replace(multi_line_string_test(type))
     |> replace(multi_polygon_test(type))
+    |> replace(geometry_collection_test(type))
   end
 
   defp geometries(type) do
@@ -797,6 +800,149 @@ defmodule GenFromZM do
     |> replacements()
   end
 
+  defp geometry_collection_test(type) do
+    replacements(type)
+    |> replacements(
+      xyzm: ~S"""
+            01\
+            070000C0\
+            03000000\
+      """,
+      xyz: ~S"""
+            01\
+            07000080\
+            03000000\
+      """,
+      xym: ~S"""
+            01\
+            07000040\
+            03000000\
+      """,
+      xy: ~S"""
+            01\
+            07000000\
+            03000000\
+      """
+    )
+    |> replacements(
+      xyzm: ~S"""
+            01\
+            070000C0\
+            01000000\
+            01\
+            010000C0\
+            000000000000F03F000000000000004000000000000008400000000000001040\
+      """,
+      xyz: ~S"""
+            01\
+            07000080\
+            01000000\
+            01\
+            01000080\
+            000000000000F03F00000000000000400000000000000840\
+      """,
+      xym: ~S"""
+            01\
+            07000040\
+            01000000\
+            01\
+            01000040\
+            000000000000F03F00000000000000400000000000001040\
+      """,
+      xy: ~S"""
+            01\
+            07000000\
+            01000000\
+            01\
+            01000000\
+            000000000000F03F0000000000000040\
+      """
+    )
+    |> replacements(
+      xyzm: ~S"""
+            01\
+            070000E0\
+            37000000\
+            01000000\
+            01\
+            010000C0\
+            000000000000F03F000000000000004000000000000008400000000000001040\
+      """,
+      xyz: ~S"""
+            01\
+            070000A0\
+            37000000\
+            01000000\
+            01\
+            01000080\
+            000000000000F03F00000000000000400000000000000840\
+      """,
+      xym: ~S"""
+            01\
+            07000060\
+            37000000\
+            01000000\
+            01\
+            01000040\
+            000000000000F03F00000000000000400000000000001040\
+      """,
+      xy: ~S"""
+            01\
+            07000020\
+            37000000\
+            01000000\
+            01\
+            01000000\
+            000000000000F03F0000000000000040\
+      """
+    )
+    |> replacements(
+      xyzm: """
+            01\
+            070000C0\
+            01000000\
+            01\
+            010000E0\
+            37000000\
+            000000000000F03F000000000000004000000000000008400000000000001040\
+      """,
+      xym: """
+            01\
+            07000080\
+            01000000\
+            01\
+            010000A0\
+            37000000\
+            000000000000F03F00000000000000400000000000001040\
+      """,
+      xyz: """
+            01\
+            07000040\
+            01000000\
+            01\
+            01000060\
+            37000000\
+            000000000000F03F00000000000000400000000000000840\
+      """,
+      xy: """
+            01\
+            07000000\
+            01000000\
+            01\
+            01000020\
+            37000000\
+            000000000000F03F0000000000000040\
+      """
+    )
+    |> replacements(
+      xyzm: "01070000C000000000",
+      xyz: "010700008000000000",
+      xym: "010700004000000000",
+      xy: "010700000000000000"
+    )
+    |> replacements()
+  end
+
   defp multi_polygon_test(type) do
     replacements(type)
     |> replacements(
@@ -1065,6 +1211,17 @@ defmodule GenFromZM do
     |> replacements()
   end
 
+  defp geometry_collection(type) do
+    replacements(type)
+    |> replacements(
+      xyzm: ", type: :zm",
+      xyz: ", type: :z",
+      xym: ", type: :m",
+      xy: ""
+    )
+    |> replacements()
+  end
+
   defp wkb_code(type) do
     replacements(type)
     |> replacements(
@@ -1227,6 +1384,33 @@ defmodule GenFromZM do
             {:ndr, false} -> "060000C0"
             {:xdr, true} -> "E0000006"
             {:ndr, true} -> "060000E0"
+      """
+    )
+    |> replacements(
+      # GeometryCollection
+      xy: """
+            {:xdr, false} -> "00000007"
+            {:ndr, false} -> "07000000"
+            {:xdr, true} -> "20000007"
+            {:ndr, true} -> "07000020"
+      """,
+      xym: """
+            {:xdr, false} -> "40000007"
+            {:ndr, false} -> "07000040"
+            {:xdr, true} -> "60000007"
+            {:ndr, true} -> "07000060"
+      """,
+      xyz: """
+            {:xdr, false} -> "80000007"
+            {:ndr, false} -> "07000080"
+            {:xdr, true} -> "A0000007"
+            {:ndr, true} -> "070000A0"
+      """,
+      xyzm: """
+            {:xdr, false} -> "C0000007"
+            {:ndr, false} -> "070000C0"
+            {:xdr, true} -> "E0000007"
+            {:ndr, true} -> "070000E0"
       """
     )
     |> replacements()

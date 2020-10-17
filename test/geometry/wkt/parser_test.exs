@@ -34,17 +34,18 @@ defmodule Geometry.WKT.ParserTest do
   }
 
   describe "Point (Z/M/ZM):" do
-    @tag :only
     prove Parser.parse("Point(1 2)") == {:ok, %Point{x: 1, y: 2}}
     prove Parser.parse("POINT ( -1.5 2.66 ) ") == {:ok, %Point{x: -1.5, y: 2.66}}
     prove Parser.parse("Point Z (1 2 3)") == {:ok, %PointZ{x: 1, y: 2, z: 3}}
     prove Parser.parse("POINTZ(1 2 3)") == {:ok, %PointZ{x: 1, y: 2, z: 3}}
     prove Parser.parse("POINT M(1 2 3)") == {:ok, %PointM{x: 1, y: 2, m: 3}}
-    prove Parser.parse("point zm(1 2 3 4)") == {:ok, %PointZM{x: 1, y: 2, z: 3, m: 4}}
+    prove Parser.parse("point zm(1 2 3 4)   ") == {:ok, %PointZM{x: 1, y: 2, z: 3, m: 4}}
+    prove Parser.parse("Point(1 2) ignore") == {:ok, %Point{x: 1, y: 2}}
+    @tag :only
+    prove Parser.parse("Point Z EMPTY") == {:ok, %PointZ{}}
   end
 
   describe "Point from EWKT:" do
-    @tag :srid
     prove Parser.parse("SRID=4437;Point(1 2)") == {:ok, %Point{x: 1, y: 2}, 4437}
     prove Parser.parse(" SriD = 1 ; Point(1 2)") == {:ok, %Point{x: 1, y: 2}, 1}
   end
@@ -92,7 +93,19 @@ defmodule Geometry.WKT.ParserTest do
     prove Parser.parse("LineStringZM(1 2 3 4, 5 6 7 8)") ==
             {:ok,
              %LineStringZM{
-               points: [%PointZM{x: 1, y: 2, z: 3, m: 4}, %PointZM{x: 5, y: 6, z: 7, m: 8}]
+               points: [
+                 %PointZM{x: 1, y: 2, z: 3, m: 4},
+                 %PointZM{x: 5, y: 6, z: 7, m: 8}
+               ]
+             }}
+
+    prove Parser.parse("LineString(1 2, 4 5) foo") ==
+            {:ok,
+             %LineString{
+               points: [
+                 %Point{x: 1, y: 2},
+                 %Point{x: 4, y: 5}
+               ]
              }}
   end
 
@@ -248,7 +261,7 @@ defmodule Geometry.WKT.ParserTest do
     prove Parser.parse("MultiPoint ZM ((11 12 13 14), (21 22 23 24))") ==
             {:ok,
              %MultiPointZM{
-               geometries:
+               points:
                  MapSet.new([
                    %PointZM{x: 11, y: 12, z: 13, m: 14},
                    %PointZM{x: 21, y: 22, z: 23, m: 24}
@@ -258,7 +271,7 @@ defmodule Geometry.WKT.ParserTest do
     prove Parser.parse("MultiPointZM(11 12 13 14, 21 22 23 24)") ==
             {:ok,
              %MultiPointZM{
-               geometries:
+               points:
                  MapSet.new([
                    %PointZM{x: 11, y: 12, z: 13, m: 14},
                    %PointZM{x: 21, y: 22, z: 23, m: 24}
@@ -268,7 +281,7 @@ defmodule Geometry.WKT.ParserTest do
     prove Parser.parse("MultiPoint M (11 12 13 , 21 22 23 )") ==
             {:ok,
              %MultiPointM{
-               geometries:
+               points:
                  MapSet.new([
                    %PointM{x: 11, y: 12, m: 13},
                    %PointM{x: 21, y: 22, m: 23}
@@ -278,7 +291,7 @@ defmodule Geometry.WKT.ParserTest do
     prove Parser.parse("MultiPoint Z (11 12 13 , 21 22 23 )") ==
             {:ok,
              %MultiPointZ{
-               geometries:
+               points:
                  MapSet.new([
                    %PointZ{x: 11, y: 12, z: 13},
                    %PointZ{x: 21, y: 22, z: 23}
@@ -288,7 +301,7 @@ defmodule Geometry.WKT.ParserTest do
     prove Parser.parse("MultiPoint  (11 12, 21 22)") ==
             {:ok,
              %MultiPoint{
-               geometries:
+               points:
                  MapSet.new([
                    %Point{x: 11, y: 12},
                    %Point{x: 21, y: 22}
@@ -307,7 +320,7 @@ defmodule Geometry.WKT.ParserTest do
       assert Parser.parse(wkt) ==
                {:ok,
                 %MultiLineStringZM{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringZM{
                         points: [
@@ -330,7 +343,7 @@ defmodule Geometry.WKT.ParserTest do
       assert Parser.parse(wkt) ==
                {:ok,
                 %MultiLineStringZM{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringZM{
                         points: [
@@ -361,7 +374,7 @@ defmodule Geometry.WKT.ParserTest do
       assert Parser.parse(wkt) ==
                {:ok,
                 %MultiLineStringZM{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringZM{
                         points: [
@@ -396,7 +409,7 @@ defmodule Geometry.WKT.ParserTest do
       assert Parser.parse(wkt) ==
                {:ok,
                 %MultiLineStringZ{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringZ{
                         points: [
@@ -426,7 +439,7 @@ defmodule Geometry.WKT.ParserTest do
       assert Parser.parse(wkt) ==
                {:ok,
                 %MultiLineStringM{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringM{
                         points: [
@@ -456,7 +469,7 @@ defmodule Geometry.WKT.ParserTest do
       assert Parser.parse(wkt) ==
                {:ok,
                 %MultiLineString{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineString{
                         points: [
@@ -488,7 +501,7 @@ defmodule Geometry.WKT.ParserTest do
                {
                  :ok,
                  %MultiPolygon{
-                   geometries:
+                   polygons:
                      MapSet.new([
                        %Polygon{
                          exterior: [
@@ -515,7 +528,7 @@ defmodule Geometry.WKT.ParserTest do
                {
                  :ok,
                  %MultiPolygonZ{
-                   geometries:
+                   polygons:
                      MapSet.new([
                        %PolygonZ{
                          exterior: [
@@ -542,7 +555,7 @@ defmodule Geometry.WKT.ParserTest do
                {
                  :ok,
                  %MultiPolygonM{
-                   geometries:
+                   polygons:
                      MapSet.new([
                        %PolygonM{
                          exterior: [
@@ -569,7 +582,7 @@ defmodule Geometry.WKT.ParserTest do
                {
                  :ok,
                  %MultiPolygonZM{
-                   geometries:
+                   polygons:
                      MapSet.new([
                        %PolygonZM{
                          exterior: [
@@ -583,6 +596,48 @@ defmodule Geometry.WKT.ParserTest do
                      ])
                  }
                }
+    end
+  end
+
+  describe "GeometryCollection:" do
+    test "An empty collection" do
+      assert Parser.parse("GeometryCollection ZM EMPTY") ==
+               {:ok, %Geometry.GeometryCollectionZM{}}
+    end
+
+    test "Collection with 3 ZM geometries" do
+      wkt = """
+      GeometryCollection ZM (
+        Point ZM (40 10 20 30),
+        LineString ZM (10 10 20 15, 20 20 10 15, 10 40 20 30),
+        Polygon ZM ((40 40 20 10, 20 45 15 20, 45 30 10 15, 40 40 20 10))
+      )
+      """
+
+      assert Parser.parse(wkt) ==
+               {:ok,
+                %Geometry.GeometryCollectionZM{
+                  geometries:
+                    MapSet.new([
+                      %Geometry.LineStringZM{
+                        points: [
+                          %Geometry.PointZM{x: 10, y: 10, z: 20, m: 15},
+                          %Geometry.PointZM{x: 20, y: 20, z: 10, m: 15},
+                          %Geometry.PointZM{x: 10, y: 40, z: 20, m: 30}
+                        ]
+                      },
+                      %Geometry.PolygonZM{
+                        exterior: [
+                          %Geometry.PointZM{x: 40, y: 40, z: 20, m: 10},
+                          %Geometry.PointZM{x: 20, y: 45, z: 15, m: 20},
+                          %Geometry.PointZM{x: 45, y: 30, z: 10, m: 15},
+                          %Geometry.PointZM{x: 40, y: 40, z: 20, m: 10}
+                        ],
+                        interiors: []
+                      },
+                      %Geometry.PointZM{x: 40, y: 10, z: 20, m: 30}
+                    ])
+                }}
     end
   end
 
@@ -621,11 +676,41 @@ defmodule Geometry.WKT.ParserTest do
     end
 
     test "Missing closing bracket" do
-      assert Parser.parse("Point(1 2") == {:error, "expected )", "", {1, 0}, 9}
-      assert Parser.parse("Point(1\n2") == {:error, "expected )", "", {2, 8}, 9}
-      assert Parser.parse("Point\n(1 2") == {:error, "expected )", "", {2, 6}, 10}
-      assert Parser.parse("\nPoint\n(1 2") == {:error, "expected )", "", {3, 7}, 11}
-      assert Parser.parse("   \nPoint\n(1 2") == {:error, "expected )", "", {3, 10}, 14}
+      assert Parser.parse("Point(1 2") == {:error, "expected Point data", "(1 2", {1, 0}, 5}
+
+      assert Parser.parse("   \nPoint\n(1 2") ==
+               {:error, "expected Point data", "(1 2", {3, 10}, 10}
+    end
+
+    @tag :only
+    test "Mixed collection" do
+      wkt = """
+      GeometryCollection ZM (
+        Point M (10 20 30),
+        Point ZM (40 10 20 30)
+      )
+      """
+
+      assert Parser.parse(wkt) ==
+               {:error, "unexpected geometry in collection",
+                "(10 20 30),\n  Point ZM (40 10 20 30)\n)\n", {2, 24}, 34}
+    end
+
+    test "Invalid collection" do
+      wkt = """
+      GeometryCollection ZM
+        Point M (10 20 30),
+        Point ZM (40 10 20 30)
+      )
+      """
+
+      assert Parser.parse(wkt) == {
+               :error,
+               "expected '(', ',' ')', or 'EMPTY'",
+               "Point M (10 20 30),\n  Point ZM (40 10 20 30)\n)\n",
+               {2, 22},
+               24
+             }
     end
   end
 end

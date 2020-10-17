@@ -45,7 +45,7 @@ defmodule Geometry.MultiPointTest do
 
       assert MultiPoint.from_geo_json!(geo_json) ==
                %MultiPoint{
-                 geometries:
+                 points:
                    MapSet.new([
                      %Point{x: 1.1, y: 1.2},
                      %Point{x: 20.1, y: 20.2}
@@ -108,7 +108,7 @@ defmodule Geometry.MultiPointTest do
       """
 
       multi_point = %MultiPoint{
-        geometries:
+        points:
           MapSet.new([
             %Point{x: 30.0, y: 10.0},
             %Point{x: 20.0, y: 40.0},
@@ -158,7 +158,7 @@ defmodule Geometry.MultiPointTest do
       """
 
       multi_point = %MultiPoint{
-        geometries:
+        points:
           MapSet.new([
             %Point{x: 30.0, y: 10.0},
             %Point{x: 20.0, y: 40.0},
@@ -181,7 +181,7 @@ defmodule Geometry.MultiPointTest do
       """
 
       multi_point = %MultiPoint{
-        geometries: MapSet.new([%Point{x: 30.0, y: 10.0}])
+        points: MapSet.new([%Point{x: 30.0, y: 10.0}])
       }
 
       assert MultiPoint.from_wkb!(wkb) == {multi_point, 9999}
@@ -201,7 +201,7 @@ defmodule Geometry.MultiPointTest do
       wkb_start = "0000000004000000030000000001"
 
       multi_point = %MultiPoint{
-        geometries:
+        points:
           MapSet.new([
             %Point{x: 30.0, y: 10.0},
             %Point{x: 20.0, y: 40.0},
@@ -228,7 +228,7 @@ defmodule Geometry.MultiPointTest do
       """
 
       multi_point = %MultiPoint{
-        geometries: MapSet.new([%Point{x: 30.0, y: 10.0}])
+        points: MapSet.new([%Point{x: 30.0, y: 10.0}])
       }
 
       assert MultiPoint.to_wkb(multi_point, srid: 9999) == wkb
@@ -259,7 +259,7 @@ defmodule Geometry.MultiPointTest do
     test "returns a MultiPoint" do
       assert MultiPoint.from_wkt!("MultiPoint (-5.1 7.8, 0.1 0.2)") ==
                %MultiPoint{
-                 geometries:
+                 points:
                    MapSet.new([
                      %Point{x: -5.1, y: 7.8},
                      %Point{x: 0.1, y: 0.2}
@@ -270,7 +270,7 @@ defmodule Geometry.MultiPointTest do
     test "returns a MultiPoint with an SRID" do
       assert MultiPoint.from_wkt!("SRID=7219;MultiPoint (-5.1 7.8, 0.1 0.2)") ==
                {%MultiPoint{
-                  geometries:
+                  points:
                     MapSet.new([
                       %Point{x: -5.1, y: 7.8},
                       %Point{x: 0.1, y: 0.2}

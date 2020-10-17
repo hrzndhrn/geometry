@@ -129,6 +129,9 @@ defmodule Geometry.PointZM do
 
       iex> PointZM.from_wkt("SRID=7219;Point ZM (-5.1 7.8 9.9 12)")
       {:ok, %PointZM{x: -5.1, y: 7.8, z: 9.9, m: 12}, 7219}
+
+      iex> PointZM.from_wkt("Point ZM EMPTY")
+      {:ok, %PointZM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()

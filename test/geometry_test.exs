@@ -4,6 +4,10 @@ defmodule GeometryTest do
   import Prove
 
   alias Geometry.{
+    GeometryCollection,
+    GeometryCollectionM,
+    GeometryCollectionZ,
+    GeometryCollectionZM,
     LineString,
     LineStringM,
     LineStringZ,
@@ -43,25 +47,25 @@ defmodule GeometryTest do
 
   describe "from_wkt/1" do
     test "returns an error tuple for an invalid coordiante" do
-      assert Geometry.from_wkt("Point (x 5)") == {:error, "expected number", "x 5)", {1, 0}, 7}
+      assert Geometry.from_wkt("Point (x 5)") ==
+               {:error, "expected Point data", "(x 5)", {1, 0}, 6}
     end
   end
 
   describe "from_wkt!/2" do
     test "returns an exception for an invalid coordiante in Point" do
-      message = "expected number at 2:4, got: 'X\n)\n'"
+      message = "expected Point data at 2:2, got: '(7 X)\n'"
 
       assert_raise Geometry.Error, message, fn ->
         Geometry.from_wkt!("""
-        Point (
-          7 X
-        )
+        Point
+          (7 X)
         """)
       end
     end
 
     test "returns an exception for an invalid coordiante in LineString" do
-      message = "expected number at 1:11, got: 'x 1, 2 2,...'"
+      message = "expected LineString data at 1:10, got: '(x 1, 2 2...'"
 
       assert_raise Geometry.Error, message, fn ->
         Geometry.from_wkt!("LineString(x 1, 2 2, 3 3, 4 4, 5 5, 6 6, 7 7)")
@@ -112,6 +116,11 @@ defmodule GeometryTest do
     prove Geometry.empty?(MultiPolygonM.new()) == true
     prove Geometry.empty?(MultiPolygonZ.new()) == true
     prove Geometry.empty?(MultiPolygonZM.new()) == true
+
+    prove Geometry.empty?(GeometryCollection.new()) == true
+    prove Geometry.empty?(GeometryCollectionM.new()) == true
+    prove Geometry.empty?(GeometryCollectionZ.new()) == true
+    prove Geometry.empty?(GeometryCollectionZM.new()) == true
   end
 
   describe "from_geo_json/2" do
@@ -396,7 +405,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json) ==
                {:ok,
                 %MultiPoint{
-                  geometries:
+                  points:
                     MapSet.new([
                       %Point{x: 1.1, y: 1.2},
                       %Point{x: 20.1, y: 20.2}
@@ -421,7 +430,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :m) ==
                {:ok,
                 %MultiPointM{
-                  geometries:
+                  points:
                     MapSet.new([
                       %PointM{x: 1.1, y: 1.2, m: 1.3},
                       %PointM{x: 20.1, y: 20.2, m: 20.3}
@@ -446,7 +455,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :z) ==
                {:ok,
                 %MultiPointZ{
-                  geometries:
+                  points:
                     MapSet.new([
                       %PointZ{x: 1.1, y: 1.2, z: 1.3},
                       %PointZ{x: 20.1, y: 20.2, z: 20.3}
@@ -471,7 +480,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
                 %MultiPointZM{
-                  geometries:
+                  points:
                     MapSet.new([
                       %PointZM{x: 1.1, y: 1.2, z: 1.3, m: 1.4},
                       %PointZM{x: 20.1, y: 20.2, z: 20.3, m: 20.4}
@@ -495,7 +504,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
                 %MultiLineStringZM{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringZM{
                         points: [
@@ -523,7 +532,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :z) ==
                {:ok,
                 %MultiLineStringZ{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringZ{
                         points: [
@@ -551,7 +560,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :m) ==
                {:ok,
                 %MultiLineStringM{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineStringM{
                         points: [
@@ -579,7 +588,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json) ==
                {:ok,
                 %MultiLineString{
-                  geometries:
+                  line_strings:
                     MapSet.new([
                       %LineString{
                         points: [
@@ -612,7 +621,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json) ==
                {:ok,
                 %MultiPolygon{
-                  geometries:
+                  polygons:
                     MapSet.new([
                       %Polygon{
                         exterior: [
@@ -664,7 +673,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :m) ==
                {:ok,
                 %MultiPolygonM{
-                  geometries:
+                  polygons:
                     MapSet.new([
                       %PolygonM{
                         exterior: [
@@ -716,7 +725,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :z) ==
                {:ok,
                 %MultiPolygonZ{
-                  geometries:
+                  polygons:
                     MapSet.new([
                       %PolygonZ{
                         exterior: [
@@ -768,7 +777,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
                 %MultiPolygonZM{
-                  geometries:
+                  polygons:
                     MapSet.new([
                       %PolygonZM{
                         exterior: [
@@ -797,6 +806,38 @@ defmodule GeometryTest do
                       }
                     ])
                 }}
+    end
+
+    test "returns GeometryCollectionZM" do
+      geo_json =
+        Jason.decode!("""
+          {
+            "type": "GeometryCollection",
+            "geometries": [
+              {"type": "Point", "coordinates": [1.1, 2.2, 3.3, 4.4]}
+            ]
+          }
+        """)
+
+      assert Geometry.from_geo_json(geo_json, type: :zm) ==
+               {:ok,
+                %GeometryCollectionZM{
+                  geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                }}
+    end
+
+    test "returns an error for invalid data" do
+      geo_json =
+        Jason.decode!("""
+          {
+            "type": "GeometryCollection",
+            "geometries": [
+              {"type": "Point", "coordinates": ["evil", 2.2, 3.3, 4.4]}
+            ]
+          }
+        """)
+
+      assert Geometry.from_geo_json(geo_json, type: :zm) == {:error, :invalid_data}
     end
 
     test "returns an error for an invalid Polygon" do
@@ -1097,7 +1138,7 @@ defmodule GeometryTest do
       assert Geometry.from_wkb(wkb) ==
                {:ok,
                 %MultiPointZM{
-                  geometries:
+                  points:
                     MapSet.new([
                       %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
                       %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
@@ -1135,7 +1176,7 @@ defmodule GeometryTest do
       """
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -1187,7 +1228,7 @@ defmodule GeometryTest do
       """
 
       multi_string = %MultiLineStringZM{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZM{
               points: [

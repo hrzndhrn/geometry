@@ -64,7 +64,7 @@ defmodule Geometry.MultiPolygonZMTest do
         """)
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -120,7 +120,7 @@ defmodule Geometry.MultiPolygonZMTest do
       """
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -170,7 +170,7 @@ defmodule Geometry.MultiPolygonZMTest do
       """
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -218,7 +218,7 @@ defmodule Geometry.MultiPolygonZMTest do
       """
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -265,7 +265,7 @@ defmodule Geometry.MultiPolygonZMTest do
   describe "to_wkt/2" do
     test "returns wkt-string" do
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -349,7 +349,7 @@ defmodule Geometry.MultiPolygonZMTest do
       """
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -388,7 +388,7 @@ defmodule Geometry.MultiPolygonZMTest do
       wkb_start = "01060000C00200000001030000C0"
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [
@@ -454,7 +454,7 @@ defmodule Geometry.MultiPolygonZMTest do
       """
 
       multi_polygon = %MultiPolygonZM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonZM{
               exterior: [

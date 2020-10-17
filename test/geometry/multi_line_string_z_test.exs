@@ -46,7 +46,7 @@ defmodule Geometry.MultiLineStringZTest do
         """)
 
       multi_line_string = %MultiLineStringZ{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZ{
               points: [
@@ -122,7 +122,7 @@ defmodule Geometry.MultiLineStringZTest do
       """
 
       multi_line_string = %MultiLineStringZ{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZ{
               points: [
@@ -152,7 +152,7 @@ defmodule Geometry.MultiLineStringZTest do
       """
 
       multi_line_string = %MultiLineStringZ{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZ{
               points: [
@@ -187,7 +187,7 @@ defmodule Geometry.MultiLineStringZTest do
       wkb_start = "0080000005000000020080000002"
 
       multi_line_string = %MultiLineStringZ{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZ{
               points: [
@@ -233,7 +233,7 @@ defmodule Geometry.MultiLineStringZTest do
       """
 
       multi_line_string = %MultiLineStringZ{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZ{
               points: [
@@ -275,7 +275,7 @@ defmodule Geometry.MultiLineStringZTest do
       """
 
       multi_line_string = %MultiLineStringZ{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineStringZ{
               points: [

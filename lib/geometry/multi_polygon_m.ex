@@ -1,13 +1,13 @@
 defmodule Geometry.MultiPolygonM do
   @moduledoc """
-  A collection set of geometries restricted to `Geometry.MultiPolygonM`.
+  A set of polygons from type `Geometry.PolygonM`
   """
 
   alias Geometry.{GeoJson, MultiPolygonM, PointM, PolygonM, WKB, WKT}
 
-  defstruct geometries: MapSet.new()
+  defstruct polygons: MapSet.new()
 
-  @type t :: %MultiPolygonM{geometries: MapSet.t(PolygonM.t())}
+  @type t :: %MultiPolygonM{polygons: MapSet.t(PolygonM.t())}
 
   @doc """
   Creates an empty `MultiPolygonM`.
@@ -15,7 +15,7 @@ defmodule Geometry.MultiPolygonM do
   ## Examples
 
       iex> MultiPolygonM.new()
-      %MultiPolygonM{geometries: MapSet.new()}
+      %MultiPolygonM{polygons: MapSet.new()}
   """
   @spec new :: t()
   def new, do: %MultiPolygonM{}
@@ -45,7 +45,7 @@ defmodule Geometry.MultiPolygonM do
       ...>   ]])
       ...> ])
       %MultiPolygonM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonM{
               exterior: [
@@ -80,7 +80,7 @@ defmodule Geometry.MultiPolygonM do
   """
   @spec new([PolygonM.t()]) :: t()
   def new([]), do: %MultiPolygonM{}
-  def new(polygon), do: %MultiPolygonM{geometries: MapSet.new(polygon)}
+  def new(polygon), do: %MultiPolygonM{polygons: MapSet.new(polygon)}
 
   @doc """
   Returns `true` if the given `MultiPolygonM` is empty.
@@ -104,7 +104,7 @@ defmodule Geometry.MultiPolygonM do
   """
   @spec empty?(t()) :: boolean
   def empty?(%MultiPolygonM{} = multi_polygon),
-    do: Enum.empty?(multi_polygon.geometries)
+    do: Enum.empty?(multi_polygon.polygons)
 
   @doc """
   Creates a `MultiPolygonM` from the given coordinates.
@@ -120,7 +120,7 @@ defmodule Geometry.MultiPolygonM do
       ...>   ]
       ...> ])
       %MultiPolygonM{
-        geometries:
+        polygons:
           MapSet.new([
             %PolygonM{
               exterior: [
@@ -153,7 +153,7 @@ defmodule Geometry.MultiPolygonM do
   @spec from_coordinates([[Geometry.coordinate_m()]]) :: t()
   def from_coordinates(coordinates) do
     %MultiPolygonM{
-      geometries: coordinates |> Enum.map(&PolygonM.from_coordinates/1) |> MapSet.new()
+      polygons: coordinates |> Enum.map(&PolygonM.from_coordinates/1) |> MapSet.new()
     }
   end
 
@@ -181,7 +181,7 @@ defmodule Geometry.MultiPolygonM do
       {
         :ok,
         %MultiPolygonM{
-          geometries:
+          polygons:
             MapSet.new([
               %PolygonM{
                 exterior: [
@@ -256,7 +256,7 @@ defmodule Geometry.MultiPolygonM do
   ```
   """
   @spec to_geo_json(t()) :: Geometry.geo_json_term()
-  def to_geo_json(%MultiPolygonM{geometries: polygons}) do
+  def to_geo_json(%MultiPolygonM{polygons: polygons}) do
     %{
       "type" => "MultiPolygon",
       "coordinates" =>
@@ -290,7 +290,7 @@ defmodule Geometry.MultiPolygonM do
       {
         :ok,
         %MultiPolygonM{
-          geometries:
+          polygons:
             MapSet.new([
               %PolygonM{
                 exterior: [
@@ -323,6 +323,9 @@ defmodule Geometry.MultiPolygonM do
         },
         1234
       }
+
+      iex> MultiPolygonM.from_wkt("MultiPolygon M EMPTY")
+      {:ok, %MultiPolygonM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
@@ -352,7 +355,7 @@ defmodule Geometry.MultiPolygonM do
   ```elixir
   MultiPolygonM.to_wkt(
     %MultiPolygonM{
-      geometries:
+      polygons:
         MapSet.new([
           %PolygonM{
             exterior: [
@@ -398,7 +401,7 @@ defmodule Geometry.MultiPolygonM do
         when opts: [srid: Geometry.srid()]
   def to_wkt(polygons, opts \\ [])
 
-  def to_wkt(%MultiPolygonM{geometries: polygons}, opts) do
+  def to_wkt(%MultiPolygonM{polygons: polygons}, opts) do
     polygons
     |> Enum.empty?()
     |> case do
@@ -492,13 +495,13 @@ defmodule Geometry.MultiPolygonM do
 
   defp to_wkt_multi_polygon(wkt), do: "MultiPolygon M #{wkt}"
 
-  defp to_wkb_multi_polygon(%MultiPolygonM{geometries: geometries}, endian) do
+  defp to_wkb_multi_polygon(%MultiPolygonM{polygons: polygons}, endian) do
     data =
-      Enum.reduce(geometries, [], fn polygon, acc ->
+      Enum.reduce(polygons, [], fn polygon, acc ->
         [PolygonM.to_wkb(polygon, endian: endian) | acc]
       end)
 
-    <<WKB.length(geometries, endian)::binary, IO.iodata_to_binary(data)::binary>>
+    <<WKB.length(polygons, endian)::binary, IO.iodata_to_binary(data)::binary>>
   end
 
   defp wkb_code(endian, srid?) do

@@ -45,7 +45,7 @@ defmodule Geometry.MultiPointZTest do
 
       assert MultiPointZ.from_geo_json!(geo_json) ==
                %MultiPointZ{
-                 geometries:
+                 points:
                    MapSet.new([
                      %PointZ{x: 1.1, y: 1.2, z: 1.3},
                      %PointZ{x: 20.1, y: 20.2, z: 20.3}
@@ -108,7 +108,7 @@ defmodule Geometry.MultiPointZTest do
       """
 
       multi_point = %MultiPointZ{
-        geometries:
+        points:
           MapSet.new([
             %PointZ{x: 30.0, y: 10.0, z: 15.0},
             %PointZ{x: 20.0, y: 40.0, z: 15.0},
@@ -158,7 +158,7 @@ defmodule Geometry.MultiPointZTest do
       """
 
       multi_point = %MultiPointZ{
-        geometries:
+        points:
           MapSet.new([
             %PointZ{x: 30.0, y: 10.0, z: 15.0},
             %PointZ{x: 20.0, y: 40.0, z: 15.0},
@@ -181,7 +181,7 @@ defmodule Geometry.MultiPointZTest do
       """
 
       multi_point = %MultiPointZ{
-        geometries: MapSet.new([%PointZ{x: 30.0, y: 10.0, z: 15.0}])
+        points: MapSet.new([%PointZ{x: 30.0, y: 10.0, z: 15.0}])
       }
 
       assert MultiPointZ.from_wkb!(wkb) == {multi_point, 9999}
@@ -201,7 +201,7 @@ defmodule Geometry.MultiPointZTest do
       wkb_start = "0080000004000000030080000001"
 
       multi_point = %MultiPointZ{
-        geometries:
+        points:
           MapSet.new([
             %PointZ{x: 30.0, y: 10.0, z: 15.0},
             %PointZ{x: 20.0, y: 40.0, z: 15.0},
@@ -228,7 +228,7 @@ defmodule Geometry.MultiPointZTest do
       """
 
       multi_point = %MultiPointZ{
-        geometries: MapSet.new([%PointZ{x: 30.0, y: 10.0, z: 15.0}])
+        points: MapSet.new([%PointZ{x: 30.0, y: 10.0, z: 15.0}])
       }
 
       assert MultiPointZ.to_wkb(multi_point, srid: 9999) == wkb
@@ -259,7 +259,7 @@ defmodule Geometry.MultiPointZTest do
     test "returns a MultiPointZ" do
       assert MultiPointZ.from_wkt!("MultiPoint Z (-5.1 7.8 1.1, 0.1 0.2 2.2)") ==
                %MultiPointZ{
-                 geometries:
+                 points:
                    MapSet.new([
                      %PointZ{x: -5.1, y: 7.8, z: 1.1},
                      %PointZ{x: 0.1, y: 0.2, z: 2.2}
@@ -270,7 +270,7 @@ defmodule Geometry.MultiPointZTest do
     test "returns a MultiPointZ with an SRID" do
       assert MultiPointZ.from_wkt!("SRID=7219;MultiPoint Z (-5.1 7.8 1.1, 0.1 0.2 2.2)") ==
                {%MultiPointZ{
-                  geometries:
+                  points:
                     MapSet.new([
                       %PointZ{x: -5.1, y: 7.8, z: 1.1},
                       %PointZ{x: 0.1, y: 0.2, z: 2.2}

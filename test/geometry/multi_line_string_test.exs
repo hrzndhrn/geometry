@@ -46,7 +46,7 @@ defmodule Geometry.MultiLineStringTest do
         """)
 
       multi_line_string = %MultiLineString{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineString{
               points: [
@@ -122,7 +122,7 @@ defmodule Geometry.MultiLineStringTest do
       """
 
       multi_line_string = %MultiLineString{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineString{
               points: [
@@ -152,7 +152,7 @@ defmodule Geometry.MultiLineStringTest do
       """
 
       multi_line_string = %MultiLineString{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineString{
               points: [
@@ -187,7 +187,7 @@ defmodule Geometry.MultiLineStringTest do
       wkb_start = "0000000005000000020000000002"
 
       multi_line_string = %MultiLineString{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineString{
               points: [
@@ -233,7 +233,7 @@ defmodule Geometry.MultiLineStringTest do
       """
 
       multi_line_string = %MultiLineString{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineString{
               points: [
@@ -275,7 +275,7 @@ defmodule Geometry.MultiLineStringTest do
       """
 
       multi_line_string = %MultiLineString{
-        geometries:
+        line_strings:
           MapSet.new([
             %LineString{
               points: [

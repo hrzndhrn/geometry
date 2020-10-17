@@ -1,40 +1,13 @@
 defmodule Geometry.WKT.Parser do
   @moduledoc false
 
-  import NimbleParsec
-  import Geometry.WKT.ParserHelper
-
-  defparsecp(:geometry, geometry())
-
-  defparsecp(:point_xy, point_xy())
-  defparsecp(:point_xyz, point_xyz())
-  defparsecp(:point_xyzm, point_xyzm())
-
-  defparsecp(:line_string_xy, line_string_xy())
-  defparsecp(:line_string_xyz, line_string_xyz())
-  defparsecp(:line_string_xyzm, line_string_xyzm())
-
-  defparsecp(:polygon_xy, polygon_xy())
-  defparsecp(:polygon_xyz, polygon_xyz())
-  defparsecp(:polygon_xyzm, polygon_xyzm())
-
-  defparsecp(:multi_point_xy, multi_point_xy())
-  defparsecp(:multi_point_xyz, multi_point_xyz())
-  defparsecp(:multi_point_xyzm, multi_point_xyzm())
-
-  defparsecp(:multi_line_string_xy, multi_line_string_xy())
-  defparsecp(:multi_line_string_xyz, multi_line_string_xyz())
-  defparsecp(:multi_line_string_xyzm, multi_line_string_xyzm())
-
-  defparsecp(:multi_polygon_xy, multi_polygon_xy())
-  defparsecp(:multi_polygon_xyz, multi_polygon_xyz())
-  defparsecp(:multi_polygon_xyzm, multi_polygon_xyzm())
+  import Geometry.WKT.Parsers
 
   @spec parse(Geometry.wkt()) ::
           {:ok, Geometry.t()} | {:ok, Geometry.t(), Geometry.srid()} | Geometry.wkt_error()
   def parse(string) do
     with {:ok, [info], rest, _context, line, byte_offset} <- geometry(string),
-         {:ok, geometry} <-
+         {:ok, geometry, _rest, _context, _line, _byte_offset} <-
            geometry_text({info.geometry, info.tag}, rest, line: line, byte_offset: byte_offset) do
       case Map.fetch(info, :srid) do
         {:ok, srid} -> {:ok, geometry, srid}
@@ -46,13 +19,30 @@ defmodule Geometry.WKT.Parser do
     end
   end
 
+  defp geometry_collection_item(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <-
+           geometry(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid)} do
+        {true, nil} ->
+          geometry_text({info.geometry, info.tag}, rest, line: line, byte_offset: byte_offset)
+
+        {false, nil} ->
+          {:error, "unexpected geometry in collection", rest, context, line, byte_offset}
+
+        {_tag, _srid} ->
+          {:error, "unexpected SRID in collection", rest, context, line, byte_offset}
+      end
+    end
+  end
+
   [
     "point",
     "polygon",
     "line_string",
     "multi_point",
     "multi_line_string",
-    "multi_polygon"
+    "multi_polygon",
+    "geometry_collection"
   ]
   |> Enum.map(fn parser ->
     module = Macro.camelize(parser)
@@ -67,8 +57,10 @@ defmodule Geometry.WKT.Parser do
     {String.to_atom(parser), Enum.map(modules, &String.to_atom/1)}
   end)
   |> Enum.each(fn {parser, [module, module_z, module_m, module_zm]} ->
-    defp geometry_text({unquote(parser), type}, rest, opts) do
-      case type do
+    defp geometry_text({unquote(parser), tag}, rest, opts) do
+      opts = Keyword.put(opts, :tag, tag)
+
+      case tag do
         :xy ->
           geometry_text(unquote(module), unquote(:"#{parser}_xy")(rest, opts))
 
@@ -85,8 +77,52 @@ defmodule Geometry.WKT.Parser do
   end)
 
   defp geometry_text(module, data) do
-    with {:ok, coordinates, "", _context, _postion, _byte_offset} <- data do
-      {:ok, module.from_coordinates(coordinates)}
+    case data do
+      {:ok, [], rest, context, line, byte_offset} ->
+        {:ok, struct(module), rest, context, line, byte_offset}
+
+      {:ok, {:geometries, geometries}, rest, context, line, byte_offset} ->
+        {:ok, module.new(geometries), rest, context, line, byte_offset}
+
+      {:ok, coordinates, rest, context, line, byte_offset} ->
+        {:ok, module.from_coordinates(coordinates), rest, context, line, byte_offset}
+
+      error ->
+        error
     end
   end
+
+  Enum.each(
+    [:geometry_collection_xy, :geometry_collection_xyz, :geometry_collection_xyzm],
+    fn geometry_collection ->
+      defp unquote(geometry_collection)(string, opts, acc \\ []) do
+        tag = Keyword.get(opts, :tag)
+
+        case next(string, opts) do
+          {:ok, [:empty], rest, context, line, byte_offset} ->
+            {:ok, {:geometries, acc}, rest, context, line, byte_offset}
+
+          {:ok, [:next], rest, _context, line, byte_offset} ->
+            with {:ok, geometry, rest, _context, line, byte_offset} <-
+                   geometry_collection_item(rest,
+                     line: line,
+                     byte_offset: byte_offset,
+                     tag: tag
+                   ) do
+              unquote(geometry_collection)(
+                rest,
+                [line: line, byte_offset: byte_offset, tag: tag],
+                [geometry | acc]
+              )
+            end
+
+          {:ok, [:halt], rest, context, line, byte_offset} ->
+            {:ok, {:geometries, acc}, rest, context, line, byte_offset}
+
+          error ->
+            error
+        end
+      end
+    end
+  )
 end

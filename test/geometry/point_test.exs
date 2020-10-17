@@ -41,14 +41,12 @@ defmodule Geometry.PointTest do
   end
 
   describe "to_wkt/1:" do
-    @describetag :wkt
-
     prove Point.to_wkt(Point.new()) == "Point EMPTY"
     prove Point.to_wkt(Point.new(3.45, 6.78)) == "Point (3.45 6.78)"
   end
 
   describe "from_wkt/1:" do
-    @describetag :wkt
+    prove Point.from_wkt("Point empty") == {:ok, %Point{}}
 
     prove Point.from_wkt("Point (5 4)") == {:ok, %Point{x: 5, y: 4}}
 
@@ -58,19 +56,18 @@ defmodule Geometry.PointTest do
     prove Point.from_wkt("LineString (5 7, 3 3)") ==
             {:error, %{expected: Geometry.Point, got: Geometry.LineString}}
 
-    prove Point.from_wkt("Point XY (5 6 7)") == {:error, "expected (", "XY (5 6 7)", {1, 0}, 6}
+    prove Point.from_wkt("Point XY (5 6 7)") ==
+            {:error, "expected Point data", "XY (5 6 7)", {1, 0}, 6}
   end
 
   describe "from_wkt!/1:" do
-    @describetag :wkt
-
     prove Point.from_wkt!("Point (5 4)") == %Point{x: 5, y: 4}
 
     prove Point.from_wkt!("srid=11;Point (1.1 -2.2)") ==
             {%Point{x: 1.1, y: -2.2}, 11}
 
     test "raises an exception" do
-      message = "expected ( at 1:6, got: 'XY (5 6 7)'"
+      message = "expected Point data at 1:6, got: 'XY (5 6 7)'"
 
       assert_raise Geometry.Error, message, fn ->
         Point.from_wkt!("Point XY (5 6 7)")
@@ -79,8 +76,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "from_wkb/1" do
-    @describetag :wkb
-
     test "returns ok tuple with Point from an xdr-string" do
       wkb = "00000000013FF199999999999A400199999999999A"
       assert Point.from_wkb(wkb) == {:ok, %Point{x: 1.1, y: 2.2}}
@@ -105,8 +100,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "from_wkb!/1" do
-    @describetag :wkb
-
     test "returns ok tuple with Point from an xdr-string" do
       wkb = "00000000013FF199999999999A400199999999999A"
       assert Point.from_wkb!(wkb) == %Point{x: 1.1, y: 2.2}
@@ -128,8 +121,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "to_wkb/2" do
-    @describetag :wkb
-
     test "returns xdr-string for Point" do
       wkb = "00000000013FF199999999999A400199999999999A"
       assert Point.to_wkb(%Point{x: 1.1, y: 2.2}, endian: :xdr) == wkb
@@ -142,8 +133,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "to_geo_json/1:" do
-    @describetag :geo_json
-
     prove Point.to_geo_json(Point.new(3.45, 6.78)) == %{
             "type" => "Point",
             "coordinates" => [3.45, 6.78]
@@ -151,8 +140,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "to_geo_json/1" do
-    @describetag :geo_json
-
     test "raise an exception for an empty point" do
       assert_raise FunctionClauseError, fn ->
         Point.to_geo_json(Point.new())
@@ -161,8 +148,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "from_geo_json/1:" do
-    @describetag :geo_json
-
     @geo_json Jason.decode!("""
               {
                 "type": "Point",
@@ -182,8 +167,6 @@ defmodule Geometry.PointTest do
   end
 
   describe "from_geo_json!/1" do
-    @describetag :geo_json
-
     test "returns Point" do
       geo_json =
         Jason.decode!("""

@@ -160,6 +160,9 @@ defmodule Geometry.LineStringZM do
           %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}
         ]
       }, 7219}
+
+      iex> LineStringZM.from_wkt("LineString ZM EMPTY")
+      {:ok, %LineStringZM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()

@@ -59,6 +59,8 @@ defmodule Geometry.LineStringZTest do
   end
 
   describe "from_wkt/1:" do
+    prove LineStringZ.from_wkt("LineString Z empty") == {:ok, %LineStringZ{}}
+
     prove LineStringZ.from_wkt("LineStringZ (5 4 6, 3.1 -44.5 55)") ==
             {:ok,
              %LineStringZ{
@@ -84,7 +86,7 @@ defmodule Geometry.LineStringZTest do
             {:error, %{expected: LineStringZ, got: PointZ}}
 
     prove LineStringZ.from_wkt("linestring XY (5 6)") ==
-            {:error, "expected (", "XY (5 6)", {1, 0}, 11}
+            {:error, "expected LineString data", "XY (5 6)", {1, 0}, 11}
   end
 
   describe "from_wkt!/1:" do

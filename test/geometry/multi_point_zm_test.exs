@@ -42,7 +42,7 @@ defmodule Geometry.MultiPointZMTest do
 
       assert MultiPointZM.from_geo_json!(geo_json) ==
                %MultiPointZM{
-                 geometries:
+                 points:
                    MapSet.new([
                      %PointZM{x: 1.1, y: 1.2, z: 1.3, m: 1.4},
                      %PointZM{x: 20.1, y: 20.2, z: 20.3, m: 20.4}
@@ -105,7 +105,7 @@ defmodule Geometry.MultiPointZMTest do
       """
 
       multi_point = %MultiPointZM{
-        geometries:
+        points:
           MapSet.new([
             %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
             %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
@@ -155,7 +155,7 @@ defmodule Geometry.MultiPointZMTest do
       """
 
       multi_point = %MultiPointZM{
-        geometries:
+        points:
           MapSet.new([
             %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
             %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
@@ -178,7 +178,7 @@ defmodule Geometry.MultiPointZMTest do
       """
 
       multi_point = %MultiPointZM{
-        geometries: MapSet.new([%PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0}])
+        points: MapSet.new([%PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0}])
       }
 
       assert MultiPointZM.from_wkb!(wkb) == {multi_point, 9999}
@@ -198,7 +198,7 @@ defmodule Geometry.MultiPointZMTest do
       wkb_start = "00C00000040000000300C0000001"
 
       multi_point = %MultiPointZM{
-        geometries:
+        points:
           MapSet.new([
             %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
             %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
@@ -225,7 +225,7 @@ defmodule Geometry.MultiPointZMTest do
       """
 
       multi_point = %MultiPointZM{
-        geometries: MapSet.new([%PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0}])
+        points: MapSet.new([%PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0}])
       }
 
       assert MultiPointZM.to_wkb(multi_point, srid: 9999) == wkb
@@ -256,7 +256,7 @@ defmodule Geometry.MultiPointZMTest do
     test "returns a MultiPointZM" do
       assert MultiPointZM.from_wkt!("MultiPoint ZM (-5.1 7.8 1.1 1, 0.1 0.2 2.2 2)") ==
                %MultiPointZM{
-                 geometries:
+                 points:
                    MapSet.new([
                      %PointZM{x: -5.1, y: 7.8, z: 1.1, m: 1},
                      %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}
@@ -267,7 +267,7 @@ defmodule Geometry.MultiPointZMTest do
     test "returns a MultiPointZM with an SRID" do
       assert MultiPointZM.from_wkt!("SRID=7219;MultiPoint ZM (-5.1 7.8 1.1 1, 0.1 0.2 2.2 2)") ==
                {%MultiPointZM{
-                  geometries:
+                  points:
                     MapSet.new([
                       %PointZM{x: -5.1, y: 7.8, z: 1.1, m: 1},
                       %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}

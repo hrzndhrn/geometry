@@ -334,6 +334,9 @@ defmodule Geometry.Polygon do
            ]
          ]
        }, 789}
+
+      iex> Polygon.from_wkt("Polygon EMPTY")
+      {:ok, %Polygon{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()

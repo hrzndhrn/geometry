@@ -334,6 +334,9 @@ defmodule Geometry.PolygonZ do
            ]
          ]
        }, 789}
+
+      iex> PolygonZ.from_wkt("Polygon Z EMPTY")
+      {:ok, %PolygonZ{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()

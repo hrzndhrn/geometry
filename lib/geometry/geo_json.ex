@@ -2,6 +2,10 @@ defmodule Geometry.GeoJson do
   @moduledoc false
 
   alias Geometry.{
+    GeometryCollection,
+    GeometryCollectionM,
+    GeometryCollectionZ,
+    GeometryCollectionZM,
     LineString,
     LineStringM,
     LineStringZ,
@@ -44,6 +48,37 @@ defmodule Geometry.GeoJson do
   @type multi_polygon ::
           MultiPolygon.t() | MultiPolygonZ.t() | MultiPolygonM.t() | MultiPolygonZM.t()
 
+  @modules %{
+    {"Point", :xy} => Point,
+    {"Point", :m} => PointM,
+    {"Point", :z} => PointZ,
+    {"Point", :zm} => PointZM,
+    {"LineString", :xy} => LineString,
+    {"LineString", :m} => LineStringM,
+    {"LineString", :z} => LineStringZ,
+    {"LineString", :zm} => LineStringZM,
+    {"Polygon", :xy} => Polygon,
+    {"Polygon", :m} => PolygonM,
+    {"Polygon", :z} => PolygonZ,
+    {"Polygon", :zm} => PolygonZM,
+    {"MultiPoint", :xy} => MultiPoint,
+    {"MultiPoint", :m} => MultiPointM,
+    {"MultiPoint", :z} => MultiPointZ,
+    {"MultiPoint", :zm} => MultiPointZM,
+    {"MultiLineString", :xy} => MultiLineString,
+    {"MultiLineString", :m} => MultiLineStringM,
+    {"MultiLineString", :z} => MultiLineStringZ,
+    {"MultiLineString", :zm} => MultiLineStringZM,
+    {"MultiPolygon", :xy} => MultiPolygon,
+    {"MultiPolygon", :m} => MultiPolygonM,
+    {"MultiPolygon", :z} => MultiPolygonZ,
+    {"MultiPolygon", :zm} => MultiPolygonZM,
+    {"GeometryCollection", :xy} => GeometryCollection,
+    {"GeometryCollection", :m} => GeometryCollectionM,
+    {"GeometryCollection", :z} => GeometryCollectionZ,
+    {"GeometryCollection", :zm} => GeometryCollectionZM
+  }
+
   [
     "point",
     "line_string",
@@ -69,40 +104,62 @@ defmodule Geometry.GeoJson do
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def(unquote(:"to_#{geometry}")(_json, _line_string), do: {:error, :type_not_found})
+    def(unquote(:"to_#{geometry}")(_json, _module), do: {:error, :type_not_found})
   end)
+
+  @spec to_geometry_collection(Geometry.geo_json_term(), module(), keyword()) ::
+          {:ok, GeometryCollection.t()} | Geometry.geo_json_error()
+  def to_geometry_collection(json, module, opts \\ [])
+
+  def to_geometry_collection(%{"type" => "GeometryCollection"} = json, module, opts) do
+    json
+    |> Map.fetch("geometries")
+    |> case do
+      {:ok, geometries} ->
+        with list when is_list(list) <- geometry_collection_items(geometries, opts) do
+          {:ok, module.new(list)}
+        end
+
+      :error ->
+        {:error, :geometries_not_found}
+    end
+  end
+
+  def to_geometry_collection(_json, _module, _opts), do: {:error, :type_not_found}
 
   @spec to_geometry(Geometry.geo_json_term(), keyword()) ::
           {:ok, line_string()} | Geometry.geo_json_error()
   def to_geometry(%{"type" => type} = json, opts) do
-    case {type, Keyword.get(opts, :type, :xy)} do
-      {"Point", :xy} -> to_point(json, Point)
-      {"Point", :m} -> to_point(json, PointM)
-      {"Point", :z} -> to_point(json, PointZ)
-      {"Point", :zm} -> to_point(json, PointZM)
-      {"LineString", :xy} -> to_line_string(json, LineString)
-      {"LineString", :m} -> to_line_string(json, LineStringM)
-      {"LineString", :z} -> to_line_string(json, LineStringZ)
-      {"LineString", :zm} -> to_line_string(json, LineStringZM)
-      {"Polygon", :xy} -> to_polygon(json, Polygon)
-      {"Polygon", :m} -> to_polygon(json, PolygonM)
-      {"Polygon", :z} -> to_polygon(json, PolygonZ)
-      {"Polygon", :zm} -> to_polygon(json, PolygonZM)
-      {"MultiPoint", :xy} -> to_multi_point(json, MultiPoint)
-      {"MultiPoint", :m} -> to_multi_point(json, MultiPointM)
-      {"MultiPoint", :z} -> to_multi_point(json, MultiPointZ)
-      {"MultiPoint", :zm} -> to_multi_point(json, MultiPointZM)
-      {"MultiLineString", :xy} -> to_multi_line_string(json, MultiLineString)
-      {"MultiLineString", :m} -> to_multi_line_string(json, MultiLineStringM)
-      {"MultiLineString", :z} -> to_multi_line_string(json, MultiLineStringZ)
-      {"MultiLineString", :zm} -> to_multi_line_string(json, MultiLineStringZM)
-      {"MultiPolygon", :xy} -> to_multi_polygon(json, MultiPolygon)
-      {"MultiPolygon", :m} -> to_multi_polygon(json, MultiPolygonM)
-      {"MultiPolygon", :z} -> to_multi_polygon(json, MultiPolygonZ)
-      {"MultiPolygon", :zm} -> to_multi_polygon(json, MultiPolygonZM)
-      _not_found -> {:error, :unknown_type}
+    with {:ok, module} <- module(type, opts) do
+      case type do
+        "Point" -> to_point(json, module)
+        "LineString" -> to_line_string(json, module)
+        "Polygon" -> to_polygon(json, module)
+        "MultiPoint" -> to_multi_point(json, module)
+        "MultiLineString" -> to_multi_line_string(json, module)
+        "MultiPolygon" -> to_multi_polygon(json, module)
+        "GeometryCollection" -> to_geometry_collection(json, module, opts)
+        _not_found -> {:error, :unknown_type}
+      end
     end
   end
 
   def to_geometry(_json, _opts), do: {:error, :type_not_found}
+
+  @compile {:inline, geometry_collection_items: 2}
+  defp geometry_collection_items(geometries, opts) do
+    Enum.reduce_while(geometries, [], fn geometry, acc ->
+      case to_geometry(geometry, opts) do
+        {:ok, geometry} -> {:cont, [geometry | acc]}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  @compile {:inline, module: 2}
+  defp module(type, opts) do
+    with :error <- Map.fetch(@modules, {type, Keyword.get(opts, :type, :xy)}) do
+      {:error, :unknown_type}
+    end
+  end
 end

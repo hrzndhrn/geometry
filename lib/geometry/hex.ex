@@ -1,8 +1,6 @@
 defmodule Geometry.Hex do
   @moduledoc false
 
-  @compile {:inline, from_bit_string: 1}
-
   @type t :: binary()
   @type size :: 8 | 16
   @type force :: :none | :float
@@ -53,10 +51,13 @@ defmodule Geometry.Hex do
     ndr
   end
 
+  @compile {:inline, from_float: 1}
   defp from_float(float), do: from_bit_string(<<float::float-64>>)
 
+  @compile {:inline, from_bit_string: 1}
   defp from_bit_string(<<value::integer-64>>), do: value
 
+  @compile {:inline, to_ndr: 1}
   defp to_ndr(<<a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>>) do
     {:ok, "#{d}#{c}#{b}#{a}"}
   end
@@ -70,6 +71,7 @@ defmodule Geometry.Hex do
 
   defp to_ndr(_hex), do: :error
 
+  @compile {:inline, binary_to_integer: 2}
   defp binary_to_integer(binary, :xdr) do
     {:ok, :erlang.binary_to_integer(binary, 16)}
   rescue

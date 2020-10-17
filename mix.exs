@@ -81,6 +81,14 @@ defmodule Geometry.MixProject do
           Geometry.MultiPointZM,
           Geometry.MultiPolygonZ,
           Geometry.MultiPolygonZM
+        ],
+        "Geometries collection 2D": [
+          Geometry.GeometryCollection,
+          Geometry.GeometryCollectionM
+        ],
+        "Geometries collection 3D": [
+          Geometry.GeometryCollectionZ,
+          Geometry.GeometryCollectionZM
         ]
       ]
     ]
@@ -97,12 +105,13 @@ defmodule Geometry.MixProject do
 
   defp deps do
     [
+      {:nimble_parsec, "~> 0.5 or ~> 1.0"},
+      # test and dev
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:excoveralls, "~> 0.13", only: :test, runtime: false},
       {:jason, "~> 1.2", only: [:dev, :test]},
-      {:nimble_parsec, "~> 1.0"},
       {:xema, "~> 0.13.1", only: :test}
     ]
   end

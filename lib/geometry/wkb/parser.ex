@@ -2,6 +2,10 @@ defmodule Geometry.WKB.Parser do
   @moduledoc false
 
   alias Geometry.{
+    GeometryCollection,
+    GeometryCollectionM,
+    GeometryCollectionZ,
+    GeometryCollectionZM,
     Hex,
     LineString,
     LineStringM,
@@ -77,7 +81,15 @@ defmodule Geometry.WKB.Parser do
     0x80000006 => {MultiPolygonZ, false},
     0xA0000006 => {MultiPolygonZ, true},
     0xC0000006 => {MultiPolygonZM, false},
-    0xE0000006 => {MultiPolygonZM, true}
+    0xE0000006 => {MultiPolygonZM, true},
+    0x00000007 => {GeometryCollection, false},
+    0x20000007 => {GeometryCollection, true},
+    0x40000007 => {GeometryCollectionM, false},
+    0x60000007 => {GeometryCollectionM, true},
+    0x80000007 => {GeometryCollectionZ, false},
+    0xA0000007 => {GeometryCollectionZ, true},
+    0xC0000007 => {GeometryCollectionZM, false},
+    0xE0000007 => {GeometryCollectionZM, true}
   }
 
   @spec parse(wkb) :: {:ok, geometry} | {:ok, geometry, srid} | {:error, message, rest, offset}
@@ -90,7 +102,8 @@ defmodule Geometry.WKB.Parser do
   def parse(wkb) do
     with {:ok, {module, endian, srid?}, rest, offset} <- geometry(wkb, 0),
          {:ok, srid, rest, offset} <- srid(rest, offset, srid?, endian),
-         {:ok, geometry} <- geometry_body(module, rest, endian, offset) do
+         {:ok, geometry, rest, offset} <- geometry_body(module, rest, endian, offset),
+         :ok <- eos(rest, offset) do
       case srid? do
         true -> {:ok, geometry, srid}
         false -> {:ok, geometry}
@@ -213,9 +226,28 @@ defmodule Geometry.WKB.Parser do
   |> to_atoms.()
   |> Enum.each(fn [module, parser] ->
     defp geometry_body(unquote(module), str, endian, offset) do
-      with {:ok, coordinates, rest, offset} <- unquote(parser)(str, endian, offset),
-           :ok <- eos(rest, offset) do
-        {:ok, unquote(module).from_coordinates(coordinates)}
+      with {:ok, coordinates, rest, offset} <- unquote(parser)(str, endian, offset) do
+        {:ok, unquote(module).from_coordinates(coordinates), rest, offset}
+      end
+    end
+  end)
+
+  ["geometry_collection"]
+  |> Enum.flat_map(fn geometry ->
+    module = Macro.camelize(geometry)
+
+    [
+      ["Elixir.Geometry.#{module}", geometry],
+      ["Elixir.Geometry.#{module}M", "#{geometry}_m"],
+      ["Elixir.Geometry.#{module}Z", "#{geometry}_z"],
+      ["Elixir.Geometry.#{module}ZM", "#{geometry}_zm"]
+    ]
+  end)
+  |> to_atoms.()
+  |> Enum.each(fn [module, parser] ->
+    defp geometry_body(unquote(module), str, endian, offset) do
+      with {:ok, geometries, rest, offset} <- unquote(parser)(str, endian, offset) do
+        {:ok, unquote(module).new(geometries), rest, offset}
       end
     end
   end)
@@ -277,6 +309,42 @@ defmodule Geometry.WKB.Parser do
       with {:ok, length, rest, offset} <- length(str, endian, offset),
            {:ok, acc, rest, offset} <- unquote(polygons)(length, rest, endian, offset) do
         {:ok, acc, rest, offset}
+      end
+    end
+  end)
+
+  ["geometry_collection", "geometry_collection_items"]
+  |> args.()
+  |> Enum.each(fn [geometry_collection, geometry_collection_items] ->
+    defp unquote(geometry_collection)(str, endian, offset) do
+      with {:ok, length, rest, offset} <- length(str, endian, offset),
+           {:ok, acc, rest, offset} <-
+             unquote(geometry_collection_items)(length, rest, endian, offset) do
+        {:ok, acc, rest, offset}
+      end
+    end
+  end)
+
+  ["geometry_collection_items"]
+  |> args.()
+  |> Enum.each(fn [geometry_collection_items] ->
+    defp unquote(geometry_collection_items)(n, str, endian, offset, acc \\ [])
+
+    defp unquote(geometry_collection_items)(0, str, _endian, offset, acc) do
+      {:ok, acc, str, offset}
+    end
+
+    defp unquote(geometry_collection_items)(n, str, endian, offset, acc) do
+      with {:ok, {module, _endian, srid?}, rest, offset} <- geometry(str, offset),
+           {:ok, srid, rest, offset} <- srid(rest, offset, srid?, endian),
+           {:ok, geometry, rest, offset} <- geometry_body(module, rest, endian, offset) do
+        case srid == nil do
+          true ->
+            unquote(geometry_collection_items)(n - 1, rest, endian, offset, [geometry | acc])
+
+          false ->
+            {:error, "unexpected SRID in sub-geometry", str, offset}
+        end
       end
     end
   end)

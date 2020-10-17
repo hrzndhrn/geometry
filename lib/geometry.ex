@@ -3,8 +3,23 @@ defmodule Geometry do
   A set of geometry types.
   """
 
+  # TODO LIST
+  # [open] add Geometry.Feature (GeoJson)
+  # [open] add Geometry.FeatureCollection (GeoJson)
+  # [open] add benchee to rewrite wkt/parser, maybe wkb/parser
+  #
+  # [done] add Geometry.GeometryCollection
+  # [done] add tests for empty geometries from wkt
+  # [done] check labels in wkt/parser
+  #
+  # [wont] (don't do this) check new inputs in multi
+
   alias Geometry.{
     GeoJson,
+    GeometryCollection,
+    GeometryCollectionM,
+    GeometryCollectionZ,
+    GeometryCollectionZM,
     LineString,
     LineStringM,
     LineStringZ,
@@ -34,6 +49,10 @@ defmodule Geometry do
   alias Geometry.{WKB, WKT}
 
   @geometries [
+    GeometryCollection,
+    GeometryCollectionM,
+    GeometryCollectionZ,
+    GeometryCollectionZM,
     LineString,
     LineStringM,
     LineStringZ,
@@ -64,7 +83,11 @@ defmodule Geometry do
   A geometry is one of the provided geometries or geometry-collections.
   """
   @type t ::
-          LineString.t()
+          GeometryCollection.t()
+          | GeometryCollectionM.t()
+          | GeometryCollectionZ.t()
+          | GeometryCollectionZM.t()
+          | LineString.t()
           | LineStringM.t()
           | LineStringZ.t()
           | LineStringZM.t()
@@ -181,6 +204,7 @@ defmodule Geometry do
   @type geo_json_error ::
           {:error,
            :coordinates_not_found
+           | :geometries_not_found
            | :invalid_data
            | :type_not_found
            | :unknown_type}

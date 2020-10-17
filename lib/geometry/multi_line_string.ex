@@ -1,13 +1,13 @@
 defmodule Geometry.MultiLineString do
   @moduledoc """
-  A collection set of geometries restricted to `Geometry.MultiLineString`.
+  A set of line-strings from type `Geometry.LineString`
   """
 
   alias Geometry.{GeoJson, LineString, MultiLineString, Point, WKB, WKT}
 
-  defstruct geometries: MapSet.new()
+  defstruct line_strings: MapSet.new()
 
-  @type t :: %MultiLineString{geometries: MapSet.t(LineString.t())}
+  @type t :: %MultiLineString{line_strings: MapSet.t(LineString.t())}
 
   @doc """
   Creates an empty `MultiLineString`.
@@ -15,7 +15,7 @@ defmodule Geometry.MultiLineString do
   ## Examples
 
       iex> MultiLineString.new()
-      %MultiLineString{geometries: MapSet.new()}
+      %MultiLineString{line_strings: MapSet.new()}
   """
   @spec new :: t()
   def new, do: %MultiLineString{}
@@ -40,7 +40,7 @@ defmodule Geometry.MultiLineString do
       ...>     Point.new(30, 40)
       ...>   ])
       ...> ])
-      %MultiLineString{geometries: MapSet.new([
+      %MultiLineString{line_strings: MapSet.new([
         %LineString{points: [
           %Point{x: 1, y: 2},
           %Point{x: 2, y: 3},
@@ -53,11 +53,11 @@ defmodule Geometry.MultiLineString do
       ])}
 
       iex> MultiLineString.new([])
-      %MultiLineString{geometries: MapSet.new()}
+      %MultiLineString{line_strings: MapSet.new()}
   """
   @spec new([LineString.t()]) :: t()
   def new([]), do: %MultiLineString{}
-  def new(line_strings), do: %MultiLineString{geometries: MapSet.new(line_strings)}
+  def new(line_strings), do: %MultiLineString{line_strings: MapSet.new(line_strings)}
 
   @doc """
   Returns `true` if the given `MultiLineString` is empty.
@@ -76,7 +76,7 @@ defmodule Geometry.MultiLineString do
   """
   @spec empty?(t()) :: boolean
   def empty?(%MultiLineString{} = multi_line_string),
-    do: Enum.empty?(multi_line_string.geometries)
+    do: Enum.empty?(multi_line_string.line_strings)
 
   @doc """
   Creates a `MultiLineString` from the given coordinates.
@@ -88,7 +88,7 @@ defmodule Geometry.MultiLineString do
       ...>   [{-10, 10}, {-20, 20}]
       ...> ])
       %MultiLineString{
-        geometries: MapSet.new([
+        line_strings: MapSet.new([
           %LineString{points: [
             %Point{x: -1, y: 1},
             %Point{x: 2, y: 2},
@@ -104,7 +104,7 @@ defmodule Geometry.MultiLineString do
   @spec from_coordinates([[Geometry.coordinate()]]) :: t()
   def from_coordinates(coordinates) do
     %MultiLineString{
-      geometries: coordinates |> Enum.map(&LineString.from_coordinates/1) |> MapSet.new()
+      line_strings: coordinates |> Enum.map(&LineString.from_coordinates/1) |> MapSet.new()
     }
   end
 
@@ -128,7 +128,7 @@ defmodule Geometry.MultiLineString do
       {
         :ok,
         %MultiLineString{
-          geometries: MapSet.new([
+          line_strings: MapSet.new([
             %LineString{points: [
               %Point{x: -1, y: 1},
               %Point{x: 2, y: 2},
@@ -182,7 +182,7 @@ defmodule Geometry.MultiLineString do
   ```
   """
   @spec to_geo_json(t()) :: Geometry.geo_json_term()
-  def to_geo_json(%MultiLineString{geometries: line_strings}) do
+  def to_geo_json(%MultiLineString{line_strings: line_strings}) do
     %{
       "type" => "MultiLineString",
       "coordinates" =>
@@ -209,7 +209,7 @@ defmodule Geometry.MultiLineString do
       {
         :ok,
         %MultiLineString{
-          geometries:
+          line_strings:
             MapSet.new([
               %LineString{
                 points: [
@@ -228,6 +228,9 @@ defmodule Geometry.MultiLineString do
         },
         1234
       }
+
+      iex> MultiLineString.from_wkt("MultiLineString EMPTY")
+      ...> {:ok, %MultiLineString{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
@@ -288,7 +291,7 @@ defmodule Geometry.MultiLineString do
         when opts: [srid: Geometry.srid()]
   def to_wkt(line_strings, opts \\ [])
 
-  def to_wkt(%MultiLineString{geometries: line_strings}, opts) do
+  def to_wkt(%MultiLineString{line_strings: line_strings}, opts) do
     line_strings
     |> Enum.empty?()
     |> case do
@@ -369,13 +372,13 @@ defmodule Geometry.MultiLineString do
 
   defp to_wkt_multi_line_string(wkt), do: "MultiLineString #{wkt}"
 
-  defp to_wkb_multi_line_string(%MultiLineString{geometries: geometries}, endian) do
+  defp to_wkb_multi_line_string(%MultiLineString{line_strings: line_strings}, endian) do
     data =
-      Enum.reduce(geometries, [], fn line_string, acc ->
+      Enum.reduce(line_strings, [], fn line_string, acc ->
         [LineString.to_wkb(line_string, endian: endian) | acc]
       end)
 
-    <<WKB.length(geometries, endian)::binary, IO.iodata_to_binary(data)::binary>>
+    <<WKB.length(line_strings, endian)::binary, IO.iodata_to_binary(data)::binary>>
   end
 
   defp wkb_code(endian, srid?) do

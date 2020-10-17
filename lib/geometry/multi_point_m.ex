@@ -1,13 +1,13 @@
 defmodule Geometry.MultiPointM do
   @moduledoc """
-  A collection set of geometries restricted to `Geometry.PointM`.
+  A set of points from type `Geometry.PointM`
   """
 
   alias Geometry.{GeoJson, MultiPointM, PointM, WKB, WKT}
 
-  defstruct geometries: MapSet.new()
+  defstruct points: MapSet.new()
 
-  @type t :: %MultiPointM{geometries: MapSet.t(PointM.t())}
+  @type t :: %MultiPointM{points: MapSet.t(PointM.t())}
 
   @doc """
   Creates an empty `MultiPointM`.
@@ -15,7 +15,7 @@ defmodule Geometry.MultiPointM do
   ## Examples
 
       iex> MultiPointM.new()
-      %MultiPointM{geometries: MapSet.new()}
+      %MultiPointM{points: MapSet.new()}
   """
   @spec new :: t()
   def new, do: %MultiPointM{}
@@ -30,17 +30,17 @@ defmodule Geometry.MultiPointM do
       ...>   PointM.new(1, 2, 4),
       ...>   PointM.new(3, 4, 6)
       ...> ])
-      %MultiPointM{geometries: MapSet.new([
+      %MultiPointM{points: MapSet.new([
         %PointM{x: 1, y: 2, m: 4},
         %PointM{x: 3, y: 4, m: 6}
       ])}
 
       iex> MultiPointM.new([])
-      %MultiPointM{geometries: MapSet.new()}
+      %MultiPointM{points: MapSet.new()}
   """
   @spec new([PointM.t()]) :: t()
   def new([]), do: %MultiPointM{}
-  def new(points), do: %MultiPointM{geometries: MapSet.new(points)}
+  def new(points), do: %MultiPointM{points: MapSet.new(points)}
 
   @doc """
   Returns `true` if the given `MultiPointM` is empty.
@@ -56,7 +56,7 @@ defmodule Geometry.MultiPointM do
       false
   """
   @spec empty?(t()) :: boolean
-  def empty?(%MultiPointM{} = multi_point), do: Enum.empty?(multi_point.geometries)
+  def empty?(%MultiPointM{} = multi_point), do: Enum.empty?(multi_point.points)
 
   @doc """
   Creates a `MultiPointM` from the given coordinates.
@@ -66,7 +66,7 @@ defmodule Geometry.MultiPointM do
       iex> MultiPointM.from_coordinates([
       ...>   [-1, 1, 1], [-2, 2, 2], [-3, 3, 3]])
       %MultiPointM{
-        geometries: MapSet.new([
+        points: MapSet.new([
           %PointM{x: -1, y: 1, m: 1},
           %PointM{x: -2, y: 2, m: 2},
           %PointM{x: -3, y: 3, m: 3}
@@ -76,7 +76,7 @@ defmodule Geometry.MultiPointM do
       iex> MultiPointM.from_coordinates(
       ...>   [{-1, 1, 1}, {-2, 2, 2}, {-3, 3, 3}])
       %MultiPointM{
-        geometries: MapSet.new([
+        points: MapSet.new([
           %PointM{x: -1, y: 1, m: 1},
           %PointM{x: -2, y: 2, m: 2},
           %PointM{x: -3, y: 3, m: 3}
@@ -85,7 +85,7 @@ defmodule Geometry.MultiPointM do
   """
   @spec from_coordinates([Geometry.coordinate_m()]) :: t()
   def from_coordinates(coordinates) do
-    %MultiPointM{geometries: coordinates |> Enum.map(&PointM.new/1) |> MapSet.new()}
+    %MultiPointM{points: coordinates |> Enum.map(&PointM.new/1) |> MapSet.new()}
   end
 
   @doc """
@@ -105,7 +105,7 @@ defmodule Geometry.MultiPointM do
       ...> )
       iex> |> Jason.decode!()
       iex> |> MultiPointM.from_geo_json()
-      {:ok, %MultiPointM{geometries: MapSet.new([
+      {:ok, %MultiPointM{points: MapSet.new([
         %PointM{x: 1.1, y: 1.2, m: 1.4},
         %PointM{x: 20.1, y: 20.2, m: 20.4}
       ])}}
@@ -150,7 +150,7 @@ defmodule Geometry.MultiPointM do
   ```
   """
   @spec to_geo_json(t()) :: Geometry.geo_json_term()
-  def to_geo_json(%MultiPointM{geometries: points}) do
+  def to_geo_json(%MultiPointM{points: points}) do
     %{
       "type" => "MultiPoint",
       "coordinates" => Enum.map(points, &PointM.to_list/1)
@@ -168,7 +168,7 @@ defmodule Geometry.MultiPointM do
       iex> MultiPointM.from_wkt(
       ...>   "MultiPoint M (-5.1 7.8 1, 0.1 0.2 2)")
       {:ok, %MultiPointM{
-        geometries: MapSet.new([
+        points: MapSet.new([
           %PointM{x: -5.1, y: 7.8, m: 1},
           %PointM{x: 0.1, y: 0.2, m: 2}
         ])
@@ -177,11 +177,14 @@ defmodule Geometry.MultiPointM do
       iex> MultiPointM.from_wkt(
       ...>   "SRID=7219;MultiPoint M (-5.1 7.8 1, 0.1 0.2 2)")
       {:ok, %MultiPointM{
-        geometries: MapSet.new([
+        points: MapSet.new([
           %PointM{x: -5.1, y: 7.8, m: 1},
           %PointM{x: 0.1, y: 0.2, m: 2}
         ])
       }, 7219}
+
+      iex> MultiPointM.from_wkt("MultiPoint M EMPTY")
+      ...> {:ok, %MultiPointM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
@@ -233,7 +236,7 @@ defmodule Geometry.MultiPointM do
         when opts: [srid: Geometry.srid()]
   def to_wkt(line_string, opts \\ [])
 
-  def to_wkt(%MultiPointM{geometries: points}, opts) do
+  def to_wkt(%MultiPointM{points: points}, opts) do
     points
     |> Enum.empty?()
     |> case do
@@ -305,13 +308,13 @@ defmodule Geometry.MultiPointM do
 
   defp to_wkt_multi_point(wkt), do: <<"MultiPoint M ", wkt::binary()>>
 
-  defp to_wkb_multi_point(%MultiPointM{geometries: geometries}, endian) do
+  defp to_wkb_multi_point(%MultiPointM{points: points}, endian) do
     data =
-      Enum.reduce(geometries, [], fn point, acc ->
+      Enum.reduce(points, [], fn point, acc ->
         [PointM.to_wkb(point, endian: endian) | acc]
       end)
 
-    <<WKB.length(geometries, endian)::binary, IO.iodata_to_binary(data)::binary>>
+    <<WKB.length(points, endian)::binary, IO.iodata_to_binary(data)::binary>>
   end
 
   defp wkb_code(endian, srid?) do
