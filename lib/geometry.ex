@@ -3,18 +3,6 @@ defmodule Geometry do
   A set of geometry types for WKT/WKB and GeoJson.
   """
 
-  # TODO LIST
-  # [open] add protocolls enumerable and collectable
-  # [open] add benchee to rewrite wkt/parser, maybe wkb/parser
-  #
-  # [done] add Geometry.Feature (GeoJson)
-  # [done] add Geometry.FeatureCollection (GeoJson)
-  # [done] add Geometry.GeometryCollection
-  # [done] add tests for empty geometries from wkt
-  # [done] check labels in wkt/parser
-  #
-  # [wont] (don't do this) check new inputs in multi
-
   alias Geometry.{
     Feature,
     FeatureCollection,
