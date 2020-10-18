@@ -301,4 +301,21 @@ defmodule Geometry.MultiLineStringZMTest do
       end
     end
   end
+
+  test "Enum.slice/3" do
+    multi_line_string =
+      MultiLineStringZM.new([
+        LineStringZM.new([
+          PointZM.new(1, 2, 3, 4),
+          PointZM.new(3, 4, 5, 6)
+        ]),
+        LineStringZM.new([
+          PointZM.new(1, 2, 3, 4),
+          PointZM.new(11, 12, 13, 14),
+          PointZM.new(13, 14, 15, 16)
+        ])
+      ])
+
+    assert [%LineStringZM{}] = Enum.slice(multi_line_string, 1, 1)
+  end
 end

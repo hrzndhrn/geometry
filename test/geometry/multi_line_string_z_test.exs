@@ -184,7 +184,7 @@ defmodule Geometry.MultiLineStringZTest do
 
   describe "to_wkb/2" do
     test "returns a MultiLineStringZ (xdr)" do
-      wkb_start = "0080000005000000020080000002"
+      wkb_start =  "0080000005000000020080000002"
 
       multi_line_string = %MultiLineStringZ{
         line_strings:
@@ -303,5 +303,22 @@ defmodule Geometry.MultiLineStringZTest do
         MultiLineStringZ.from_wkb!("nonono")
       end
     end
+  end
+
+  test "Enum.slice/3" do
+    multi_line_string =
+      MultiLineStringZ.new([
+        LineStringZ.new([
+          PointZ.new(1, 2, 3),
+          PointZ.new(3, 4, 5)
+        ]),
+        LineStringZ.new([
+          PointZ.new(1, 2, 3),
+          PointZ.new(11, 12, 13),
+          PointZ.new(13, 14, 15)
+        ])
+      ])
+
+    assert [%LineStringZ{}] = Enum.slice(multi_line_string, 1, 1)
   end
 end

@@ -1,6 +1,41 @@
 defmodule Geometry.MultiLineStringZ do
   @moduledoc """
   A set of line-strings from type `Geometry.LineStringZ`
+
+  `MultiLineStringMZ` implements the protocols `Enumerable` and `Collectable`.
+
+  ## Examples
+
+      iex> Enum.map(
+      ...>   MultiLineStringZ.new([
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(1, 2, 3),
+      ...>       PointZ.new(3, 4, 5)
+      ...>     ]),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(1, 2, 3),
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(13, 14, 15)
+      ...>     ])
+      ...>   ]),
+      ...>   fn line_string -> length line_string.points end
+      ...> )
+      [2, 3]
+
+      iex> Enum.into(
+      ...>   [LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(5, 6, 7)])],
+      ...>   MultiLineStringZ.new())
+      %MultiLineStringZ{
+        line_strings:
+          MapSet.new([
+            %LineStringZ{
+              points: [
+                %PointZ{x: 1, y: 2, z: 3},
+                %PointZ{x: 5, y: 6, z: 7}
+              ]
+            }
+          ])
+      }
   """
 
   alias Geometry.{GeoJson, LineStringZ, MultiLineStringZ, PointZ, WKB, WKT}
@@ -352,6 +387,95 @@ defmodule Geometry.MultiLineStringZ do
     end
   end
 
+  @doc """
+  Returns the number of elements in `MultiLineStringZ`.
+
+  ## Examples
+
+      iex> MultiLineStringZ.size(
+      ...>   MultiLineStringZ.new([
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(21, 22, 23)
+      ...>     ]),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(31, 32, 33),
+      ...>       PointZ.new(41, 42, 43)
+      ...>     ])
+      ...>   ])
+      ...> )
+      2
+  """
+  @spec size(t()) :: non_neg_integer()
+  def size(%MultiLineStringZ{line_strings: line_strings}), do: MapSet.size(line_strings)
+
+  @doc """
+  Checks if `MultiLineStringZ` contains `line_string`.
+
+  ## Examples
+
+      iex> MultiLineStringZ.member?(
+      ...>   MultiLineStringZ.new([
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(21, 22, 23)
+      ...>     ]),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(31, 32, 33),
+      ...>       PointZ.new(41, 42, 43)
+      ...>     ])
+      ...>   ]),
+      ...>   LineStringZ.new([
+      ...>     PointZ.new(31, 32, 33),
+      ...>     PointZ.new(41, 42, 43)
+      ...>   ])
+      ...> )
+      true
+
+      iex> MultiLineStringZ.member?(
+      ...>   MultiLineStringZ.new([
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(21, 22, 23)
+      ...>     ]),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(31, 32, 33),
+      ...>       PointZ.new(41, 42, 43)
+      ...>     ])
+      ...>   ]),
+      ...>   LineStringZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     PointZ.new(41, 42, 43)
+      ...>   ])
+      ...> )
+      false
+  """
+  @spec member?(t(), LineStringZ.t()) :: boolean()
+  def member?(%MultiLineStringZ{line_strings: line_strings}, %LineStringZ{} = line_string),
+    do: MapSet.member?(line_strings, line_string)
+
+  @doc """
+  Converts `MultiLineStringZ` to a list.
+
+  ## Examples
+
+      iex> MultiLineStringZ.to_list(
+      ...>   MultiLineStringZ.new([
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(41, 42, 43)
+      ...>     ])
+      ...>   ])
+      ...> )
+      [%LineStringZ{points: [
+        %PointZ{x: 11, y: 12, z: 13},
+        %PointZ{x: 41, y: 42, z: 43}
+      ]}]
+  """
+  @spec to_list(t()) :: [PointZ.t()]
+  def to_list(%MultiLineStringZ{line_strings: line_strings}), do: MapSet.to_list(line_strings)
+
+  @compile {:inline, to_wkt_line_strings: 1}
   defp to_wkt_line_strings(line_strings) do
     wkt =
       line_strings
@@ -370,6 +494,7 @@ defmodule Geometry.MultiLineStringZ do
     "(#{wkt})"
   end
 
+  @compile {:inline, to_wkt_multi_line_string: 1}
   defp to_wkt_multi_line_string(wkt), do: "MultiLineString Z #{wkt}"
 
   defp to_wkb_multi_line_string(%MultiLineStringZ{line_strings: line_strings}, endian) do
@@ -381,12 +506,53 @@ defmodule Geometry.MultiLineStringZ do
     <<WKB.length(line_strings, endian)::binary, IO.iodata_to_binary(data)::binary>>
   end
 
+  @compile {:inline, wkb_code: 2}
   defp wkb_code(endian, srid?) do
     case {endian, srid?} do
       {:xdr, false} -> "80000005"
       {:ndr, false} -> "05000080"
       {:xdr, true} -> "A0000005"
       {:ndr, true} -> "050000A0"
+    end
+  end
+
+  defimpl Enumerable do
+    def count(multi_line_string) do
+      {:ok, MultiLineStringZ.size(multi_line_string)}
+    end
+
+    def member?(multi_line_string, val) do
+      {:ok, MultiLineStringZ.member?(multi_line_string, val)}
+    end
+
+    def slice(multi_line_string) do
+      size = MultiLineStringZ.size(multi_line_string)
+
+      {:ok, size,
+       &Enumerable.List.slice(MultiLineStringZ.to_list(multi_line_string), &1, &2, size)}
+    end
+
+    def reduce(multi_line_string, acc, fun) do
+      Enumerable.List.reduce(MultiLineStringZ.to_list(multi_line_string), acc, fun)
+    end
+  end
+
+  defimpl Collectable do
+    def into(%MultiLineStringZ{line_strings: line_strings}) do
+      fun = fn
+        list, {:cont, x} ->
+          [{x, []} | list]
+
+        list, :done ->
+          %MultiLineStringZ{
+            line_strings: %{line_strings | map: Map.merge(line_strings.map, Map.new(list))}
+          }
+
+        _, :halt ->
+          :ok
+      end
+
+      {[], fun}
     end
   end
 end

@@ -184,7 +184,7 @@ defmodule Geometry.MultiLineStringMTest do
 
   describe "to_wkb/2" do
     test "returns a MultiLineStringM (xdr)" do
-      wkb_start = "0040000005000000020040000002"
+      wkb_start =  "0040000005000000020040000002"
 
       multi_line_string = %MultiLineStringM{
         line_strings:
@@ -303,5 +303,22 @@ defmodule Geometry.MultiLineStringMTest do
         MultiLineStringM.from_wkb!("nonono")
       end
     end
+  end
+
+  test "Enum.slice/3" do
+    multi_line_string =
+      MultiLineStringM.new([
+        LineStringM.new([
+          PointM.new(1, 2, 4),
+          PointM.new(3, 4, 6)
+        ]),
+        LineStringM.new([
+          PointM.new(1, 2, 4),
+          PointM.new(11, 12, 14),
+          PointM.new(13, 14, 16)
+        ])
+      ])
+
+    assert [%LineStringM{}] = Enum.slice(multi_line_string, 1, 1)
   end
 end
