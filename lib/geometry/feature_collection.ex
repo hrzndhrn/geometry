@@ -47,7 +47,7 @@ defmodule Geometry.FeatureCollection do
         }
 
   @doc """
-  Creates an empty `FeatureCollection'.
+  Creates an empty `FeatureCollection`.
 
   ## Examples
 
