@@ -126,10 +126,12 @@ defmodule Geometry.MixProject do
       # test and dev
       {:benchee, "~> 1.0", only: :dev, runtime: false},
       {:benchee_dsl, "~> 0.1.0", only: :dev},
+      {:benchee_markdown, "~> 0.2", only: :dev},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:excoveralls, "~> 0.13", only: :test, runtime: false},
+      {:geo, "~> 3.3", only: :dev},
       {:jason, "~> 1.2", only: [:dev, :test]},
       {:xema, "~> 0.13.1", only: :test}
     ]

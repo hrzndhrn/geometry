@@ -95,14 +95,7 @@ defmodule Geometry.GeoJson do
             {:ok, unquote(:"#{geometry}")()} | Geometry.geo_json_error()
     def unquote(:"to_#{geometry}")(%{"type" => "#{unquote(type)}"} = json, module) do
       # credo:disable-for-previous-line Credo.Check.Readability.Specs
-
-      case Map.fetch(json, "coordinates") do
-        {:ok, coordinates} -> {:ok, module.from_coordinates(coordinates)}
-        :error -> {:error, :coordinates_not_found}
-      end
-    rescue
-      _error in FunctionClauseError ->
-        {:error, :invalid_data}
+      coordinates(json, module)
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.Specs
@@ -159,12 +152,12 @@ defmodule Geometry.GeoJson do
   def to_geometry(%{"type" => type} = json, opts) do
     with {:ok, module} <- module(type, opts) do
       case type do
-        "Point" -> to_point(json, module)
-        "LineString" -> to_line_string(json, module)
-        "Polygon" -> to_polygon(json, module)
-        "MultiPoint" -> to_multi_point(json, module)
-        "MultiLineString" -> to_multi_line_string(json, module)
-        "MultiPolygon" -> to_multi_polygon(json, module)
+        "Point" -> coordinates(json, module)
+        "LineString" -> coordinates(json, module)
+        "Polygon" -> coordinates(json, module)
+        "MultiPoint" -> coordinates(json, module)
+        "MultiLineString" -> coordinates(json, module)
+        "MultiPolygon" -> coordinates(json, module)
         "GeometryCollection" -> to_geometry_collection(json, module, opts)
         "Feature" -> to_feature(json, opts)
         "FeatureCollection" -> to_feature_collection(json, opts)
@@ -174,6 +167,17 @@ defmodule Geometry.GeoJson do
   end
 
   def to_geometry(_json, _opts), do: {:error, :type_not_found}
+
+  defp coordinates(%{"coordinates" => coordinates}, module) do
+    {:ok, module.from_coordinates(coordinates)}
+  rescue
+    _error ->
+      {:error, :invalid_data}
+  end
+
+  defp coordinates(_json, _module) do
+    {:error, :coordinates_not_found}
+  end
 
   @compile {:inline, geometry_collection_items: 2}
   defp geometry_collection_items(geometries, opts) do
