@@ -1,12 +1,11 @@
 defmodule DecodeBench do
   use BencheeDsl.Benchmark
 
-  @title "Decode"
-  @description "Generating structs from WKT, WKB and GeoJson"
 
   formatter(Benchee.Formatters.Markdown,
     file: Path.join("bench", Macro.underscore(__MODULE__) <> ".md"),
-    description: @description
+    title: "Decode",
+    description: "Generating structs from WKT, WKB and GeoJson"
   )
 
   @geometries %{

@@ -1,14 +1,11 @@
 defmodule EncodeWkbXdrBench do
   use BencheeDsl.Benchmark
 
-  @title "Decode"
-  @description "Generating structs from WKT, WKB and GeoJson"
-
   @endian :xdr
 
   formatter(Benchee.Formatters.Markdown,
     file: Path.join("bench", Macro.underscore(__MODULE__) <> ".md"),
-    description: @description
+    title: "Eecode WKB (XDR)"
   )
 
   @geometries %{
