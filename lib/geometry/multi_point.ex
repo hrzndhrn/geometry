@@ -1,6 +1,27 @@
 defmodule Geometry.MultiPoint do
   @moduledoc """
-  A set of points from type `Geometry.Point`
+  A set of points from type `Geometry.Point`.
+
+  `MultiPoint` implements the protocols `Enumerable` and `Collectable`.
+
+  ## Examples
+
+      iex> Enum.map(
+      ...>   MultiPoint.new([
+      ...>     Point.new(1, 2),
+      ...>     Point.new(3, 4)
+      ...>   ]),
+      ...>   fn point -> point.x end
+      ...> )
+      [1, 3]
+
+      iex> Enum.into([Point.new(1, 2)], MultiPoint.new())
+      %MultiPoint{
+        points:
+          MapSet.new([
+            %Point{x: 1, y: 2}
+          ])
+      }
   """
 
   alias Geometry.{GeoJson, MultiPoint, Point, WKB, WKT}
@@ -297,6 +318,66 @@ defmodule Geometry.MultiPoint do
     end
   end
 
+  @doc """
+  Returns the number of elements in `MultiPoint`.
+
+  ## Examples
+
+      iex> MultiPoint.size(
+      ...>   MultiPoint.new([
+      ...>     Point.new(11, 12),
+      ...>     Point.new(21, 22)
+      ...>   ])
+      ...> )
+      2
+  """
+  @spec size(t()) :: non_neg_integer()
+  def size(%MultiPoint{points: points}), do: MapSet.size(points)
+
+  @doc """
+  Checks if `MulitPoint` contains `point`.
+
+  ## Examples
+
+      iex> MultiPoint.member?(
+      ...>   MultiPoint.new([
+      ...>     Point.new(11, 12),
+      ...>     Point.new(21, 22)
+      ...>   ]),
+      ...>   Point.new(11, 12)
+      ...> )
+      true
+
+      iex> MultiPoint.member?(
+      ...>   MultiPoint.new([
+      ...>     Point.new(11, 12),
+      ...>     Point.new(21, 22)
+      ...>   ]),
+      ...>   Point.new(1, 2)
+      ...> )
+      false
+  """
+  @spec member?(t(), Point.t()) :: boolean()
+  def member?(%MultiPoint{points: points}, %Point{} = point),
+    do: MapSet.member?(points, point)
+
+  @doc """
+  Converts `MultiPoint` to a list.
+
+  ## Examples
+
+      iex> MultiPoint.to_list(
+      ...>   MultiPoint.new([
+      ...>     Point.new(11, 12),
+      ...>     Point.new(21, 22)
+      ...>   ])
+      ...> )
+      [Point.new(11, 12), Point.new(21, 22)]
+  """
+  @spec to_list(t()) :: [Point.t()]
+  def to_list(%MultiPoint{points: points}), do: MapSet.to_list(points)
+
+  @compile {:inline, to_wkt_points: 1}
   defp to_wkt_points(points) do
     wkt =
       points
@@ -306,8 +387,10 @@ defmodule Geometry.MultiPoint do
     <<"(", wkt::binary(), ")">>
   end
 
+  @compile {:inline, to_wkt_multi_point: 1}
   defp to_wkt_multi_point(wkt), do: <<"MultiPoint ", wkt::binary()>>
 
+  @compile {:inline, to_wkb_multi_point: 2}
   defp to_wkb_multi_point(%MultiPoint{points: points}, endian) do
     data =
       Enum.reduce(points, [], fn point, acc ->
@@ -317,12 +400,49 @@ defmodule Geometry.MultiPoint do
     <<WKB.length(points, endian)::binary, IO.iodata_to_binary(data)::binary>>
   end
 
+  @compile {:inline, wkb_code: 2}
   defp wkb_code(endian, srid?) do
     case {endian, srid?} do
       {:xdr, false} -> "00000004"
       {:ndr, false} -> "04000000"
       {:xdr, true} -> "20000004"
       {:ndr, true} -> "04000020"
+    end
+  end
+
+  defimpl Enumerable do
+    def count(multi_point) do
+      {:ok, MultiPoint.size(multi_point)}
+    end
+
+    def member?(multi_point, val) do
+      {:ok, MultiPoint.member?(multi_point, val)}
+    end
+
+    def slice(multi_point) do
+      size = MultiPoint.size(multi_point)
+      {:ok, size, &Enumerable.List.slice(MultiPoint.to_list(multi_point), &1, &2, size)}
+    end
+
+    def reduce(multi_point, acc, fun) do
+      Enumerable.List.reduce(MultiPoint.to_list(multi_point), acc, fun)
+    end
+  end
+
+  defimpl Collectable do
+    def into(%MultiPoint{points: points}) do
+      fun = fn
+        list, {:cont, x} ->
+          [{x, []} | list]
+
+        list, :done ->
+          %MultiPoint{points: %{points | map: Map.merge(points.map, Map.new(list))}}
+
+        _, :halt ->
+          :ok
+      end
+
+      {[], fun}
     end
   end
 end

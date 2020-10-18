@@ -286,4 +286,14 @@ defmodule Geometry.MultiPointMTest do
       end
     end
   end
+
+  test "Enum.slice/3" do
+    multi_point =
+      MultiPointM.new([
+        PointM.new(-1.1, -2.2, -4.4),
+        PointM.new(1.1, 2.2, 4.4)
+      ])
+
+    assert [%PointM{}] = Enum.slice(multi_point, 0, 1)
+  end
 end

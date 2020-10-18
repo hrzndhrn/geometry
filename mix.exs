@@ -1,17 +1,22 @@
 defmodule Geometry.MixProject do
   use Mix.Project
 
+  @github "https://github.com/hrzndhrn/geometry"
+
   def project do
     [
       app: :geometry,
       name: "Geometry",
       version: "0.1.0",
-      elixir: "~> 1.10",
+      elixir: "~> 1.9",
+      description: description(),
+      source_url: @github,
       start_permanent: Mix.env() == :prod,
       dialyzer: dialyzer(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: preferred_cli_env(),
+      package: package(),
       aliases: aliases(),
       docs: docs(),
       deps: deps()
@@ -20,6 +25,10 @@ defmodule Geometry.MixProject do
 
   def application do
     [extra_applications: [:logger]]
+  end
+
+  def description do
+    "A set of geometry types for WKT/WKB and GeoJson."
   end
 
   def elixirc_paths(env) do
@@ -44,12 +53,15 @@ defmodule Geometry.MixProject do
   defp aliases do
     [
       carp: ["test --seed 0 --max-failures 1"],
-      "geometry.gen": ["run script/gen_from_zm.exs", "test"]
+      "geometry.gen": ["run script/gen_from_zm.exs"]
     ]
   end
 
   defp docs do
     [
+      extras: [
+        "CHANGELOG.md"
+      ],
       groups_for_modules: [
         "Geometry primitives 2D": [
           Geometry.LineString,
@@ -118,6 +130,21 @@ defmodule Geometry.MixProject do
       {:excoveralls, "~> 0.13", only: :test, runtime: false},
       {:jason, "~> 1.2", only: [:dev, :test]},
       {:xema, "~> 0.13.1", only: :test}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Marcus Kruse"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => @github},
+      files: [
+        "lib",
+        "mix.exs",
+        "README*",
+        "LICENSE*",
+        "script"
+      ]
     ]
   end
 end

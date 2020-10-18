@@ -1,6 +1,27 @@
 defmodule Geometry.MultiPointZM do
   @moduledoc """
-  A set of points from type `Geometry.PointZM`
+  A set of points from type `Geometry.PointZM`.
+
+  `MultiPointZM` implements the protocols `Enumerable` and `Collectable`.
+
+  ## Examples
+
+      iex> Enum.map(
+      ...>   MultiPointZM.new([
+      ...>     PointZM.new(1, 2, 3, 4),
+      ...>     PointZM.new(3, 4, 5, 6)
+      ...>   ]),
+      ...>   fn point -> point.x end
+      ...> )
+      [1, 3]
+
+      iex> Enum.into([PointZM.new(1, 2, 3, 4)], MultiPointZM.new())
+      %MultiPointZM{
+        points:
+          MapSet.new([
+            %PointZM{x: 1, y: 2, z: 3, m: 4}
+          ])
+      }
   """
 
   alias Geometry.{GeoJson, MultiPointZM, PointZM, WKB, WKT}
@@ -297,6 +318,66 @@ defmodule Geometry.MultiPointZM do
     end
   end
 
+  @doc """
+  Returns the number of elements in `MultiPointZM`.
+
+  ## Examples
+
+      iex> MultiPointZM.size(
+      ...>   MultiPointZM.new([
+      ...>     PointZM.new(11, 12, 13, 14),
+      ...>     PointZM.new(21, 22, 23, 24)
+      ...>   ])
+      ...> )
+      2
+  """
+  @spec size(t()) :: non_neg_integer()
+  def size(%MultiPointZM{points: points}), do: MapSet.size(points)
+
+  @doc """
+  Checks if `MulitPointZM` contains `point`.
+
+  ## Examples
+
+      iex> MultiPointZM.member?(
+      ...>   MultiPointZM.new([
+      ...>     PointZM.new(11, 12, 13, 14),
+      ...>     PointZM.new(21, 22, 23, 24)
+      ...>   ]),
+      ...>   PointZM.new(11, 12, 13, 14)
+      ...> )
+      true
+
+      iex> MultiPointZM.member?(
+      ...>   MultiPointZM.new([
+      ...>     PointZM.new(11, 12, 13, 14),
+      ...>     PointZM.new(21, 22, 23, 24)
+      ...>   ]),
+      ...>   PointZM.new(1, 2, 3, 4)
+      ...> )
+      false
+  """
+  @spec member?(t(), PointZM.t()) :: boolean()
+  def member?(%MultiPointZM{points: points}, %PointZM{} = point),
+    do: MapSet.member?(points, point)
+
+  @doc """
+  Converts `MultiPointZM` to a list.
+
+  ## Examples
+
+      iex> MultiPointZM.to_list(
+      ...>   MultiPointZM.new([
+      ...>     PointZM.new(11, 12, 13, 14),
+      ...>     PointZM.new(21, 22, 23, 24)
+      ...>   ])
+      ...> )
+      [PointZM.new(11, 12, 13, 14), PointZM.new(21, 22, 23, 24)]
+  """
+  @spec to_list(t()) :: [PointZM.t()]
+  def to_list(%MultiPointZM{points: points}), do: MapSet.to_list(points)
+
+  @compile {:inline, to_wkt_points: 1}
   defp to_wkt_points(points) do
     wkt =
       points
@@ -306,8 +387,10 @@ defmodule Geometry.MultiPointZM do
     <<"(", wkt::binary(), ")">>
   end
 
+  @compile {:inline, to_wkt_multi_point: 1}
   defp to_wkt_multi_point(wkt), do: <<"MultiPoint ZM ", wkt::binary()>>
 
+  @compile {:inline, to_wkb_multi_point: 2}
   defp to_wkb_multi_point(%MultiPointZM{points: points}, endian) do
     data =
       Enum.reduce(points, [], fn point, acc ->
@@ -317,12 +400,49 @@ defmodule Geometry.MultiPointZM do
     <<WKB.length(points, endian)::binary, IO.iodata_to_binary(data)::binary>>
   end
 
+  @compile {:inline, wkb_code: 2}
   defp wkb_code(endian, srid?) do
     case {endian, srid?} do
       {:xdr, false} -> "C0000004"
       {:ndr, false} -> "040000C0"
       {:xdr, true} -> "E0000004"
       {:ndr, true} -> "040000E0"
+    end
+  end
+
+  defimpl Enumerable do
+    def count(multi_point) do
+      {:ok, MultiPointZM.size(multi_point)}
+    end
+
+    def member?(multi_point, val) do
+      {:ok, MultiPointZM.member?(multi_point, val)}
+    end
+
+    def slice(multi_point) do
+      size = MultiPointZM.size(multi_point)
+      {:ok, size, &Enumerable.List.slice(MultiPointZM.to_list(multi_point), &1, &2, size)}
+    end
+
+    def reduce(multi_point, acc, fun) do
+      Enumerable.List.reduce(MultiPointZM.to_list(multi_point), acc, fun)
+    end
+  end
+
+  defimpl Collectable do
+    def into(%MultiPointZM{points: points}) do
+      fun = fn
+        list, {:cont, x} ->
+          [{x, []} | list]
+
+        list, :done ->
+          %MultiPointZM{points: %{points | map: Map.merge(points.map, Map.new(list))}}
+
+        _, :halt ->
+          :ok
+      end
+
+      {[], fun}
     end
   end
 end
