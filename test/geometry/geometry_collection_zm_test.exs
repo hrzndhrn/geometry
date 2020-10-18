@@ -252,4 +252,17 @@ defmodule Geometry.GeometryCollectionZMTest do
       end
     end
   end
+
+  test "Enum.slice/3" do
+    collection =
+      GeometryCollectionZM.new([
+        PointZM.new(11, 12, 13, 14),
+        LineStringZM.new([
+          PointZM.new(21, 22, 23, 24),
+          PointZM.new(31, 32, 33, 34)
+        ])
+      ])
+
+    assert [_geometry] = Enum.slice(collection, 0, 1)
+  end
 end

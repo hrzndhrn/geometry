@@ -1,6 +1,30 @@
 defmodule Geometry.GeometryCollectionZ do
   @moduledoc """
   A collection set of 3D geometries.
+
+  `GeometryCollectionZ` implements the protocols `Enumerable` and `Collectable`.
+
+  ## Examples
+
+      iex> Enum.map(
+      ...>   GeometryCollectionZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(21, 22, 23),
+      ...>       PointZ.new(31, 32, 33)
+      ...>     ])
+      ...>   ]),
+      ...>   fn
+      ...>     %PointZ{} -> :point
+      ...>     %LineStringZ{} -> :line_string
+      ...>   end
+      ...> )
+      [:line_string, :point]
+
+      iex> Enum.into([PointZ.new(1, 2, 3)], GeometryCollectionZ.new())
+      %GeometryCollectionZ{
+        geometries: MapSet.new([%PointZ{x: 1, y: 2, z: 3}])
+      }
   """
 
   alias Geometry.{
@@ -101,7 +125,7 @@ defmodule Geometry.GeometryCollectionZ do
       ...>   "GeometryCollection Z (Point Z (1.1 2.2 3.3))")
       {
         :ok,
-        %Geometry.GeometryCollectionZ{
+        %GeometryCollectionZ{
           geometries: MapSet.new([%PointZ{x: 1.1, y: 2.2, z: 3.3}])
         }
       }
@@ -110,7 +134,7 @@ defmodule Geometry.GeometryCollectionZ do
       ...>   "SRID=123;GeometryCollection Z (Point Z (1.1 2.2 3.3))")
       {
         :ok,
-        %Geometry.GeometryCollectionZ{
+        %GeometryCollectionZ{
           geometries: MapSet.new([%PointZ{x: 1.1, y: 2.2, z: 3.3}])
         },
         123
@@ -250,6 +274,85 @@ defmodule Geometry.GeometryCollectionZ do
     end
   end
 
+  @doc """
+  Returns the number of elements in `GeometryCollectionZ`.
+
+  ## Examples
+
+      iex> GeometryCollectionZ.size(
+      ...>   GeometryCollectionZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(21, 22, 23),
+      ...>       PointZ.new(31, 32, 33)
+      ...>     ])
+      ...>   ])
+      ...> )
+      2
+  """
+  @spec size(t()) :: non_neg_integer()
+  def size(%GeometryCollectionZ{geometries: geometries}), do: MapSet.size(geometries)
+
+  @doc """
+  Checks if `GeometryCollectionZ` contains `geometry`.
+
+  ## Examples
+
+      iex> GeometryCollectionZ.member?(
+      ...>   GeometryCollectionZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(21, 22, 23),
+      ...>       PointZ.new(31, 32, 33)
+      ...>     ])
+      ...>   ]),
+      ...>   PointZ.new(11, 12, 13)
+      ...> )
+      true
+
+      iex> GeometryCollectionZ.member?(
+      ...>   GeometryCollectionZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(21, 22, 23),
+      ...>       PointZ.new(31, 32, 33)
+      ...>     ])
+      ...>   ]),
+      ...>   PointZ.new(1, 2, 3)
+      ...> )
+      false
+  """
+  @spec member?(t(), Geometry.t()) :: boolean()
+  def member?(%GeometryCollectionZ{geometries: geometries}, geometry),
+    do: MapSet.member?(geometries, geometry)
+
+  @doc """
+  Converts `GeometryCollectionZ` to a list.
+
+  ## Examples
+
+      iex> GeometryCollectionZ.to_list(
+      ...>   GeometryCollectionZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     LineStringZ.new([
+      ...>       PointZ.new(21, 22, 23),
+      ...>       PointZ.new(31, 32, 33)
+      ...>     ])
+      ...>   ])
+      ...> )
+      [
+        %LineStringZ{
+          points: [
+            %PointZ{x: 21, y: 22, z: 23},
+            %PointZ{x: 31, y: 32, z: 33}
+          ]
+        },
+        %PointZ{x: 11, y: 12, z: 13}
+      ]
+  """
+  @spec to_list(t()) :: [Geometry.t()]
+  def to_list(%GeometryCollectionZ{geometries: geometries}), do: MapSet.to_list(geometries)
+
   @compile {:inline, to_wkt_geometry_collection: 1}
   defp to_wkt_geometry_collection(wkt), do: <<"GeometryCollection Z ", wkt::binary()>>
 
@@ -277,6 +380,51 @@ defmodule Geometry.GeometryCollectionZ do
       {:ndr, false} -> "07000080"
       {:xdr, true} -> "A0000007"
       {:ndr, true} -> "070000A0"
+    end
+  end
+
+  defimpl Enumerable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def count(geometry_collection) do
+      {:ok, GeometryCollectionZ.size(geometry_collection)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def member?(geometry_collection, val) do
+      {:ok, GeometryCollectionZ.member?(geometry_collection, val)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def slice(geometry_collection) do
+      size = GeometryCollectionZ.size(geometry_collection)
+
+      {:ok, size,
+       &Enumerable.List.slice(GeometryCollectionZ.to_list(geometry_collection), &1, &2, size)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def reduce(geometry_collection, acc, fun) do
+      Enumerable.List.reduce(GeometryCollectionZ.to_list(geometry_collection), acc, fun)
+    end
+  end
+
+  defimpl Collectable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def into(%GeometryCollectionZ{geometries: geometries}) do
+      fun = fn
+        list, {:cont, x} ->
+          [{x, []} | list]
+
+        list, :done ->
+          %GeometryCollectionZ{
+            geometries: %{geometries | map: Map.merge(geometries.map, Map.new(list))}
+          }
+
+        _list, :halt ->
+          :ok
+      end
+
+      {[], fun}
     end
   end
 end

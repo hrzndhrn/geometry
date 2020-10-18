@@ -1,7 +1,14 @@
 defmodule Geometry.FeatureCollectionTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{Feature, FeatureCollection, Point}
+  alias Geometry.{
+    Feature,
+    FeatureCollection,
+    LineString,
+    Point,
+    PointM,
+    PointZ
+  }
 
   doctest Geometry.FeatureCollection, import: true
 
@@ -101,5 +108,21 @@ defmodule Geometry.FeatureCollectionTest do
         FeatureCollection.from_geo_json!(geo_json, type: :z)
       end
     end
+  end
+
+  test "Enum.slice/3" do
+    collection =
+      FeatureCollection.new([
+        Feature.new(
+          geometry: Point.new(11, 12),
+          properties: %{"facility" => "Hotel"}
+        ),
+        Feature.new(
+          geometry: Point.new(55, 55),
+          properties: %{"facility" => "Tower"}
+        )
+      ])
+
+    assert [%Feature{}] = Enum.slice(collection, 0, 1)
   end
 end

@@ -1,6 +1,41 @@
 defmodule Geometry.FeatureCollection do
   @moduledoc """
   A collection of `Geometry.Featre`s.
+
+  `GeometryCollectionZM` implements the protocols `Enumerable` and `Collectable`.
+
+  ## Examples
+
+      iex> Enum.filter(
+      ...>   FeatureCollection.new([
+      ...>     Feature.new(
+      ...>       geometry: Point.new(11, 12),
+      ...>       properties: %{"facility" => "Hotel"}
+      ...>     ),
+      ...>     Feature.new(
+      ...>       geometry: Point.new(55, 55),
+      ...>       properties: %{"facility" => "Tower"}
+      ...>     )
+      ...>   ]),
+      ...>   fn %Feature{properties: properties} ->
+      ...>     Map.get(properties, "facility") == "Hotel"
+      ...>   end
+      ...> )
+      [%Feature{geometry: %Point{x: 11, y: 12}, properties: %{"facility" => "Hotel"}}]
+
+      iex> Enum.into(
+      ...>   [Feature.new(geometry: Point.new(5, 1), properties: %{"area" => 51})],
+      ...>   FeatureCollection.new([
+      ...>     Feature.new(geometry: Point.new(4, 2), properties: %{"area" => 42})
+      ...>   ])
+      ...> )
+      %FeatureCollection{
+        features:
+          MapSet.new([
+            %Feature{geometry: %Point{x: 4, y: 2}, properties: %{"area" => 42}},
+            %Feature{geometry: %Point{x: 5, y: 1}, properties: %{"area" => 51}}
+          ])
+      }
   """
 
   alias Geometry.{Feature, FeatureCollection, GeoJson}
@@ -39,10 +74,10 @@ defmodule Geometry.FeatureCollection do
       ...> ])
       %FeatureCollection{features: MapSet.new([
         %Feature{
-          geometry: %Geometry.Point{x: 1, y: 2},
+          geometry: %Point{x: 1, y: 2},
           properties: %{facility: :hotel}},
         %Feature{
-          geometry: %Geometry.Point{x: 3, y: 4},
+          geometry: %Point{x: 3, y: 4},
           properties: %{facility: :school}}
       ])}
   """
@@ -91,11 +126,11 @@ defmodule Geometry.FeatureCollection do
           features:
             MapSet.new([
               %Feature{
-                geometry: %Geometry.PointZ{x: 1, y: 2, z: 3},
+                geometry: %PointZ{x: 1, y: 2, z: 3},
                 properties: %{"facility" => "Hotel"}
               },
               %Feature{
-                geometry: %Geometry.PointZ{x: 4, y: 3, z: 2},
+                geometry: %PointZ{x: 4, y: 3, z: 2},
                 properties: %{"facility" => "School"}
               }
             ])
@@ -132,11 +167,11 @@ defmodule Geometry.FeatureCollection do
         features:
           MapSet.new([
             %Feature{
-              geometry: %Geometry.PointM{x: 1, y: 2, m: 3},
+              geometry: %PointM{x: 1, y: 2, m: 3},
               properties: %{"facility" => "Hotel"}
             },
             %Feature{
-              geometry: %Geometry.PointM{x: 4, y: 3, m: 2},
+              geometry: %PointM{x: 4, y: 3, m: 2},
               properties: %{"facility" => "School"}
             }
           ])
@@ -179,5 +214,123 @@ defmodule Geometry.FeatureCollection do
       "type" => "FeatureCollection",
       "features" => Enum.map(features, &Feature.to_geo_json/1)
     }
+  end
+
+  @doc """
+  Returns the number of elements in `FeatureCollection`.
+
+  ## Examples
+
+      iex> FeatureCollection.size(
+      ...>   FeatureCollection.new([
+      ...>     Feature.new(geometry: Point.new(11, 12)),
+      ...>     Feature.new(geometry:
+      ...>       LineString.new([
+      ...>         Point.new(21, 22),
+      ...>         Point.new(31, 32)
+      ...>       ])
+      ...>     )
+      ...>   ])
+      ...> )
+      2
+  """
+  @spec size(t()) :: non_neg_integer()
+  def size(%FeatureCollection{features: features}), do: MapSet.size(features)
+
+  @doc """
+  Checks if `FeatureCollection` contains `geometry`.
+
+  ## Examples
+
+      iex> FeatureCollection.member?(
+      ...>   FeatureCollection.new([
+      ...>     Feature.new(geometry: Point.new(11, 12)),
+      ...>     Feature.new(geometry:
+      ...>       LineString.new([
+      ...>         Point.new(21, 22),
+      ...>         Point.new(31, 32)
+      ...>       ])
+      ...>     )
+      ...>   ]),
+      ...>   Feature.new(geometry: Point.new(11, 12))
+      ...> )
+      true
+
+      iex> FeatureCollection.member?(
+      ...>   FeatureCollection.new([
+      ...>     Feature.new(geometry: Point.new(11, 12)),
+      ...>     Feature.new(geometry:
+      ...>       LineString.new([
+      ...>         Point.new(21, 22),
+      ...>         Point.new(31, 32)
+      ...>       ])
+      ...>     )
+      ...>   ]),
+      ...>   Feature.new(geometry: Point.new(1, 2))
+      ...> )
+      false
+  """
+  @spec member?(t(), Geometry.t()) :: boolean()
+  def member?(%FeatureCollection{features: features}, geometry),
+    do: MapSet.member?(features, geometry)
+
+  @doc """
+  Converts `FeatureCollection` to a list.
+
+  ## Examples
+
+      iex> FeatureCollection.to_list(
+      ...>   FeatureCollection.new([
+      ...>     Feature.new(geometry: Point.new(11, 12))
+      ...>   ])
+      ...> )
+      [%Feature{geometry: %Point{x: 11, y: 12}, properties: nil}]
+  """
+  @spec to_list(t()) :: [Geometry.t()]
+  def to_list(%FeatureCollection{features: features}), do: MapSet.to_list(features)
+
+  defimpl Enumerable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def count(geometry_collection) do
+      {:ok, FeatureCollection.size(geometry_collection)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def member?(geometry_collection, val) do
+      {:ok, FeatureCollection.member?(geometry_collection, val)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def slice(geometry_collection) do
+      size = FeatureCollection.size(geometry_collection)
+
+      {:ok, size,
+       &Enumerable.List.slice(FeatureCollection.to_list(geometry_collection), &1, &2, size)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def reduce(geometry_collection, acc, fun) do
+      Enumerable.List.reduce(FeatureCollection.to_list(geometry_collection), acc, fun)
+    end
+  end
+
+  defimpl Collectable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def into(%FeatureCollection{features: features}) do
+      fun = fn
+        list, {:cont, x} ->
+          [{x, []} | list]
+
+        list, :done ->
+          %FeatureCollection{
+            features: %{features | map: Map.merge(features.map, Map.new(list))}
+          }
+
+        _list, :halt ->
+          :ok
+      end
+
+      {[], fun}
+    end
   end
 end

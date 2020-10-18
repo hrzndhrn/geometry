@@ -498,4 +498,18 @@ defmodule Geometry.MultiPolygonTest do
       end
     end
   end
+
+  test "Enum.slice/3" do
+    multi_polygon =
+      MultiPolygon.new([
+        Polygon.new([
+          Point.new(11, 12),
+          Point.new(21, 22),
+          Point.new(31, 32),
+          Point.new(41, 42)
+        ])
+      ])
+
+    assert [%Polygon{}] = Enum.slice(multi_polygon, 0, 1)
+  end
 end

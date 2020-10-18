@@ -1,6 +1,61 @@
 defmodule Geometry.MultiPolygonZ do
   @moduledoc """
   A set of polygons from type `Geometry.PolygonZ`
+
+  `MultiPointZ` implements the protocols `Enumerable` and `Collectable`.
+
+  ## Examples
+
+      iex> Enum.map(
+      ...>   MultiPolygonZ.new([
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(11, 22, 23),
+      ...>       PointZ.new(31, 22, 33),
+      ...>       PointZ.new(11, 12, 13)
+      ...>     ]),
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(35, 10, 13),
+      ...>       PointZ.new(45, 45, 23),
+      ...>       PointZ.new(10, 20, 33),
+      ...>       PointZ.new(35, 10, 13)
+      ...>     ], [
+      ...>       [
+      ...>         PointZ.new(20, 30, 13),
+      ...>         PointZ.new(35, 35, 23),
+      ...>         PointZ.new(30, 20, 33),
+      ...>         PointZ.new(20, 30, 13)
+      ...>       ]
+      ...>     ])
+      ...>   ]),
+      ...>   fn polygon -> Enum.empty?(polygon.interiors) end
+      ...> )
+      [true, false]
+
+      iex> Enum.into(
+      ...>   [
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(11, 22, 23),
+      ...>       PointZ.new(31, 22, 33),
+      ...>       PointZ.new(11, 12, 13)
+      ...>     ]),
+      ...>   ],
+      ...>   MultiPolygonZ.new())
+      %MultiPolygonZ{
+        polygons:
+          MapSet.new([
+            %PolygonZ{
+              exterior: [
+                %PointZ{x: 11, y: 12, z: 13},
+                %PointZ{x: 11, y: 22, z: 23},
+                %PointZ{x: 31, y: 22, z: 33},
+                %PointZ{x: 11, y: 12, z: 13}
+              ],
+              interiors: []
+            }
+          ])
+      }
   """
 
   alias Geometry.{GeoJson, MultiPolygonZ, PointZ, PolygonZ, WKB, WKT}
@@ -462,6 +517,102 @@ defmodule Geometry.MultiPolygonZ do
     end
   end
 
+  @doc """
+  Returns the number of elements in `MultiPolygonZ`.
+
+  ## Examples
+
+      iex> MultiPolygonZ.size(
+      ...>   MultiPolygonZ.new([
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(11, 22, 23),
+      ...>       PointZ.new(31, 22, 33),
+      ...>       PointZ.new(11, 12, 13)
+      ...>     ])
+      ...>   ])
+      ...> )
+      1
+  """
+  @spec size(t()) :: non_neg_integer()
+  def size(%MultiPolygonZ{polygons: polygons}), do: MapSet.size(polygons)
+
+  @doc """
+  Checks if `MultiPolygonZ` contains `point`.
+
+  ## Examples
+
+      iex> MultiPolygonZ.member?(
+      ...>   MultiPolygonZ.new([
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(11, 22, 23),
+      ...>       PointZ.new(31, 22, 33),
+      ...>       PointZ.new(11, 12, 13)
+      ...>     ])
+      ...>   ]),
+      ...>   PolygonZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     PointZ.new(11, 22, 23),
+      ...>     PointZ.new(31, 22, 33),
+      ...>     PointZ.new(11, 12, 13)
+      ...>   ])
+      ...> )
+      true
+
+      iex> MultiPolygonZ.member?(
+      ...>   MultiPolygonZ.new([
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(11, 22, 23),
+      ...>       PointZ.new(31, 22, 33),
+      ...>       PointZ.new(11, 12, 13)
+      ...>     ])
+      ...>   ]),
+      ...>   PolygonZ.new([
+      ...>     PointZ.new(11, 12, 13),
+      ...>     PointZ.new(11, 22, 23),
+      ...>     PointZ.new(33, 22, 33),
+      ...>     PointZ.new(11, 12, 13)
+      ...>   ])
+      ...> )
+      false
+  """
+  @spec member?(t(), PolygonZ.t()) :: boolean()
+  def member?(%MultiPolygonZ{polygons: polygons}, %PolygonZ{} = polygon),
+    do: MapSet.member?(polygons, polygon)
+
+  @doc """
+  Converts `MultiPolygonZ` to a list.
+
+  ## Examples
+
+      iex> MultiPolygonZ.to_list(
+      ...>   MultiPolygonZ.new([
+      ...>     PolygonZ.new([
+      ...>       PointZ.new(11, 12, 13),
+      ...>       PointZ.new(11, 22, 23),
+      ...>       PointZ.new(31, 22, 33),
+      ...>       PointZ.new(11, 12, 13)
+      ...>     ])
+      ...>   ])
+      ...> )
+      [
+        %PolygonZ{
+          exterior: [
+            %PointZ{x: 11, y: 12, z: 13},
+            %PointZ{x: 11, y: 22, z: 23},
+            %PointZ{x: 31, y: 22, z: 33},
+            %PointZ{x: 11, y: 12, z: 13}
+          ],
+          interiors: []
+        }
+      ]
+  """
+
+  @spec to_list(t()) :: [PolygonZ.t()]
+  def to_list(%MultiPolygonZ{polygons: polygons}), do: MapSet.to_list(polygons)
+
   defp to_wkt_polygons(polygons) do
     wkt =
       polygons
@@ -510,6 +661,47 @@ defmodule Geometry.MultiPolygonZ do
       {:ndr, false} -> "06000080"
       {:xdr, true} -> "A0000006"
       {:ndr, true} -> "060000A0"
+    end
+  end
+
+  defimpl Enumerable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def count(multi_polygon) do
+      {:ok, MultiPolygonZ.size(multi_polygon)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def member?(multi_polygon, val) do
+      {:ok, MultiPolygonZ.member?(multi_polygon, val)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def slice(multi_polygon) do
+      size = MultiPolygonZ.size(multi_polygon)
+      {:ok, size, &Enumerable.List.slice(MultiPolygonZ.to_list(multi_polygon), &1, &2, size)}
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def reduce(multi_polygon, acc, fun) do
+      Enumerable.List.reduce(MultiPolygonZ.to_list(multi_polygon), acc, fun)
+    end
+  end
+
+  defimpl Collectable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
+    def into(%MultiPolygonZ{polygons: polygons}) do
+      fun = fn
+        list, {:cont, x} ->
+          [{x, []} | list]
+
+        list, :done ->
+          %MultiPolygonZ{polygons: %{polygons | map: Map.merge(polygons.map, Map.new(list))}}
+
+        _list, :halt ->
+          :ok
+      end
+
+      {[], fun}
     end
   end
 end

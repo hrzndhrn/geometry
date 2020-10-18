@@ -173,7 +173,9 @@ defmodule Geometry.GeometryCollectionTest do
     end
 
     test "returns a GeometryCollection with an SRID" do
-      assert GeometryCollection.from_wkt("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
+      assert GeometryCollection.from_wkt(
+               "SRID=123;GeometryCollection (Point (1.1 2.2))"
+             ) ==
                {
                  :ok,
                  %GeometryCollection{
@@ -200,7 +202,9 @@ defmodule Geometry.GeometryCollectionTest do
     end
 
     test "returns a GeometryCollection with an SRID" do
-      assert GeometryCollection.from_wkt!("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
+      assert GeometryCollection.from_wkt!(
+               "SRID=123;GeometryCollection (Point (1.1 2.2))"
+             ) ==
                {%GeometryCollection{
                   geometries: MapSet.new([%Point{x: 1.1, y: 2.2}])
                 }, 123}
@@ -250,5 +254,18 @@ defmodule Geometry.GeometryCollectionTest do
         GeometryCollection.from_geo_json!(geo_json)
       end
     end
+  end
+
+  test "Enum.slice/3" do
+    collection =
+      GeometryCollection.new([
+        Point.new(11, 12),
+        LineString.new([
+          Point.new(21, 22),
+          Point.new(31, 32)
+        ])
+      ])
+
+    assert [_geometry] = Enum.slice(collection, 0, 1)
   end
 end

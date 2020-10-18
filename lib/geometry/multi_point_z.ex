@@ -372,7 +372,10 @@ defmodule Geometry.MultiPointZ do
       ...>     PointZ.new(21, 22, 23)
       ...>   ])
       ...> )
-      [PointZ.new(11, 12, 13), PointZ.new(21, 22, 23)]
+      [
+        %PointZ{x: 11, y: 12, z: 13},
+        %PointZ{x: 21, y: 22, z: 23}
+      ]
   """
   @spec to_list(t()) :: [PointZ.t()]
   def to_list(%MultiPointZ{points: points}), do: MapSet.to_list(points)
