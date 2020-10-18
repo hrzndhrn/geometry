@@ -411,25 +411,30 @@ defmodule Geometry.MultiPointM do
   end
 
   defimpl Enumerable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(multi_point) do
       {:ok, MultiPointM.size(multi_point)}
     end
 
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(multi_point, val) do
       {:ok, MultiPointM.member?(multi_point, val)}
     end
 
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def slice(multi_point) do
       size = MultiPointM.size(multi_point)
       {:ok, size, &Enumerable.List.slice(MultiPointM.to_list(multi_point), &1, &2, size)}
     end
 
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(multi_point, acc, fun) do
       Enumerable.List.reduce(MultiPointM.to_list(multi_point), acc, fun)
     end
   end
 
   defimpl Collectable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%MultiPointM{points: points}) do
       fun = fn
         list, {:cont, x} ->
@@ -438,7 +443,7 @@ defmodule Geometry.MultiPointM do
         list, :done ->
           %MultiPointM{points: %{points | map: Map.merge(points.map, Map.new(list))}}
 
-        _, :halt ->
+        _list, :halt ->
           :ok
       end
 

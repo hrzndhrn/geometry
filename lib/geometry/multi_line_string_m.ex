@@ -517,14 +517,17 @@ defmodule Geometry.MultiLineStringM do
   end
 
   defimpl Enumerable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(multi_line_string) do
       {:ok, MultiLineStringM.size(multi_line_string)}
     end
 
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(multi_line_string, val) do
       {:ok, MultiLineStringM.member?(multi_line_string, val)}
     end
 
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def slice(multi_line_string) do
       size = MultiLineStringM.size(multi_line_string)
 
@@ -532,12 +535,14 @@ defmodule Geometry.MultiLineStringM do
        &Enumerable.List.slice(MultiLineStringM.to_list(multi_line_string), &1, &2, size)}
     end
 
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(multi_line_string, acc, fun) do
       Enumerable.List.reduce(MultiLineStringM.to_list(multi_line_string), acc, fun)
     end
   end
 
   defimpl Collectable do
+    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%MultiLineStringM{line_strings: line_strings}) do
       fun = fn
         list, {:cont, x} ->
@@ -548,7 +553,7 @@ defmodule Geometry.MultiLineStringM do
             line_strings: %{line_strings | map: Map.merge(line_strings.map, Map.new(list))}
           }
 
-        _, :halt ->
+        _list, :halt ->
           :ok
       end
 
