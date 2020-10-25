@@ -147,7 +147,6 @@ defmodule GenFromZM do
     |> replace(point_test(type))
     |> replace(point(type))
     |> replace(geometry_collection(type))
-    |> replace(coordinate_type(type))
     |> replace(wkb_code(type))
     |> replace(hint(:code))
   end
@@ -192,17 +191,6 @@ defmodule GenFromZM do
       end
 
     {" ZM", new}
-  end
-
-  defp coordinate_type(type) do
-    new =
-      case type do
-        :xy -> "Geometry.coordinate()"
-        :xyz -> "Geometry.coordinate_z()"
-        :xym -> "Geometry.coordinate_m()"
-      end
-
-    {"Geometry.coordinate_zm()", new}
   end
 
   defp hint(:code) do
@@ -368,7 +356,7 @@ defmodule GenFromZM do
       """,
       xy: ~S"""
             to_wkb_number(x, endian)::binary(),
-            to_wkb_number(y, endian)::binary(),
+            to_wkb_number(y, endian)::binary()
       """,
       xym: ~S"""
             to_wkb_number(x, endian)::binary(),
@@ -378,7 +366,7 @@ defmodule GenFromZM do
       xyz: ~S"""
             to_wkb_number(x, endian)::binary(),
             to_wkb_number(y, endian)::binary(),
-            to_wkb_number(z, endian)::binary(),
+            to_wkb_number(z, endian)::binary()
       """
     )
     |> replacements()

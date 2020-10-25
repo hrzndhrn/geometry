@@ -113,16 +113,25 @@ defmodule Geometry.MixProject do
 
   defp dialyzer do
     [
-      ignore_warnings: ".dialyzer_ignore.exs",
-      plt_add_apps: [:nimble_parsec],
+      flags: [:unmatched_returns],
       plt_file: {:no_warn, "test/support/plts/dialyzer.plt"},
-      flags: [:unmatched_returns]
+      plt_ignore_apps: [
+        :benchee,
+        :benchee_dsl,
+        :benchee_markdown,
+        :deep_merge,
+        :eex,
+        :geo,
+        :jason
+      ]
     ]
   end
 
   defp deps do
     [
       {:nimble_parsec, "~> 0.5 or ~> 1.0"},
+      # dev and test
+      {:benchee, "~> 1.0", only: :dev},
       {:benchee_dsl, "~> 0.1.0", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
