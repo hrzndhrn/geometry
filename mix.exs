@@ -113,7 +113,7 @@ defmodule Geometry.MixProject do
 
   defp dialyzer do
     [
-      # ignore_warnings: ".dialyzer_ignore.exs",
+      ignore_warnings: ".dialyzer_ignore.exs",
       plt_add_apps: [:nimble_parsec],
       plt_file: {:no_warn, "test/support/plts/dialyzer.plt"},
       flags: [:unmatched_returns]
