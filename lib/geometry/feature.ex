@@ -33,7 +33,7 @@ defmodule Geometry.Feature do
       ...>   properties: %{facility: :hotel}
       ...> )
       %Feature{
-        geometry: %Point{x: 1, y: 2},
+        geometry: %Point{coordinate: [1, 2]},
         properties: %{facility: :hotel}
       }
   """
@@ -71,7 +71,7 @@ defmodule Geometry.Feature do
       iex> |> Jason.decode!()
       iex> |> Feature.from_geo_json(type: :z)
       {:ok, %Feature{
-        geometry: %PointZ{x: 1, y: 2, z: 3},
+        geometry: %PointZ{coordinate: [1, 2, 3]},
         properties: %{"facility" => "Hotel"}
       }}
 
@@ -83,7 +83,7 @@ defmodule Geometry.Feature do
       iex> |> Jason.decode!()
       iex> |> Feature.from_geo_json()
       {:ok, %Feature{
-        geometry: %Point{x: 1, y: 2},
+        geometry: %Point{coordinate: [1, 2]},
         properties: %{"facility" => "Hotel"}
       }}
   """
@@ -105,7 +105,7 @@ defmodule Geometry.Feature do
       iex> |> Jason.decode!()
       iex> |> Feature.from_geo_json!(type: :m)
       %Feature{
-        geometry: %PointM{x: 1, y: 2, m: 3},
+        geometry: %PointM{coordinate: [1, 2, 3]},
         properties: %{"facility" => "Hotel"}
       }
   """

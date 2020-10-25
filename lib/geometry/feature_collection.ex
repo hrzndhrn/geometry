@@ -21,7 +21,7 @@ defmodule Geometry.FeatureCollection do
       ...>     Map.get(properties, "facility") == "Hotel"
       ...>   end
       ...> )
-      [%Feature{geometry: %Point{x: 11, y: 12}, properties: %{"facility" => "Hotel"}}]
+      [%Feature{geometry: %Point{coordinate: [11, 12]}, properties: %{"facility" => "Hotel"}}]
 
       iex> Enum.into(
       ...>   [Feature.new(geometry: Point.new(5, 1), properties: %{"area" => 51})],
@@ -32,8 +32,8 @@ defmodule Geometry.FeatureCollection do
       %FeatureCollection{
         features:
           MapSet.new([
-            %Feature{geometry: %Point{x: 4, y: 2}, properties: %{"area" => 42}},
-            %Feature{geometry: %Point{x: 5, y: 1}, properties: %{"area" => 51}}
+            %Feature{geometry: %Point{coordinate: [4, 2]}, properties: %{"area" => 42}},
+            %Feature{geometry: %Point{coordinate: [5, 1]}, properties: %{"area" => 51}}
           ])
       }
   """
@@ -74,10 +74,10 @@ defmodule Geometry.FeatureCollection do
       ...> ])
       %FeatureCollection{features: MapSet.new([
         %Feature{
-          geometry: %Point{x: 1, y: 2},
+          geometry: %Point{coordinate: [1, 2]},
           properties: %{facility: :hotel}},
         %Feature{
-          geometry: %Point{x: 3, y: 4},
+          geometry: %Point{coordinate: [3, 4]},
           properties: %{facility: :school}}
       ])}
   """
@@ -126,11 +126,11 @@ defmodule Geometry.FeatureCollection do
           features:
             MapSet.new([
               %Feature{
-                geometry: %PointZ{x: 1, y: 2, z: 3},
+                geometry: %PointZ{coordinate: [1, 2, 3]},
                 properties: %{"facility" => "Hotel"}
               },
               %Feature{
-                geometry: %PointZ{x: 4, y: 3, z: 2},
+                geometry: %PointZ{coordinate: [4, 3, 2]},
                 properties: %{"facility" => "School"}
               }
             ])
@@ -167,11 +167,11 @@ defmodule Geometry.FeatureCollection do
         features:
           MapSet.new([
             %Feature{
-              geometry: %PointM{x: 1, y: 2, m: 3},
+              geometry: %PointM{coordinate: [1, 2, 3]},
               properties: %{"facility" => "Hotel"}
             },
             %Feature{
-              geometry: %PointM{x: 4, y: 3, m: 2},
+              geometry: %PointM{coordinate: [4, 3, 2]},
               properties: %{"facility" => "School"}
             }
           ])
@@ -284,7 +284,7 @@ defmodule Geometry.FeatureCollection do
       ...>     Feature.new(geometry: Point.new(11, 12))
       ...>   ])
       ...> )
-      [%Feature{geometry: %Point{x: 11, y: 12}, properties: nil}]
+      [%Feature{geometry: %Point{coordinate: [11, 12]}, properties: nil}]
   """
   @spec to_list(t()) :: [Geometry.t()]
   def to_list(%FeatureCollection{features: features}), do: MapSet.to_list(features)

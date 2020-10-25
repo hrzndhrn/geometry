@@ -109,52 +109,20 @@ defmodule Geometry do
           | PointZM.t()
 
   @typedoc """
-  The `x` part of a `coordinate`. In a GIS context, this is the longitude
-  specifying the east-west position.
+  An n-dimensional coordinate.
   """
-  @type x :: number()
+  @type coordinate :: [number(), ...]
 
   @typedoc """
-  The `y` part of a `coordinate`. In a GIS context, this is the latitude
-  specifying the east-west position.
+  A list of n-dimensional coordinates.
   """
-  @type y :: number()
-
-  @typedoc """
-  The `z` part of a `coordinate`. In a GIS context, this is the elevation.
-  """
-  @type z :: number()
-
-  @typedoc """
-  A user-defined measurement.
-  """
-  @type m :: number()
-
-  @typedoc """
-  A 2D coordinate.
-  """
-  @type coordinate :: {x(), y()} | [number(), ...]
-
-  @typedoc """
-  A 2D coordinate with a measurement.
-  """
-  @type coordinate_m :: {x(), y(), m()} | [number(), ...]
-
-  @typedoc """
-  A 3D coordinate.
-  """
-  @type coordinate_z :: {x(), y(), z()} | [number(), ...]
-
-  @typedoc """
-  A 2D coordinate with a measurement.
-  """
-  @type coordinate_zm :: {x(), y(), z(), m()} | [number(), ...]
+  @type coordinates :: [coordinate()]
 
   @typedoc """
   The Spatial Reference System Identifier to identify projected, unprojected,
   and local spatial coordinate system definitions.
   """
-  @type srid :: integer()
+  @type srid :: non_neg_integer()
 
   @typedoc """
   [Well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
@@ -163,8 +131,7 @@ defmodule Geometry do
   @type wkt :: String.t()
 
   @typedoc """
-  [Well-known binary]
-  (https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
+  [Well-known binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
   The binary representation of WKT.
   """
   @type wkb :: binary()
@@ -236,14 +203,14 @@ defmodule Geometry do
   in the options.
 
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:ndr`.
+  endian is returned. The default is `:xdr`.
 
   ## Examples
 
-      iex> Geometry.to_wkb(PointZ.new(1, 2, 3))
+      iex> Geometry.to_wkb(PointZ.new(1, 2, 3), endian: :ndr)
       "0101000080000000000000F03F00000000000000400000000000000840"
 
-      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711, endian: :xdr)
+      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711)
       "0020000001000012673FF00000000000004000000000000000"
   """
   @spec to_wkb(t(), opts) :: String.t()
@@ -261,10 +228,10 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.from_wkb("0101000080000000000000F03F00000000000000400000000000000840")
-      {:ok, %PointZ{x: 1.0, y: 2.0, z: 3.0}}
+      {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
 
       iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000")
-      {:ok, %Point{x: 1.0, y: 2.0}, 4711}
+      {:ok, %Point{coordinate: [1.0, 2.0]}, 4711}
   """
   @spec from_wkb(wkb()) :: {:ok, t()} | {:ok, t(), srid()} | wkb_error
   def from_wkb(wkb), do: WKB.Parser.parse(wkb)
@@ -311,10 +278,10 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.from_wkt("Point ZM (1 2 3 4)")
-      {:ok, %PointZM{x: 1, y: 2, z: 3, m: 4}}
+      {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
 
       iex> Geometry.from_wkt("SRID=42;Point (1.1 2.2)")
-      {:ok, %Point{x: 1.1, y: 2.2}, 42}
+      {:ok, %Point{coordinate: [1.1, 2.2]}, 42}
   """
   @spec from_wkt(wkt()) :: {:ok, t()} | {:ok, t(), srid()} | wkt_error
   def from_wkt(wkt), do: WKT.Parser.parse(wkt)
@@ -360,12 +327,12 @@ defmodule Geometry do
       iex> ~s({"type": "Point", "coordinates": [1, 2]})
       iex> |> Jason.decode!()
       iex> |> Geometry.from_geo_json()
-      {:ok, %Point{x: 1, y: 2}}
+      {:ok, %Point{coordinate: [1, 2]}}
 
       iex> ~s({"type": "Point", "coordinates": [1, 2, 3, 4]})
       iex> |> Jason.decode!()
       iex> |> Geometry.from_geo_json(type: :zm)
-      {:ok, %PointZM{x: 1, y: 2, z: 3, m: 4}}
+      {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
   """
   @spec from_geo_json(geo_json_term(), opts) ::
           {:ok, t() | Feature.t() | FeatureCollection.t()} | geo_json_error
@@ -386,5 +353,6 @@ defmodule Geometry do
   end
 
   @doc false
-  def default_endian, do: :ndr
+  @spec default_endian :: endian()
+  def default_endian, do: :xdr
 end

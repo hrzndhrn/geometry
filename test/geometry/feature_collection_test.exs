@@ -37,11 +37,11 @@ defmodule Geometry.FeatureCollectionTest do
                  features:
                    MapSet.new([
                      %Feature{
-                       geometry: %Geometry.PointZ{x: 1, y: 2, z: 3},
+                       geometry: %PointZ{coordinate: [1, 2, 3]},
                        properties: %{"facility" => "Hotel"}
                      },
                      %Feature{
-                       geometry: %Geometry.PointZ{x: 4, y: 3, z: 2},
+                       geometry: %PointZ{coordinate: [4, 3, 2]},
                        properties: %{"facility" => "School"}
                      }
                    ])

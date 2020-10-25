@@ -123,8 +123,6 @@ defmodule Geometry.MixProject do
   defp deps do
     [
       {:nimble_parsec, "~> 0.5 or ~> 1.0"},
-      # test and dev
-      {:benchee, "~> 1.0", only: :dev, runtime: false},
       {:benchee_dsl, "~> 0.1.0", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},

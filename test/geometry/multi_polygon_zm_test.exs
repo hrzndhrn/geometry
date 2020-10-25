@@ -2,6 +2,7 @@ defmodule Geometry.MultiPolygonZMTest do
   use ExUnit.Case, async: true
 
   alias Geometry.{
+    LineStringZM,
     MultiPolygonZM,
     PointZM,
     PolygonZM
@@ -12,14 +13,19 @@ defmodule Geometry.MultiPolygonZMTest do
   @moduletag :multi_plygon
 
   describe "to_geo_json/1" do
+    @tag :new
     test "returns geo-json-term" do
       geo_json =
         [
-          [{6, 2, 3, 4}, {8, 2, 4, 5}, {8, 4, 5, 6}, {6, 2, 3, 4}],
-          [[{60, 20, 30, 40}, {80, 20, 40, 50}, {80, 40, 50, 60}, {60, 20, 30, 40}]],
           [
-            [{1, 1, 3, 4}, {9, 1, 4, 5}, {9, 8, 5, 6}, {1, 1, 3, 4}],
-            [{6, 2, 4, 3}, {7, 2, 6, 7}, {7, 3, 3, 4}, {6, 2, 4, 3}]
+            [[60, 20, 30, 40], [80, 20, 40, 50], [80, 40, 50, 60], [60, 20, 30, 40]]
+          ],
+          [
+            [[1, 1, 3, 4], [9, 1, 4, 5], [9, 8, 5, 6], [1, 1, 3, 4]],
+            [[6, 2, 4, 3], [7, 2, 6, 7], [7, 3, 3, 4], [6, 2, 4, 3]]
+          ],
+          [
+            [[6, 2, 3, 4], [8, 2, 4, 5], [8, 4, 5, 6], [6, 2, 3, 4]]
           ]
         ]
         |> MultiPolygonZM.from_coordinates()
@@ -47,6 +53,7 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_geo_json!/1" do
+    @tag :new
     test "returns MultiPolygonZM" do
       geo_json =
         Jason.decode!("""
@@ -63,40 +70,36 @@ defmodule Geometry.MultiPolygonZMTest do
          }
         """)
 
-      multi_polygon = %MultiPolygonZM{
-        polygons:
-          MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1, y: 1, z: 3, m: 4},
-                %PointZM{x: 9, y: 1, z: 4, m: 5},
-                %PointZM{x: 9, y: 8, z: 5, m: 6},
-                %PointZM{x: 1, y: 1, z: 3, m: 4}
-              ],
-              interiors: [
-                [
-                  %PointZM{x: 6, y: 2, z: 4, m: 3},
-                  %PointZM{x: 7, y: 2, z: 6, m: 7},
-                  %PointZM{x: 7, y: 3, z: 3, m: 4},
-                  %PointZM{x: 6, y: 2, z: 4, m: 3}
-                ]
-              ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6, y: 2, z: 3, m: 4},
-                %PointZM{x: 8, y: 2, z: 4, m: 5},
-                %PointZM{x: 8, y: 4, z: 5, m: 6},
-                %PointZM{x: 6, y: 2, z: 3, m: 4}
-              ],
-              interiors: []
-            }
+      multi_polygon =
+        MultiPolygonZM.new([
+          PolygonZM.new([
+            LineStringZM.new([
+              PointZM.new(1, 1, 3, 4),
+              PointZM.new(9, 1, 4, 5),
+              PointZM.new(9, 8, 5, 6),
+              PointZM.new(1, 1, 3, 4)
+            ]),
+            LineStringZM.new([
+              PointZM.new(6, 2, 4, 3),
+              PointZM.new(7, 2, 6, 7),
+              PointZM.new(7, 3, 3, 4),
+              PointZM.new(6, 2, 4, 3)
+            ])
+          ]),
+          PolygonZM.new([
+            LineStringZM.new([
+              PointZM.new(6, 2, 3, 4),
+              PointZM.new(8, 2, 4, 5),
+              PointZM.new(8, 4, 5, 6),
+              PointZM.new(6, 2, 3, 4)
+            ])
           ])
-      }
+        ])
 
       assert MultiPolygonZM.from_geo_json!(geo_json) == multi_polygon
     end
 
+    @tag :new
     test "raises an error for an invalid geo-json-term" do
       message = "type not found"
 
@@ -107,6 +110,7 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_wkt/1" do
+    @tag :new
     test "returns MultiPolygonZM" do
       wkt = """
       MULTIPOLYGON ZM (
@@ -122,33 +126,30 @@ defmodule Geometry.MultiPolygonZMTest do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 20, y: 35, z: 20, m: 10},
-                %PointZM{x: 10, y: 30, z: 10, m: 20},
-                %PointZM{x: 10, y: 10, z: 30, m: 15},
-                %PointZM{x: 30, y: 5, z: 10, m: 15},
-                %PointZM{x: 45, y: 20, z: 10, m: 16},
-                %PointZM{x: 20, y: 35, z: 20, m: 10}
+            [
+              [
+                [20, 35, 20, 10],
+                [10, 30, 10, 20],
+                [10, 10, 30, 15],
+                [30, 5, 10, 15],
+                [45, 20, 10, 16],
+                [20, 35, 20, 10]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 30, y: 20, z: 10, m: 15},
-                  %PointZM{x: 20, y: 15, z: 20, m: 10},
-                  %PointZM{x: 20, y: 25, z: 15, m: 25},
-                  %PointZM{x: 30, y: 20, z: 10, m: 15}
-                ]
+              [
+                [30, 20, 10, 15],
+                [20, 15, 20, 10],
+                [20, 25, 15, 25],
+                [30, 20, 10, 15]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 40, y: 40, z: 10, m: 20},
-                %PointZM{x: 20, y: 45, z: 20, m: 10},
-                %PointZM{x: 45, y: 30, z: 15, m: 30},
-                %PointZM{x: 40, y: 40, z: 10, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 10, 20],
+                [20, 45, 20, 10],
+                [45, 30, 15, 30],
+                [40, 40, 10, 20]
+              ]
+            ]
           ])
       }
 
@@ -157,6 +158,7 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_wkt!/1" do
+    @tag :new
     test "returns MultiPolygonZM" do
       wkt = """
        MULTIPOLYGON ZM (
@@ -172,39 +174,37 @@ defmodule Geometry.MultiPolygonZMTest do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 20, y: 35, z: 20, m: 10},
-                %PointZM{x: 10, y: 30, z: 10, m: 20},
-                %PointZM{x: 10, y: 10, z: 30, m: 15},
-                %PointZM{x: 30, y: 5, z: 10, m: 15},
-                %PointZM{x: 45, y: 20, z: 10, m: 16},
-                %PointZM{x: 20, y: 35, z: 20, m: 10}
+            [
+              [
+                [20, 35, 20, 10],
+                [10, 30, 10, 20],
+                [10, 10, 30, 15],
+                [30, 5, 10, 15],
+                [45, 20, 10, 16],
+                [20, 35, 20, 10]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 30, y: 20, z: 10, m: 15},
-                  %PointZM{x: 20, y: 15, z: 20, m: 10},
-                  %PointZM{x: 20, y: 25, z: 15, m: 25},
-                  %PointZM{x: 30, y: 20, z: 10, m: 15}
-                ]
+              [
+                [30, 20, 10, 15],
+                [20, 15, 20, 10],
+                [20, 25, 15, 25],
+                [30, 20, 10, 15]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 40, y: 40, z: 10, m: 20},
-                %PointZM{x: 20, y: 45, z: 20, m: 10},
-                %PointZM{x: 45, y: 30, z: 15, m: 30},
-                %PointZM{x: 40, y: 40, z: 10, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 10, 20],
+                [20, 45, 20, 10],
+                [45, 30, 15, 30],
+                [40, 40, 10, 20]
+              ]
+            ]
           ])
       }
 
       assert MultiPolygonZM.from_wkt!(wkt) == multi_polygon
     end
 
+    @tag :new
     test "returns MultiPolygonZM with SRID" do
       wkt = """
        SRID=1234;MULTIPOLYGON ZM (
@@ -220,39 +220,37 @@ defmodule Geometry.MultiPolygonZMTest do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 20, y: 35, z: 20, m: 10},
-                %PointZM{x: 10, y: 30, z: 10, m: 20},
-                %PointZM{x: 10, y: 10, z: 30, m: 15},
-                %PointZM{x: 30, y: 5, z: 10, m: 15},
-                %PointZM{x: 45, y: 20, z: 10, m: 16},
-                %PointZM{x: 20, y: 35, z: 20, m: 10}
+            [
+              [
+                [20, 35, 20, 10],
+                [10, 30, 10, 20],
+                [10, 10, 30, 15],
+                [30, 5, 10, 15],
+                [45, 20, 10, 16],
+                [20, 35, 20, 10]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 30, y: 20, z: 10, m: 15},
-                  %PointZM{x: 20, y: 15, z: 20, m: 10},
-                  %PointZM{x: 20, y: 25, z: 15, m: 25},
-                  %PointZM{x: 30, y: 20, z: 10, m: 15}
-                ]
+              [
+                [30, 20, 10, 15],
+                [20, 15, 20, 10],
+                [20, 25, 15, 25],
+                [30, 20, 10, 15]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 40, y: 40, z: 10, m: 20},
-                %PointZM{x: 20, y: 45, z: 20, m: 10},
-                %PointZM{x: 45, y: 30, z: 15, m: 30},
-                %PointZM{x: 40, y: 40, z: 10, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 10, 20],
+                [20, 45, 20, 10],
+                [45, 30, 15, 30],
+                [40, 40, 10, 20]
+              ]
+            ]
           ])
       }
 
       assert MultiPolygonZM.from_wkt!(wkt) == {multi_polygon, 1234}
     end
 
+    @tag :new
     test "raises an exception for invalid WKT" do
       message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Pluto'"
 
@@ -263,37 +261,35 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "to_wkt/2" do
+    @tag :new
     test "returns wkt-string" do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 20, y: 35, z: 20, m: 10},
-                %PointZM{x: 10, y: 30, z: 10, m: 20},
-                %PointZM{x: 10, y: 10, z: 30, m: 15},
-                %PointZM{x: 30, y: 5, z: 10, m: 15},
-                %PointZM{x: 45, y: 20, z: 10, m: 16},
-                %PointZM{x: 20, y: 35, z: 20, m: 10}
+            [
+              [
+                [20, 35, 20, 10],
+                [10, 30, 10, 20],
+                [10, 10, 30, 15],
+                [30, 5, 10, 15],
+                [45, 20, 10, 16],
+                [20, 35, 20, 10]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 30, y: 20, z: 10, m: 15},
-                  %PointZM{x: 20, y: 15, z: 20, m: 10},
-                  %PointZM{x: 20, y: 25, z: 15, m: 25},
-                  %PointZM{x: 30, y: 20, z: 10, m: 15}
-                ]
+              [
+                [30, 20, 10, 15],
+                [20, 15, 20, 10],
+                [20, 25, 15, 25],
+                [30, 20, 10, 15]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 40, y: 40, z: 10, m: 20},
-                %PointZM{x: 20, y: 45, z: 20, m: 10},
-                %PointZM{x: 45, y: 30, z: 15, m: 30},
-                %PointZM{x: 40, y: 40, z: 10, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 10, 20],
+                [20, 45, 20, 10],
+                [45, 30, 15, 30],
+                [40, 40, 10, 20]
+              ]
+            ]
           ])
       }
 
@@ -320,6 +316,7 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_wkb/1" do
+    @tag :new
     test "returns a MultiPolygonZM (ndr)" do
       wkb = """
       01\
@@ -351,31 +348,28 @@ defmodule Geometry.MultiPolygonZMTest do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0},
-                %PointZM{x: 9.0, y: 1.0, z: 4.0, m: 5.0},
-                %PointZM{x: 9.0, y: 8.0, z: 5.0, m: 6.0},
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0},
-                  %PointZM{x: 7.0, y: 2.0, z: 6.0, m: 7.0},
-                  %PointZM{x: 7.0, y: 3.0, z: 3.0, m: 4.0},
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0},
-                %PointZM{x: 8.0, y: 2.0, z: 4.0, m: 5.0},
-                %PointZM{x: 8.0, y: 4.0, z: 5.0, m: 6.0},
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
           ])
       }
 
@@ -384,47 +378,46 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "to_wkb/2" do
+    @tag :new
     test "returns WKB for PolygonZM" do
       wkb_start = "01060000C00200000001030000C0"
 
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0},
-                %PointZM{x: 9.0, y: 1.0, z: 4.0, m: 5.0},
-                %PointZM{x: 9.0, y: 8.0, z: 5.0, m: 6.0},
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0},
-                  %PointZM{x: 7.0, y: 2.0, z: 6.0, m: 7.0},
-                  %PointZM{x: 7.0, y: 3.0, z: 3.0, m: 4.0},
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0},
-                %PointZM{x: 8.0, y: 2.0, z: 4.0, m: 5.0},
-                %PointZM{x: 8.0, y: 4.0, z: 5.0, m: 6.0},
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
           ])
       }
 
-      assert result = MultiPolygonZM.to_wkb(multi_polygon)
+      assert result = MultiPolygonZM.to_wkb(multi_polygon, endian: :ndr)
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygonZM.from_wkb!(result) == multi_polygon
     end
   end
 
   describe "from_wkb!/1" do
+    @tag :new
     test "returns a MultiPolygonZM (ndr)" do
       wkb = """
       01\
@@ -456,31 +449,28 @@ defmodule Geometry.MultiPolygonZMTest do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0},
-                %PointZM{x: 9.0, y: 1.0, z: 4.0, m: 5.0},
-                %PointZM{x: 9.0, y: 8.0, z: 5.0, m: 6.0},
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0},
-                  %PointZM{x: 7.0, y: 2.0, z: 6.0, m: 7.0},
-                  %PointZM{x: 7.0, y: 3.0, z: 3.0, m: 4.0},
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0},
-                %PointZM{x: 8.0, y: 2.0, z: 4.0, m: 5.0},
-                %PointZM{x: 8.0, y: 4.0, z: 5.0, m: 6.0},
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
           ])
       }
 
@@ -500,13 +490,15 @@ defmodule Geometry.MultiPolygonZMTest do
     multi_polygon =
       MultiPolygonZM.new([
         PolygonZM.new([
-          PointZM.new(11, 12, 13, 14),
-          PointZM.new(21, 22, 23, 24),
-          PointZM.new(31, 32, 33, 34),
-          PointZM.new(41, 42, 43, 44)
+          LineStringZM.new([
+            PointZM.new(11, 12, 13, 14),
+            PointZM.new(21, 22, 23, 24),
+            PointZM.new(31, 32, 33, 34),
+            PointZM.new(41, 42, 43, 44)
+          ])
         ])
       ])
 
-    assert [%PolygonZM{}] = Enum.slice(multi_polygon, 0, 1)
+    assert [_polygon] = Enum.slice(multi_polygon, 0, 1)
   end
 end

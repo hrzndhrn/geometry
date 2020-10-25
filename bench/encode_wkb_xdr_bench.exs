@@ -1,6 +1,9 @@
 defmodule EncodeWkbXdrBench do
   use BencheeDsl.Benchmark
 
+  alias Geometry.{Point, Hex}
+  alias Geo.Utils
+
   @endian :xdr
 
   formatter(Benchee.Formatters.Markdown,
@@ -17,22 +20,25 @@ defmodule EncodeWkbXdrBench do
     """
   }
 
-  inputs(%{
+  inputs %{
     "Point" => decode!(@geometries.point),
     "LineString" => decode!(@geometries.line_string),
     "LineString (long)" => decode!(@geometries.long_line_string),
     "Polygon" => decode!(@geometries.polygon)
-  })
+  }
 
-  job geometry({geometry, _geo}) do
+  job geometry({_geo, geometry}) do
     Geometry.to_wkb(geometry, endian: @endian)
   end
 
-  job geo({_geometry, geo}) do
+  job geo({geo, _geometry}) do
     Geo.WKB.encode!(geo, @endian)
   end
 
   defp decode!(wkt) do
-    {Geometry.from_wkt!(wkt), Geo.WKT.decode!(wkt)}
+    {
+      Geo.WKT.decode!(wkt),
+      Geometry.from_wkt!(wkt)
+    }
   end
 end

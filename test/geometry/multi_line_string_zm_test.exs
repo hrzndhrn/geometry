@@ -12,8 +12,8 @@ defmodule Geometry.MultiLineStringZMTest do
       geo_json =
         MultiLineStringZM.to_geo_json(
           MultiLineStringZM.from_coordinates([
-            [{-1, 1, 1, 1}, {2, 2, 2, 2}, {-3, 3, 3, 3}],
-            [{-10, 10, 10, 10}, {-20, 20, 20, 20}]
+            [[-1, 1, 1, 1], [2, 2, 2, 2], [-3, 3, 3, 3]],
+            [[-10, 10, 10, 10], [-20, 20, 20, 20]]
           ])
         )
 
@@ -42,24 +42,18 @@ defmodule Geometry.MultiLineStringZMTest do
            }
         """)
 
-      multi_line_string = %MultiLineStringZM{
-        line_strings:
-          MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: -1, y: 1, z: 1, m: 1},
-                %PointZM{x: 2, y: 2, z: 2, m: 2},
-                %PointZM{x: -3, y: 3, z: 3, m: 3}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: -10, y: 10, z: 10, m: 10},
-                %PointZM{x: -20, y: 20, z: 20, m: 20}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(-1, 1, 1, 1),
+            PointZM.new(2, 2, 2, 2),
+            PointZM.new(-3, 3, 3, 3)
+          ]),
+          LineStringZM.new([
+            PointZM.new(-10, 10, 10, 10),
+            PointZM.new(-20, 20, 20, 20)
           ])
-      }
+        ])
 
       assert MultiLineStringZM.from_geo_json!(geo_json) == multi_line_string
     end
@@ -83,8 +77,8 @@ defmodule Geometry.MultiLineStringZMTest do
       wkt =
         MultiLineStringZM.to_wkt(
           MultiLineStringZM.new([
-            [PointZM.new(7.1, 8.1, 1.1, 1), PointZM.new(9.2, 5.2, 2.2, 2)],
-            [PointZM.new(5.5, 9.2, 3.1, 1), PointZM.new(1.2, 3.2, 4.2, 2)]
+            LineStringZM.new([PointZM.new(7.1, 8.1, 1.1, 1), PointZM.new(9.2, 5.2, 2.2, 2)]),
+            LineStringZM.new([PointZM.new(5.5, 9.2, 3.1, 1), PointZM.new(1.2, 3.2, 4.2, 2)])
           ])
         )
 
@@ -93,12 +87,13 @@ defmodule Geometry.MultiLineStringZMTest do
       assert wkt =~ "(7.1 8.1 1.1 1, 9.2 5.2 2.2 2)"
     end
 
+    @tag :only
     test "returns WKT with SRID for a MultiLineStringZM" do
       wkt =
         MultiLineStringZM.to_wkt(
           MultiLineStringZM.new([
-            [PointZM.new(7.1, 8.1, 1.1, 1), PointZM.new(9.2, 5.2, 2.2, 2)],
-            [PointZM.new(5.5, 9.2, 3.1, 1), PointZM.new(1.2, 3.2, 4.2, 2)]
+            LineStringZM.new([PointZM.new(7.1, 8.1, 1.1, 1), PointZM.new(9.2, 5.2, 2.2, 2)]),
+            LineStringZM.new([PointZM.new(5.5, 9.2, 3.1, 1), PointZM.new(1.2, 3.2, 4.2, 2)])
           ]),
           srid: 555
         )
@@ -121,19 +116,15 @@ defmodule Geometry.MultiLineStringZMTest do
       multi_line_string = %MultiLineStringZM{
         line_strings:
           MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: 40, y: 30, z: 10, m: 20},
-                %PointZM{x: 30, y: 30, z: 25, m: 30}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: 10, y: 20, z: 10, m: 45},
-                %PointZM{x: 20, y: 10, z: 35, m: 15},
-                %PointZM{x: 20, y: 40, z: 10, m: 15}
-              ]
-            }
+            [
+              [40, 30, 10, 20],
+              [30, 30, 25, 30]
+            ],
+            [
+              [10, 20, 10, 45],
+              [20, 10, 35, 15],
+              [20, 40, 10, 15]
+            ]
           ])
       }
 
@@ -151,19 +142,15 @@ defmodule Geometry.MultiLineStringZMTest do
       multi_line_string = %MultiLineStringZM{
         line_strings:
           MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: 40, y: 30, z: 10, m: 20},
-                %PointZM{x: 30, y: 30, z: 25, m: 30}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: 10, y: 20, z: 10, m: 45},
-                %PointZM{x: 20, y: 10, z: 35, m: 15},
-                %PointZM{x: 20, y: 40, z: 10, m: 15}
-              ]
-            }
+            [
+              [40, 30, 10, 20],
+              [30, 30, 25, 30]
+            ],
+            [
+              [10, 20, 10, 45],
+              [20, 10, 35, 15],
+              [20, 40, 10, 15]
+            ]
           ])
       }
 
@@ -186,19 +173,15 @@ defmodule Geometry.MultiLineStringZMTest do
       multi_line_string = %MultiLineStringZM{
         line_strings:
           MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: 40.0, y: 40.0, z: 30.0, m: 20.0},
-                %PointZM{x: 30.0, y: 30.0, z: 40.0, m: 50.0}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: 10.0, y: 10.0, z: 20.0, m: 30.0},
-                %PointZM{x: 20.0, y: 20.0, z: 40.0, m: 50.0},
-                %PointZM{x: 10.0, y: 40.0, z: 10.0, m: 20.0}
-              ]
-            }
+            [
+              [40.0, 40.0, 30.0, 20.0],
+              [30.0, 30.0, 40.0, 50.0]
+            ],
+            [
+              [10.0, 10.0, 20.0, 30.0],
+              [20.0, 20.0, 40.0, 50.0],
+              [10.0, 40.0, 10.0, 20.0]
+            ]
           ])
       }
 
@@ -229,24 +212,18 @@ defmodule Geometry.MultiLineStringZMTest do
       403E000000000000403E00000000000040440000000000004049000000000000\
       """
 
-      multi_line_string = %MultiLineStringZM{
-        line_strings:
-          MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: 40.0, y: 40.0, z: 30.0, m: 20.0},
-                %PointZM{x: 30.0, y: 30.0, z: 40.0, m: 50.0}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: 10.0, y: 10.0, z: 20.0, m: 30.0},
-                %PointZM{x: 20.0, y: 20.0, z: 40.0, m: 50.0},
-                %PointZM{x: 10.0, y: 40.0, z: 10.0, m: 20.0}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(40.0, 40.0, 30.0, 20.0),
+            PointZM.new(30.0, 30.0, 40.0, 50.0)
+          ]),
+          LineStringZM.new([
+            PointZM.new(10.0, 10.0, 20.0, 30.0),
+            PointZM.new(20.0, 20.0, 40.0, 50.0),
+            PointZM.new(10.0, 40.0, 10.0, 20.0)
           ])
-      }
+        ])
 
       assert MultiLineStringZM.from_wkb(wkb) == {:ok, multi_line_string}
     end
@@ -271,24 +248,18 @@ defmodule Geometry.MultiLineStringZMTest do
       403E000000000000403E00000000000040440000000000004049000000000000\
       """
 
-      multi_line_string = %MultiLineStringZM{
-        line_strings:
-          MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: 40.0, y: 40.0, z: 30.0, m: 20.0},
-                %PointZM{x: 30.0, y: 30.0, z: 40.0, m: 50.0}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: 10.0, y: 10.0, z: 20.0, m: 30.0},
-                %PointZM{x: 20.0, y: 20.0, z: 40.0, m: 50.0},
-                %PointZM{x: 10.0, y: 40.0, z: 10.0, m: 20.0}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(40.0, 40.0, 30.0, 20.0),
+            PointZM.new(30.0, 30.0, 40.0, 50.0)
+          ]),
+          LineStringZM.new([
+            PointZM.new(10.0, 10.0, 20.0, 30.0),
+            PointZM.new(20.0, 20.0, 40.0, 50.0),
+            PointZM.new(10.0, 40.0, 10.0, 20.0)
           ])
-      }
+        ])
 
       assert MultiLineStringZM.from_wkb!(wkb) == multi_line_string
     end
@@ -316,6 +287,6 @@ defmodule Geometry.MultiLineStringZMTest do
         ])
       ])
 
-    assert [%LineStringZM{}] = Enum.slice(multi_line_string, 1, 1)
+    assert [_line_string] = Enum.slice(multi_line_string, 1, 1)
   end
 end

@@ -4,6 +4,8 @@ defmodule Geometry.WKT do
   alias Geometry.WKT.Parser
 
   @spec to_ewkt(String.t(), keyword()) :: String.t()
+  def to_ewkt(wkt, []), do: wkt
+
   def to_ewkt(wkt, opts) when is_list(opts) do
     opts
     |> Keyword.get(:srid)

@@ -15,8 +15,8 @@ defmodule Geometry.MultiLineStringMTest do
       geo_json =
         MultiLineStringM.to_geo_json(
           MultiLineStringM.from_coordinates([
-            [{-1, 1, 1}, {2, 2, 2}, {-3, 3, 3}],
-            [{-10, 10, 10}, {-20, 20, 20}]
+            [[-1, 1, 1], [2, 2, 2], [-3, 3, 3]],
+            [[-10, 10, 10], [-20, 20, 20]]
           ])
         )
 
@@ -45,24 +45,18 @@ defmodule Geometry.MultiLineStringMTest do
            }
         """)
 
-      multi_line_string = %MultiLineStringM{
-        line_strings:
-          MapSet.new([
-            %LineStringM{
-              points: [
-                %PointM{x: -1, y: 1, m: 1},
-                %PointM{x: 2, y: 2, m: 2},
-                %PointM{x: -3, y: 3, m: 3}
-              ]
-            },
-            %LineStringM{
-              points: [
-                %PointM{x: -10, y: 10, m: 10},
-                %PointM{x: -20, y: 20, m: 20}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(-1, 1, 1),
+            PointM.new(2, 2, 2),
+            PointM.new(-3, 3, 3)
+          ]),
+          LineStringM.new([
+            PointM.new(-10, 10, 10),
+            PointM.new(-20, 20, 20)
           ])
-      }
+        ])
 
       assert MultiLineStringM.from_geo_json!(geo_json) == multi_line_string
     end
@@ -86,8 +80,8 @@ defmodule Geometry.MultiLineStringMTest do
       wkt =
         MultiLineStringM.to_wkt(
           MultiLineStringM.new([
-            [PointM.new(7.1, 8.1, 1), PointM.new(9.2, 5.2, 2)],
-            [PointM.new(5.5, 9.2, 1), PointM.new(1.2, 3.2, 2)]
+            LineStringM.new([PointM.new(7.1, 8.1, 1), PointM.new(9.2, 5.2, 2)]),
+            LineStringM.new([PointM.new(5.5, 9.2, 1), PointM.new(1.2, 3.2, 2)])
           ])
         )
 
@@ -96,12 +90,13 @@ defmodule Geometry.MultiLineStringMTest do
       assert wkt =~ "(7.1 8.1 1, 9.2 5.2 2)"
     end
 
+    @tag :only
     test "returns WKT with SRID for a MultiLineStringM" do
       wkt =
         MultiLineStringM.to_wkt(
           MultiLineStringM.new([
-            [PointM.new(7.1, 8.1, 1), PointM.new(9.2, 5.2, 2)],
-            [PointM.new(5.5, 9.2, 1), PointM.new(1.2, 3.2, 2)]
+            LineStringM.new([PointM.new(7.1, 8.1, 1), PointM.new(9.2, 5.2, 2)]),
+            LineStringM.new([PointM.new(5.5, 9.2, 1), PointM.new(1.2, 3.2, 2)])
           ]),
           srid: 555
         )
@@ -124,19 +119,15 @@ defmodule Geometry.MultiLineStringMTest do
       multi_line_string = %MultiLineStringM{
         line_strings:
           MapSet.new([
-            %LineStringM{
-              points: [
-                %PointM{x: 40, y: 30, m: 20},
-                %PointM{x: 30, y: 30, m: 30}
-              ]
-            },
-            %LineStringM{
-              points: [
-                %PointM{x: 10, y: 20, m: 45},
-                %PointM{x: 20, y: 10, m: 15},
-                %PointM{x: 20, y: 40, m: 15}
-              ]
-            }
+            [
+              [40, 30, 20],
+              [30, 30, 30]
+            ],
+            [
+              [10, 20, 45],
+              [20, 10, 15],
+              [20, 40, 15]
+            ]
           ])
       }
 
@@ -154,19 +145,15 @@ defmodule Geometry.MultiLineStringMTest do
       multi_line_string = %MultiLineStringM{
         line_strings:
           MapSet.new([
-            %LineStringM{
-              points: [
-                %PointM{x: 40, y: 30, m: 20},
-                %PointM{x: 30, y: 30, m: 30}
-              ]
-            },
-            %LineStringM{
-              points: [
-                %PointM{x: 10, y: 20, m: 45},
-                %PointM{x: 20, y: 10, m: 15},
-                %PointM{x: 20, y: 40, m: 15}
-              ]
-            }
+            [
+              [40, 30, 20],
+              [30, 30, 30]
+            ],
+            [
+              [10, 20, 45],
+              [20, 10, 15],
+              [20, 40, 15]
+            ]
           ])
       }
 
@@ -189,19 +176,15 @@ defmodule Geometry.MultiLineStringMTest do
       multi_line_string = %MultiLineStringM{
         line_strings:
           MapSet.new([
-            %LineStringM{
-              points: [
-                %PointM{x: 40.0, y: 40.0, m: 20.0},
-                %PointM{x: 30.0, y: 30.0, m: 50.0}
-              ]
-            },
-            %LineStringM{
-              points: [
-                %PointM{x: 10.0, y: 10.0, m: 30.0},
-                %PointM{x: 20.0, y: 20.0, m: 50.0},
-                %PointM{x: 10.0, y: 40.0, m: 20.0}
-              ]
-            }
+            [
+              [40.0, 40.0, 20.0],
+              [30.0, 30.0, 50.0]
+            ],
+            [
+              [10.0, 10.0, 30.0],
+              [20.0, 20.0, 50.0],
+              [10.0, 40.0, 20.0]
+            ]
           ])
       }
 
@@ -232,24 +215,18 @@ defmodule Geometry.MultiLineStringMTest do
       403E000000000000403E0000000000004049000000000000\
       """
 
-      multi_line_string = %MultiLineStringM{
-        line_strings:
-          MapSet.new([
-            %LineStringM{
-              points: [
-                %PointM{x: 40.0, y: 40.0, m: 20.0},
-                %PointM{x: 30.0, y: 30.0, m: 50.0}
-              ]
-            },
-            %LineStringM{
-              points: [
-                %PointM{x: 10.0, y: 10.0, m: 30.0},
-                %PointM{x: 20.0, y: 20.0, m: 50.0},
-                %PointM{x: 10.0, y: 40.0, m: 20.0}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(40.0, 40.0, 20.0),
+            PointM.new(30.0, 30.0, 50.0)
+          ]),
+          LineStringM.new([
+            PointM.new(10.0, 10.0, 30.0),
+            PointM.new(20.0, 20.0, 50.0),
+            PointM.new(10.0, 40.0, 20.0)
           ])
-      }
+        ])
 
       assert MultiLineStringM.from_wkb(wkb) == {:ok, multi_line_string}
     end
@@ -274,24 +251,18 @@ defmodule Geometry.MultiLineStringMTest do
       403E000000000000403E0000000000004049000000000000\
       """
 
-      multi_line_string = %MultiLineStringM{
-        line_strings:
-          MapSet.new([
-            %LineStringM{
-              points: [
-                %PointM{x: 40.0, y: 40.0, m: 20.0},
-                %PointM{x: 30.0, y: 30.0, m: 50.0}
-              ]
-            },
-            %LineStringM{
-              points: [
-                %PointM{x: 10.0, y: 10.0, m: 30.0},
-                %PointM{x: 20.0, y: 20.0, m: 50.0},
-                %PointM{x: 10.0, y: 40.0, m: 20.0}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(40.0, 40.0, 20.0),
+            PointM.new(30.0, 30.0, 50.0)
+          ]),
+          LineStringM.new([
+            PointM.new(10.0, 10.0, 30.0),
+            PointM.new(20.0, 20.0, 50.0),
+            PointM.new(10.0, 40.0, 20.0)
           ])
-      }
+        ])
 
       assert MultiLineStringM.from_wkb!(wkb) == multi_line_string
     end
@@ -319,6 +290,6 @@ defmodule Geometry.MultiLineStringMTest do
         ])
       ])
 
-    assert [%LineStringM{}] = Enum.slice(multi_line_string, 1, 1)
+    assert [_line_string] = Enum.slice(multi_line_string, 1, 1)
   end
 end

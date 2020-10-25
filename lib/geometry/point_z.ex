@@ -7,13 +7,11 @@ defmodule Geometry.PointZ do
 
   import Geometry.Guards
 
-  defstruct [:x, :y, :z]
+  defstruct [:coordinate]
 
   @blank " "
 
-  @type t ::
-          %PointZ{x: Geometry.x(), y: Geometry.y(), z: Geometry.z()}
-          | %PointZ{x: nil, y: nil, z: nil}
+  @type t :: %PointZ{coordinate: Geometry.coordinate() | nil}
 
   @doc """
   Creates an empty `PointZ`.
@@ -21,7 +19,7 @@ defmodule Geometry.PointZ do
   ## Examples
 
       iex> PointZ.new()
-      %PointZ{x: nil, y: nil, z: nil}
+      %PointZ{coordinate: nil}
   """
   @spec new :: t()
   def new, do: %PointZ{}
@@ -32,14 +30,12 @@ defmodule Geometry.PointZ do
   ## Examples
 
       iex> PointZ.new([1.5, -2.1, 3])
-      %PointZ{x: 1.5, y: -2.1, z: 3}
-
-      iex> PointZ.new({4, 5, 6})
-      %PointZ{x: 4, y: 5, z: 6}
+      %PointZ{coordinate: [1.5, -2.1, 3]}
   """
-  @spec new(Geometry.coordinate_z()) :: t()
-  def new([x, y, z] = _coordinate), do: new(x, y, z)
-  def new({x, y, z} = _coordinate), do: new(x, y, z)
+  @spec new(Geometry.coordinate()) :: t()
+  def new([x, y, z] = coordinate) when is_coordinate(x, y, z) do
+    %PointZ{coordinate: coordinate}
+  end
 
   @doc """
   Creates a `PointZ` from the given `x`, `y`, and `z`.
@@ -47,10 +43,12 @@ defmodule Geometry.PointZ do
   ## Examples
 
       iex> PointZ.new(-1.1, 2.2, 3)
-      %PointZ{x: -1.1, y: 2.2, z: 3}
+      %PointZ{coordinate: [-1.1, 2.2, 3]}
   """
-  @spec new(Geometry.x(), Geometry.y(), Geometry.z()) :: t()
-  def new(x, y, z) when is_coordinate(x, y, z), do: %PointZ{x: x, y: y, z: z}
+  @spec new(number(), number(), number()) :: t()
+  def new(x, y, z) when is_coordinate(x, y, z) do
+    %PointZ{coordinate: [x, y, z]}
+  end
 
   @doc """
   Returns `true` if the given `PointZ` is empty.
@@ -64,28 +62,26 @@ defmodule Geometry.PointZ do
       false
   """
   @spec empty?(t()) :: boolean
-  def empty?(%PointZ{x: nil, y: nil, z: nil} = _point), do: true
-  def empty?(%PointZ{x: x, y: y, z: z} = _point) when is_coordinate(x, y, z), do: false
+  def empty?(%PointZ{coordinate: coordinate}), do: is_nil(coordinate)
 
   @doc """
   Creates a `PointZ` from the given coordinate.
 
   ## Examples
-
-      iex> PointZ.from_coordinates([{-1, 1, 1}])
-      %PointZ{x: -1, y: 1, z: 1}
+      iex> PointZ.from_coordinates([[-1, 1, 1]])
+      %PointZ{coordinate: [-1, 1, 1]}
   """
-  @spec from_coordinates([Geometry.coordinate_z() | {nil, nil, nil}]) :: t()
-  def from_coordinates([{nil, nil, nil}] = _coordinates) do
+  @spec from_coordinates(Geometry.coordinate() | [nil, ...]) :: t()
+  def from_coordinates([[x, y, z] = coordinate]) when is_coordinate(x, y, z) do
+    %PointZ{coordinate: coordinate}
+  end
+
+  def from_coordinates([x, y, z] = coordinate) when is_coordinate(x, y, z) do
+    %PointZ{coordinate: coordinate}
+  end
+
+  def from_coordinates([nil, nil, nil]) do
     %PointZ{}
-  end
-
-  def from_coordinates([{x, y, z}] = _coordinates) when is_coordinate(x, y, z) do
-    %PointZ{x: x, y: y, z: z}
-  end
-
-  def from_coordinates([x, y, z] = _coordinates) when is_coordinate(x, y, z) do
-    %PointZ{x: x, y: y, z: z}
   end
 
   @doc """
@@ -105,30 +101,23 @@ defmodule Geometry.PointZ do
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
-  def to_wkt(%PointZ{} = point, opts \\ []) do
-    point
-    |> PointZ.empty?()
-    |> case do
-      true -> "EMPTY"
-      false -> <<"(", to_wkt_coordinate(point)::binary(), ")">>
-    end
-    |> to_wkt_point()
-    |> WKT.to_ewkt(opts)
+  def to_wkt(%PointZ{coordinate: coordinate}, opts \\ []) do
+    WKT.to_ewkt(<<"Point Z ", to_wkt_point(coordinate)::binary()>>, opts)
   end
 
   @doc """
   Returns an `:ok` tuple with the `PointZ` from the given WKT string. Otherwise
   returns an `:error` tuple.
 
-  If the geometry contains a SRID the id is added to the tuple.
+  If the geometry contains an SRID the id is added to the tuple.
 
   ## Examples
 
       iex> PointZ.from_wkt("Point Z (-5.1 7.8 9.9)")
-      {:ok, %PointZ{x: -5.1, y: 7.8, z: 9.9}}
+      {:ok, %PointZ{coordinate: [-5.1, 7.8, 9.9]}}
 
       iex> PointZ.from_wkt("SRID=7219;Point Z (-5.1 7.8 9.9)")
-      {:ok, %PointZ{x: -5.1, y: 7.8, z: 9.9}, 7219}
+      {:ok, %PointZ{coordinate: [-5.1, 7.8, 9.9]}, 7219}
 
       iex> PointZ.from_wkt("Point Z EMPTY")
       {:ok, %PointZ{}}
@@ -158,10 +147,10 @@ defmodule Geometry.PointZ do
       %{"type" => "Point", "coordinates" => [1, 2, 3]}
   """
   @spec to_geo_json(t()) :: Geometry.geo_json_term()
-  def to_geo_json(%PointZ{x: x, y: y, z: z}) when is_coordinate(x, y, z) do
+  def to_geo_json(%PointZ{coordinate: coordinate}) when not is_nil(coordinate) do
     %{
       "type" => "Point",
-      "coordinates" => [x, y, z]
+      "coordinates" => coordinate
     }
   end
 
@@ -174,13 +163,14 @@ defmodule Geometry.PointZ do
       iex> ~s({"type": "Point", "coordinates": [1.1, 2.2, 3.3]})
       iex> |> Jason.decode!()
       iex> |> PointZ.from_geo_json()
-      {:ok, %PointZ{x: 1.1, y: 2.2, z: 3.3}}
+      {:ok, %PointZ{coordinate: [1.1, 2.2, 3.3]}}
   """
   @spec from_geo_json(Geometry.geo_json_term()) :: {:ok, t()} | Geometry.geo_json_error()
   def from_geo_json(json), do: GeoJson.to_point(json, PointZ)
 
   @doc """
-  The same as `from_geo_json/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_geo_json/1`, but raises a `Geometry.Error` exception if it
+  fails.
   """
   @spec from_geo_json!(Geometry.geo_json_term()) :: t()
   def from_geo_json!(json) do
@@ -196,17 +186,20 @@ defmodule Geometry.PointZ do
   With option `:srid` an EWKB representation with the SRID is returned.
 
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:ndr`.
+  endian is returned. The default is `:xdr`.
 
   ## Examples
 
-      iex> PointZ.to_wkb(PointZ.new(), endian: :xdr)
+      iex> PointZ.to_wkb(PointZ.new())
       "00800000017FF80000000000007FF80000000000007FF8000000000000"
+
+      iex> PointZ.to_wkb(PointZ.new(), endian: :ndr)
+      "0101000080000000000000F87F000000000000F87F000000000000F87F"
 
       iex> PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3), endian: :xdr)
       "00800000013FF199999999999A400199999999999A400A666666666666"
 
-      iex> PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3))
+      iex> PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3), endian: :ndr)
       "01010000809A9999999999F13F9A999999999901406666666666660A40"
 
       iex> PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3), srid: 4711, endian: :xdr)
@@ -214,16 +207,11 @@ defmodule Geometry.PointZ do
   """
   @spec to_wkb(t(), opts) :: Geometry.wkb()
         when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
-  def to_wkb(%PointZ{} = point, opts \\ []) do
+  def to_wkb(%PointZ{coordinate: coordinate}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
 
-    <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_point(point, endian)::binary()
-    >>
+    to_wkb(coordinate, srid, endian)
   end
 
   @doc """
@@ -237,22 +225,22 @@ defmodule Geometry.PointZ do
       iex> PointZ.from_wkb(
       ...>   "00800000017FF80000000000007FF80000000000007FF8000000000000"
       ...> )
-      {:ok, %PointZ{x: nil, y: nil, z: nil}}
+      {:ok, %PointZ{coordinate: nil}}
 
       iex> PointZ.from_wkb(
       ...>   "00800000013FF199999999999A400199999999999A400A666666666666"
       ...> )
-      {:ok, %PointZ{x: 1.1, y: 2.2, z: 3.3}}
+      {:ok, %PointZ{coordinate: [1.1, 2.2, 3.3]}}
 
       iex> PointZ.from_wkb(
       ...>   "01010000809A9999999999F13F9A999999999901406666666666660A40"
       ...> )
-      {:ok, %PointZ{x: 1.1, y: 2.2, z: 3.3}}
+      {:ok, %PointZ{coordinate: [1.1, 2.2, 3.3]}}
 
       iex> PointZ.from_wkb(
       ...>   "00A0000001000012673FF199999999999A400199999999999A400A666666666666"
       ...> )
-      {:ok, %PointZ{x: 1.1, y: 2.2, z: 3.3}, 4711}
+      {:ok, %PointZ{coordinate: [1.1, 2.2, 3.3]}, 4711}
   """
   @spec from_wkb(Geometry.wkb()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
@@ -271,25 +259,50 @@ defmodule Geometry.PointZ do
   end
 
   @doc false
-  @spec to_list(t()) :: list()
-  def to_list(%PointZ{x: x, y: y, z: z}) when is_coordinate(x, y, z), do: [x, y, z]
+  @compile {:inline, to_wkt_coordinate: 1}
+  @spec to_wkt_coordinate(Geometry.coordinate()) :: String.t()
+  def to_wkt_coordinate([x, y, z]) do
+    <<
+      to_wkt_number(x)::binary(),
+      @blank,
+      to_wkt_number(y)::binary(),
+      @blank,
+      to_wkt_number(z)::binary()
+    >>
+  end
+
+  @compile {:inline, to_wkt_point: 1}
+  defp to_wkt_point(nil), do: "EMPTY"
+
+  defp to_wkt_point(coordinate), do: <<"(", to_wkt_coordinate(coordinate)::binary(), ")">>
+
+  @compile {:inline, to_wkt_number: 1}
+  defp to_wkt_number(num) when is_integer(num), do: Integer.to_string(num)
+
+  defp to_wkt_number(num) when is_float(num), do: Float.to_string(num)
 
   @doc false
-  @spec to_wkt_coordinate(t()) :: String.t()
-  def to_wkt_coordinate(%PointZ{x: x, y: y, z: z}) when is_coordinate(x, y, z) do
+  @compile {:inline, to_wkb: 3}
+  @spec to_wkb(Geometry.coordinate(), Geometry.srid() | nil, Geometry.endian()) :: binary()
+  def to_wkb(coordinate, srid, endian) do
     <<
-      to_string(x)::binary(),
-      @blank,
-      to_string(y)::binary(),
-      @blank,
-      to_string(z)::binary()
+      WKB.byte_order(endian)::binary(),
+      wkb_code(endian, not is_nil(srid))::binary,
+      WKB.srid(srid, endian)::binary(),
+      to_wkb_coordinate(coordinate, endian)::binary
     >>
   end
 
   @doc false
-  @spec to_wkb_coordinate(t(), Geometry.endian()) :: binary()
-  def to_wkb_coordinate(%PointZ{x: x, y: y, z: z}, endian)
-      when is_coordinate(x, y, z) do
+  @compile {:inline, to_wkb_coordinate: 2}
+  @spec to_wkb_coordinate(Geometry.coordinate() | nil, Geometry.endian()) :: binary()
+  def to_wkb_coordinate(nil, :ndr),
+    do: "000000000000F87F000000000000F87F000000000000F87F"
+
+  def to_wkb_coordinate(nil, :xdr),
+    do: "7FF80000000000007FF80000000000007FF8000000000000"
+
+  def to_wkb_coordinate([x, y, z], endian) do
     <<
       to_wkb_number(x, endian)::binary(),
       to_wkb_number(y, endian)::binary(),
@@ -297,23 +310,10 @@ defmodule Geometry.PointZ do
     >>
   end
 
-  defp to_wkb_point(point, endian) do
-    point
-    |> empty?()
-    |> case do
-      true -> to_wkb_empty(endian)
-      false -> to_wkb_coordinate(point, endian)
-    end
-  end
+  @compile {:inline, to_wkb_number: 2}
+  defp to_wkb_number(num, endian), do: Hex.to_float_string(num, endian)
 
-  defp to_wkb_number(num, endian), do: Hex.to_string(num, endian, 16, :float)
-
-  defp to_wkb_empty(:xdr), do: "7FF80000000000007FF80000000000007FF8000000000000"
-
-  defp to_wkb_empty(:ndr), do: "000000000000F87F000000000000F87F000000000000F87F"
-
-  defp to_wkt_point(wkt), do: <<"Point Z ", wkt::binary()>>
-
+  @compile {:inline, wkb_code: 2}
   defp wkb_code(endian, srid?) do
     case {endian, srid?} do
       {:xdr, false} -> "80000001"

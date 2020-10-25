@@ -5,6 +5,7 @@ defmodule Geometry.MultiPolygonTest do
   use ExUnit.Case, async: true
 
   alias Geometry.{
+    LineString,
     MultiPolygon,
     Point,
     Polygon
@@ -15,14 +16,19 @@ defmodule Geometry.MultiPolygonTest do
   @moduletag :multi_plygon
 
   describe "to_geo_json/1" do
+    @tag :new
     test "returns geo-json-term" do
       geo_json =
         [
-          [{6, 2}, {8, 2}, {8, 4}, {6, 2}],
-          [[{60, 20}, {80, 20}, {80, 40}, {60, 20}]],
           [
-            [{1, 1}, {9, 1}, {9, 8}, {1, 1}],
-            [{6, 2}, {7, 2}, {7, 3}, {6, 2}]
+            [[60, 20], [80, 20], [80, 40], [60, 20]]
+          ],
+          [
+            [[1, 1], [9, 1], [9, 8], [1, 1]],
+            [[6, 2], [7, 2], [7, 3], [6, 2]]
+          ],
+          [
+            [[6, 2], [8, 2], [8, 4], [6, 2]]
           ]
         ]
         |> MultiPolygon.from_coordinates()
@@ -50,6 +56,7 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_geo_json!/1" do
+    @tag :new
     test "returns MultiPolygon" do
       geo_json =
         Jason.decode!("""
@@ -66,40 +73,36 @@ defmodule Geometry.MultiPolygonTest do
          }
         """)
 
-      multi_polygon = %MultiPolygon{
-        polygons:
-          MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 1, y: 1},
-                %Point{x: 9, y: 1},
-                %Point{x: 9, y: 8},
-                %Point{x: 1, y: 1}
-              ],
-              interiors: [
-                [
-                  %Point{x: 6, y: 2},
-                  %Point{x: 7, y: 2},
-                  %Point{x: 7, y: 3},
-                  %Point{x: 6, y: 2}
-                ]
-              ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 6, y: 2},
-                %Point{x: 8, y: 2},
-                %Point{x: 8, y: 4},
-                %Point{x: 6, y: 2}
-              ],
-              interiors: []
-            }
+      multi_polygon =
+        MultiPolygon.new([
+          Polygon.new([
+            LineString.new([
+              Point.new(1, 1),
+              Point.new(9, 1),
+              Point.new(9, 8),
+              Point.new(1, 1)
+            ]),
+            LineString.new([
+              Point.new(6, 2),
+              Point.new(7, 2),
+              Point.new(7, 3),
+              Point.new(6, 2)
+            ])
+          ]),
+          Polygon.new([
+            LineString.new([
+              Point.new(6, 2),
+              Point.new(8, 2),
+              Point.new(8, 4),
+              Point.new(6, 2)
+            ])
           ])
-      }
+        ])
 
       assert MultiPolygon.from_geo_json!(geo_json) == multi_polygon
     end
 
+    @tag :new
     test "raises an error for an invalid geo-json-term" do
       message = "type not found"
 
@@ -110,6 +113,7 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_wkt/1" do
+    @tag :new
     test "returns MultiPolygon" do
       wkt = """
       MULTIPOLYGON (
@@ -125,33 +129,30 @@ defmodule Geometry.MultiPolygonTest do
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 20, y: 35},
-                %Point{x: 10, y: 30},
-                %Point{x: 10, y: 10},
-                %Point{x: 30, y: 5},
-                %Point{x: 45, y: 20},
-                %Point{x: 20, y: 35}
+            [
+              [
+                [20, 35],
+                [10, 30],
+                [10, 10],
+                [30, 5],
+                [45, 20],
+                [20, 35]
               ],
-              interiors: [
-                [
-                  %Point{x: 30, y: 20},
-                  %Point{x: 20, y: 15},
-                  %Point{x: 20, y: 25},
-                  %Point{x: 30, y: 20}
-                ]
+              [
+                [30, 20],
+                [20, 15],
+                [20, 25],
+                [30, 20]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 40, y: 40},
-                %Point{x: 20, y: 45},
-                %Point{x: 45, y: 30},
-                %Point{x: 40, y: 40}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40],
+                [20, 45],
+                [45, 30],
+                [40, 40]
+              ]
+            ]
           ])
       }
 
@@ -160,6 +161,7 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_wkt!/1" do
+    @tag :new
     test "returns MultiPolygon" do
       wkt = """
        MULTIPOLYGON (
@@ -175,39 +177,37 @@ defmodule Geometry.MultiPolygonTest do
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 20, y: 35},
-                %Point{x: 10, y: 30},
-                %Point{x: 10, y: 10},
-                %Point{x: 30, y: 5},
-                %Point{x: 45, y: 20},
-                %Point{x: 20, y: 35}
+            [
+              [
+                [20, 35],
+                [10, 30],
+                [10, 10],
+                [30, 5],
+                [45, 20],
+                [20, 35]
               ],
-              interiors: [
-                [
-                  %Point{x: 30, y: 20},
-                  %Point{x: 20, y: 15},
-                  %Point{x: 20, y: 25},
-                  %Point{x: 30, y: 20}
-                ]
+              [
+                [30, 20],
+                [20, 15],
+                [20, 25],
+                [30, 20]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 40, y: 40},
-                %Point{x: 20, y: 45},
-                %Point{x: 45, y: 30},
-                %Point{x: 40, y: 40}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40],
+                [20, 45],
+                [45, 30],
+                [40, 40]
+              ]
+            ]
           ])
       }
 
       assert MultiPolygon.from_wkt!(wkt) == multi_polygon
     end
 
+    @tag :new
     test "returns MultiPolygon with SRID" do
       wkt = """
        SRID=1234;MULTIPOLYGON (
@@ -223,39 +223,37 @@ defmodule Geometry.MultiPolygonTest do
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 20, y: 35},
-                %Point{x: 10, y: 30},
-                %Point{x: 10, y: 10},
-                %Point{x: 30, y: 5},
-                %Point{x: 45, y: 20},
-                %Point{x: 20, y: 35}
+            [
+              [
+                [20, 35],
+                [10, 30],
+                [10, 10],
+                [30, 5],
+                [45, 20],
+                [20, 35]
               ],
-              interiors: [
-                [
-                  %Point{x: 30, y: 20},
-                  %Point{x: 20, y: 15},
-                  %Point{x: 20, y: 25},
-                  %Point{x: 30, y: 20}
-                ]
+              [
+                [30, 20],
+                [20, 15],
+                [20, 25],
+                [30, 20]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 40, y: 40},
-                %Point{x: 20, y: 45},
-                %Point{x: 45, y: 30},
-                %Point{x: 40, y: 40}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40],
+                [20, 45],
+                [45, 30],
+                [40, 40]
+              ]
+            ]
           ])
       }
 
       assert MultiPolygon.from_wkt!(wkt) == {multi_polygon, 1234}
     end
 
+    @tag :new
     test "raises an exception for invalid WKT" do
       message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Pluto'"
 
@@ -266,37 +264,35 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "to_wkt/2" do
+    @tag :new
     test "returns wkt-string" do
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 20, y: 35},
-                %Point{x: 10, y: 30},
-                %Point{x: 10, y: 10},
-                %Point{x: 30, y: 5},
-                %Point{x: 45, y: 20},
-                %Point{x: 20, y: 35}
+            [
+              [
+                [20, 35],
+                [10, 30],
+                [10, 10],
+                [30, 5],
+                [45, 20],
+                [20, 35]
               ],
-              interiors: [
-                [
-                  %Point{x: 30, y: 20},
-                  %Point{x: 20, y: 15},
-                  %Point{x: 20, y: 25},
-                  %Point{x: 30, y: 20}
-                ]
+              [
+                [30, 20],
+                [20, 15],
+                [20, 25],
+                [30, 20]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 40, y: 40},
-                %Point{x: 20, y: 45},
-                %Point{x: 45, y: 30},
-                %Point{x: 40, y: 40}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40],
+                [20, 45],
+                [45, 30],
+                [40, 40]
+              ]
+            ]
           ])
       }
 
@@ -323,6 +319,7 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_wkb/1" do
+    @tag :new
     test "returns a MultiPolygon (ndr)" do
       wkb = """
       01\
@@ -354,31 +351,28 @@ defmodule Geometry.MultiPolygonTest do
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 1.0, y: 1.0},
-                %Point{x: 9.0, y: 1.0},
-                %Point{x: 9.0, y: 8.0},
-                %Point{x: 1.0, y: 1.0}
+            [
+              [
+                [1.0, 1.0],
+                [9.0, 1.0],
+                [9.0, 8.0],
+                [1.0, 1.0]
               ],
-              interiors: [
-                [
-                  %Point{x: 6.0, y: 2.0},
-                  %Point{x: 7.0, y: 2.0},
-                  %Point{x: 7.0, y: 3.0},
-                  %Point{x: 6.0, y: 2.0}
-                ]
+              [
+                [6.0, 2.0],
+                [7.0, 2.0],
+                [7.0, 3.0],
+                [6.0, 2.0]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 6.0, y: 2.0},
-                %Point{x: 8.0, y: 2.0},
-                %Point{x: 8.0, y: 4.0},
-                %Point{x: 6.0, y: 2.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0],
+                [8.0, 2.0],
+                [8.0, 4.0],
+                [6.0, 2.0]
+              ]
+            ]
           ])
       }
 
@@ -387,47 +381,46 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "to_wkb/2" do
+    @tag :new
     test "returns WKB for Polygon" do
       wkb_start = "0106000000020000000103000000"
 
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 1.0, y: 1.0},
-                %Point{x: 9.0, y: 1.0},
-                %Point{x: 9.0, y: 8.0},
-                %Point{x: 1.0, y: 1.0}
+            [
+              [
+                [1.0, 1.0],
+                [9.0, 1.0],
+                [9.0, 8.0],
+                [1.0, 1.0]
               ],
-              interiors: [
-                [
-                  %Point{x: 6.0, y: 2.0},
-                  %Point{x: 7.0, y: 2.0},
-                  %Point{x: 7.0, y: 3.0},
-                  %Point{x: 6.0, y: 2.0}
-                ]
+              [
+                [6.0, 2.0],
+                [7.0, 2.0],
+                [7.0, 3.0],
+                [6.0, 2.0]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 6.0, y: 2.0},
-                %Point{x: 8.0, y: 2.0},
-                %Point{x: 8.0, y: 4.0},
-                %Point{x: 6.0, y: 2.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0],
+                [8.0, 2.0],
+                [8.0, 4.0],
+                [6.0, 2.0]
+              ]
+            ]
           ])
       }
 
-      assert result = MultiPolygon.to_wkb(multi_polygon)
+      assert result = MultiPolygon.to_wkb(multi_polygon, endian: :ndr)
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygon.from_wkb!(result) == multi_polygon
     end
   end
 
   describe "from_wkb!/1" do
+    @tag :new
     test "returns a MultiPolygon (ndr)" do
       wkb = """
       01\
@@ -459,31 +452,28 @@ defmodule Geometry.MultiPolygonTest do
       multi_polygon = %MultiPolygon{
         polygons:
           MapSet.new([
-            %Polygon{
-              exterior: [
-                %Point{x: 1.0, y: 1.0},
-                %Point{x: 9.0, y: 1.0},
-                %Point{x: 9.0, y: 8.0},
-                %Point{x: 1.0, y: 1.0}
+            [
+              [
+                [1.0, 1.0],
+                [9.0, 1.0],
+                [9.0, 8.0],
+                [1.0, 1.0]
               ],
-              interiors: [
-                [
-                  %Point{x: 6.0, y: 2.0},
-                  %Point{x: 7.0, y: 2.0},
-                  %Point{x: 7.0, y: 3.0},
-                  %Point{x: 6.0, y: 2.0}
-                ]
+              [
+                [6.0, 2.0],
+                [7.0, 2.0],
+                [7.0, 3.0],
+                [6.0, 2.0]
               ]
-            },
-            %Polygon{
-              exterior: [
-                %Point{x: 6.0, y: 2.0},
-                %Point{x: 8.0, y: 2.0},
-                %Point{x: 8.0, y: 4.0},
-                %Point{x: 6.0, y: 2.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0],
+                [8.0, 2.0],
+                [8.0, 4.0],
+                [6.0, 2.0]
+              ]
+            ]
           ])
       }
 
@@ -503,13 +493,15 @@ defmodule Geometry.MultiPolygonTest do
     multi_polygon =
       MultiPolygon.new([
         Polygon.new([
-          Point.new(11, 12),
-          Point.new(21, 22),
-          Point.new(31, 32),
-          Point.new(41, 42)
+          LineString.new([
+            Point.new(11, 12),
+            Point.new(21, 22),
+            Point.new(31, 32),
+            Point.new(41, 42)
+          ])
         ])
       ])
 
-    assert [%Polygon{}] = Enum.slice(multi_polygon, 0, 1)
+    assert [_polygon] = Enum.slice(multi_polygon, 0, 1)
   end
 end

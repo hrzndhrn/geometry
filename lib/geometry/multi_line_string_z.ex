@@ -18,7 +18,7 @@ defmodule Geometry.MultiLineStringZ do
       ...>       PointZ.new(13, 14, 15)
       ...>     ])
       ...>   ]),
-      ...>   fn line_string -> length line_string.points end
+      ...>   fn line_string -> length line_string end
       ...> )
       [2, 3]
 
@@ -27,14 +27,9 @@ defmodule Geometry.MultiLineStringZ do
       ...>   MultiLineStringZ.new())
       %MultiLineStringZ{
         line_strings:
-          MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: 1, y: 2, z: 3},
-                %PointZ{x: 5, y: 6, z: 7}
-              ]
-            }
-          ])
+        MapSet.new([
+          [[1, 2, 3], [5, 6, 7]]
+        ])
       }
   """
 
@@ -42,7 +37,7 @@ defmodule Geometry.MultiLineStringZ do
 
   defstruct line_strings: MapSet.new()
 
-  @type t :: %MultiLineStringZ{line_strings: MapSet.t(LineStringZ.t())}
+  @type t :: %MultiLineStringZ{line_strings: MapSet.t(Geometry.coordinates())}
 
   @doc """
   Creates an empty `MultiLineStringZ`.
@@ -75,24 +70,26 @@ defmodule Geometry.MultiLineStringZ do
       ...>     PointZ.new(30, 40, 50)
       ...>   ])
       ...> ])
-      %MultiLineStringZ{line_strings: MapSet.new([
-        %LineStringZ{points: [
-          %PointZ{x: 1, y: 2, z: 3},
-          %PointZ{x: 2, y: 3, z: 4},
-          %PointZ{x: 3, y: 4, z: 5}
-        ]},
-        %LineStringZ{ points: [
-          %PointZ{x: 10, y: 20, z: 30},
-          %PointZ{x: 30, y: 40, z: 50}
-        ]}
-      ])}
+      %Geometry.MultiLineStringZ{
+        line_strings:
+          MapSet.new([
+            [[1, 2, 3], [2, 3, 4], [3, 4, 5]],
+            [[10, 20, 30], [30, 40, 50]]
+          ])
+      }
 
       iex> MultiLineStringZ.new([])
       %MultiLineStringZ{line_strings: MapSet.new()}
   """
   @spec new([LineStringZ.t()]) :: t()
   def new([]), do: %MultiLineStringZ{}
-  def new(line_strings), do: %MultiLineStringZ{line_strings: MapSet.new(line_strings)}
+
+  def new(line_strings) do
+    %MultiLineStringZ{
+      line_strings:
+        Enum.into(line_strings, MapSet.new(), fn line_string -> line_string.points end)
+    }
+  end
 
   @doc """
   Returns `true` if the given `MultiLineStringZ` is empty.
@@ -119,28 +116,20 @@ defmodule Geometry.MultiLineStringZ do
   ## Examples
 
       iex> MultiLineStringZ.from_coordinates([
-      ...>   [{-1, 1, 1}, {2, 2, 2}, {-3, 3, 3}],
-      ...>   [{-10, 10, 10}, {-20, 20, 20}]
+      ...>   [[-1, 1, 1], [2, 2, 2], [-3, 3, 3]],
+      ...>   [[-10, 10, 10], [-20, 20, 20]]
       ...> ])
       %MultiLineStringZ{
-        line_strings: MapSet.new([
-          %LineStringZ{points: [
-            %PointZ{x: -1, y: 1, z: 1},
-            %PointZ{x: 2, y: 2, z: 2},
-            %PointZ{x: -3, y: 3, z: 3}
-          ]},
-          %LineStringZ{points: [
-            %PointZ{x: -10, y: 10, z: 10},
-            %PointZ{x: -20, y: 20, z: 20}
-          ]}
-        ])
+        line_strings:
+          MapSet.new([
+            [[-1, 1, 1], [2, 2, 2], [-3, 3, 3]],
+            [[-10, 10, 10], [-20, 20, 20]]
+          ])
       }
   """
-  @spec from_coordinates([[Geometry.coordinate_z()]]) :: t()
+  @spec from_coordinates([Geometry.coordinate()]) :: t()
   def from_coordinates(coordinates) do
-    %MultiLineStringZ{
-      line_strings: coordinates |> Enum.map(&LineStringZ.from_coordinates/1) |> MapSet.new()
-    }
+    %MultiLineStringZ{line_strings: MapSet.new(coordinates)}
   end
 
   @doc """
@@ -160,22 +149,14 @@ defmodule Geometry.MultiLineStringZ do
       ...> )
       iex> |> Jason.decode!()
       iex> |> MultiLineStringZ.from_geo_json()
-      {
-        :ok,
-        %MultiLineStringZ{
-          line_strings: MapSet.new([
-            %LineStringZ{points: [
-              %PointZ{x: -1, y: 1, z: 1},
-              %PointZ{x: 2, y: 2, z: 2},
-              %PointZ{x: -3, y: 3, z: 3}
-            ]},
-            %LineStringZ{points: [
-              %PointZ{x: -10, y: 10, z: 10},
-              %PointZ{x: -20, y: 20, z: 20}
-            ]}
-          ])
-        }
-      }
+      {:ok,
+       %Geometry.MultiLineStringZ{
+         line_strings:
+           MapSet.new([
+             [[-10, 10, 10], [-20, 20, 20]],
+             [[-1, 1, 1], [2, 2, 2], [-3, 3, 3]]
+           ])
+       }}
   """
   @spec from_geo_json(Geometry.geo_json_term()) :: {:ok, t()} | Geometry.geo_json_error()
   def from_geo_json(json), do: GeoJson.to_multi_line_string(json, MultiLineStringZ)
@@ -201,11 +182,23 @@ defmodule Geometry.MultiLineStringZ do
 
   ```elixir
   [
-    [{-1, 1, 1}, {2, 2, 2}, {-3, 3, 3}],
-    [{-10, 10, 10}, {-20, 20, 20}]
+    [[-1, 1, 1], [2, 2, 2], [-3, 3, 3]],
+    [[-10, 10, 10], [-20, 20, 20]]
   ]
   |> MultiLineStringZ.from_coordinates()
-  |> MultiLineStringZ.to_geo_json()
+  MultiLineStringZ.to_geo_json(
+    MultiLineStringZ.new([
+      LineStringZ.new([
+        PointZ.new(-1, 1, 1),
+        PointZ.new(2, 2, 2),
+        PointZ.new(-3, 3, 3)
+      ]),
+      LineStringZ.new([
+        PointZ.new(-10, 10, 10),
+        PointZ.new(-20, 20, 20)
+      ])
+    ])
+  )
   # =>
   # %{
   #   "type" => "MultiLineString",
@@ -220,10 +213,7 @@ defmodule Geometry.MultiLineStringZ do
   def to_geo_json(%MultiLineStringZ{line_strings: line_strings}) do
     %{
       "type" => "MultiLineString",
-      "coordinates" =>
-        Enum.map(line_strings, fn line_string ->
-          Enum.map(line_string.points, &PointZ.to_list/1)
-        end)
+      "coordinates" => MapSet.to_list(line_strings)
     }
   end
 
@@ -246,26 +236,15 @@ defmodule Geometry.MultiLineStringZ do
         %MultiLineStringZ{
           line_strings:
             MapSet.new([
-              %LineStringZ{
-                points: [
-                  %PointZ{x: 40, y: 30, z: 10},
-                  %PointZ{x: 30, y: 30, z: 25}
-                ]
-              },
-              %LineStringZ{
-                points: [
-                  %PointZ{x: 10, y: 20, z: 10},
-                  %PointZ{x: 20, y: 10, z: 35},
-                  %PointZ{x: 20, y: 40, z: 10}
-                ]
-              }
+              [[10, 20, 10], [20, 10, 35], [20, 40, 10]],
+              [[40, 30, 10], [30, 30, 25]]
             ])
         },
         1234
       }
 
       iex> MultiLineStringZ.from_wkt("MultiLineString Z EMPTY")
-      ...> {:ok, %MultiLineStringZ{}}
+      {:ok, %MultiLineStringZ{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
@@ -284,8 +263,8 @@ defmodule Geometry.MultiLineStringZ do
   end
 
   @doc """
-  Returns the WKT representation for a `MultiLineStringZ`. With option `:srid` an
-  EWKT representation with the SRID is returned.
+  Returns the WKT representation for a `MultiLineStringZ`. With option `:srid`
+  an EWKT representation with the SRID is returned.
 
   There are no guarantees about the order of line-strings in the returned
   WKT-string.
@@ -298,8 +277,12 @@ defmodule Geometry.MultiLineStringZ do
 
   MultiLineStringZ.to_wkt(
     MultiLineStringZ.new([
-      [PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)],
-      [PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)]
+      LineStringZ(
+        [PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)]
+      ),
+      LineStringZ(
+        [PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)]
+      )
     ])
   )
   # Returns a string without any \\n or extra spaces (formatted just for readability):
@@ -310,8 +293,12 @@ defmodule Geometry.MultiLineStringZ do
 
   MultiLineStringZ.to_wkt(
     MultiLineStringZ.new([
-      [PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)],
-      [PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)]
+      LineStringZ(
+        [PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)]
+      ),
+      LineStringZ(
+        [PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)]
+      )
     ]),
     srid: 555
   )
@@ -324,17 +311,14 @@ defmodule Geometry.MultiLineStringZ do
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
-  def to_wkt(line_strings, opts \\ [])
-
-  def to_wkt(%MultiLineStringZ{line_strings: line_strings}, opts) do
-    line_strings
-    |> Enum.empty?()
-    |> case do
-      true -> "EMPTY"
-      false -> to_wkt_line_strings(line_strings)
-    end
-    |> to_wkt_multi_line_string()
-    |> WKT.to_ewkt(opts)
+  def to_wkt(%MultiLineStringZ{line_strings: line_strings}, opts \\ []) do
+    WKT.to_ewkt(
+      <<
+        "MultiLineString Z ",
+        line_strings |> MapSet.to_list() |> to_wkt_line_strings()::binary()
+      >>,
+      opts
+    )
   end
 
   @doc """
@@ -343,7 +327,7 @@ defmodule Geometry.MultiLineStringZ do
   With option `:srid` an EWKB representation with the SRID is returned.
 
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:ndr`.
+  endian is returned. The default is `:xdr`.
 
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZ.to_wkb/1` function.
@@ -354,12 +338,7 @@ defmodule Geometry.MultiLineStringZ do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
 
-    <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_multi_line_string(multi_line_string, endian)::binary()
-    >>
+    to_wkb(multi_line_string, srid, endian)
   end
 
   @doc """
@@ -451,59 +430,43 @@ defmodule Geometry.MultiLineStringZ do
       false
   """
   @spec member?(t(), LineStringZ.t()) :: boolean()
-  def member?(%MultiLineStringZ{line_strings: line_strings}, %LineStringZ{} = line_string),
-    do: MapSet.member?(line_strings, line_string)
+  def member?(%MultiLineStringZ{line_strings: line_strings}, %LineStringZ{points: points}) do
+    MapSet.member?(line_strings, points)
+  end
 
   @doc """
   Converts `MultiLineStringZ` to a list.
-
-  ## Examples
-
-      iex> MultiLineStringZ.to_list(
-      ...>   MultiLineStringZ.new([
-      ...>     LineStringZ.new([
-      ...>       PointZ.new(11, 12, 13),
-      ...>       PointZ.new(41, 42, 43)
-      ...>     ])
-      ...>   ])
-      ...> )
-      [%LineStringZ{points: [
-        %PointZ{x: 11, y: 12, z: 13},
-        %PointZ{x: 41, y: 42, z: 43}
-      ]}]
   """
   @spec to_list(t()) :: [PointZ.t()]
   def to_list(%MultiLineStringZ{line_strings: line_strings}), do: MapSet.to_list(line_strings)
 
   @compile {:inline, to_wkt_line_strings: 1}
-  defp to_wkt_line_strings(line_strings) do
-    wkt =
-      line_strings
-      |> Enum.map(&to_wkt_line_string/1)
-      |> Enum.join(", ")
+  defp to_wkt_line_strings([]), do: "EMPTY"
 
-    "(#{wkt})"
+  defp to_wkt_line_strings([line_string | line_strings]) do
+    <<"(",
+      Enum.reduce(line_strings, LineStringZ.to_wkt_points(line_string), fn line_string, acc ->
+        <<acc::binary(), ", ", LineStringZ.to_wkt_points(line_string)::binary()>>
+      end)::binary(), ")">>
   end
 
-  defp to_wkt_line_string(line_string) do
-    wkt =
-      line_string
-      |> Enum.map(fn point -> PointZ.to_wkt_coordinate(point) end)
-      |> Enum.join(", ")
-
-    "(#{wkt})"
+  @doc false
+  @compile {:inline, to_wkb: 3}
+  @spec to_wkb(t(), Geometry.srid() | nil, Geometry.endian()) :: binary()
+  def to_wkb(%MultiLineStringZ{line_strings: line_strings}, srid, endian) do
+    <<
+      WKB.byte_order(endian)::binary(),
+      wkb_code(endian, not is_nil(srid))::binary(),
+      WKB.srid(srid, endian)::binary(),
+      to_wkb_line_strings(line_strings, endian)::binary()
+    >>
   end
 
-  @compile {:inline, to_wkt_multi_line_string: 1}
-  defp to_wkt_multi_line_string(wkt), do: "MultiLineString Z #{wkt}"
-
-  defp to_wkb_multi_line_string(%MultiLineStringZ{line_strings: line_strings}, endian) do
-    data =
-      Enum.reduce(line_strings, [], fn line_string, acc ->
-        [LineStringZ.to_wkb(line_string, endian: endian) | acc]
-      end)
-
-    <<WKB.length(line_strings, endian)::binary, IO.iodata_to_binary(data)::binary>>
+  @compile {:inline, to_wkb_line_strings: 2}
+  defp to_wkb_line_strings(line_strings, endian) do
+    Enum.reduce(line_strings, WKB.length(line_strings, endian), fn line_string, acc ->
+      <<acc::binary(), LineStringZ.to_wkb(line_string, nil, endian)::binary()>>
+    end)
   end
 
   @compile {:inline, wkb_code: 2}
@@ -549,9 +512,13 @@ defmodule Geometry.MultiLineStringZ do
           [{x, []} | list]
 
         list, :done ->
-          %MultiLineStringZ{
-            line_strings: %{line_strings | map: Map.merge(line_strings.map, Map.new(list))}
-          }
+          map =
+            Map.merge(
+              line_strings.map,
+              Enum.into(list, %{}, fn {line_string, []} -> {line_string.points, []} end)
+            )
+
+          %MultiLineStringZ{line_strings: %{line_strings | map: map}}
 
         _list, :halt ->
           :ok

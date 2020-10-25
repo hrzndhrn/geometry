@@ -17,11 +17,10 @@ defmodule Geometry.LineStringMTest do
   end
 
   describe "new/1:" do
-    @line_string %LineStringM{
-      points: [%PointM{x: 1, y: 1, m: 1}, %PointM{x: 2, y: 2, m: 2}]
-    }
+    prove LineStringM.new([PointM.new(1, 1, 1), PointM.new(2, 2, 2)]) == %LineStringM{
+            points: [[1, 1, 1], [2, 2, 2]]
+          }
 
-    prove LineStringM.new([PointM.new(1, 1, 1), PointM.new(2, 2, 2)]) == @line_string
     prove LineStringM.new([]) == %LineStringM{points: []}
     prove LineStringM.new() == %LineStringM{points: []}
   end
@@ -35,11 +34,9 @@ defmodule Geometry.LineStringMTest do
   end
 
   describe "from_coordinates/1:" do
-    @line_string %LineStringM{
-      points: [%PointM{x: 1, y: 1, m: 1}, %PointM{x: 2, y: 2, m: 2}]
-    }
-
-    prove LineStringM.from_coordinates([{1, 1, 1}, {2, 2, 2}]) == @line_string
+    prove LineStringM.from_coordinates([[1, 1, 1], [2, 2, 2]]) == %LineStringM{
+            points: [[1, 1, 1], [2, 2, 2]]
+          }
   end
 
   describe "to_wkt/2:" do
@@ -65,8 +62,8 @@ defmodule Geometry.LineStringMTest do
             {:ok,
              %LineStringM{
                points: [
-                 %PointM{x: 5, y: 4, m: 7},
-                 %PointM{x: 3.1, y: -44.5, m: -1.1}
+                 [5, 4, 7],
+                 [3.1, -44.5, -1.1]
                ]
              }}
 
@@ -74,8 +71,8 @@ defmodule Geometry.LineStringMTest do
             {:ok,
              %LineStringM{
                points: [
-                 %PointM{x: 1.1, y: -2.2, m: 5},
-                 %PointM{x: 5, y: 7, m: 1.1}
+                 [1.1, -2.2, 5],
+                 [5, 7, 1.1]
                ]
              }, 77}
 
@@ -93,19 +90,21 @@ defmodule Geometry.LineStringMTest do
     prove LineStringM.from_wkt!("LineStringM (5 4 7, 3.1 -44.5 -1.1)") ==
             %LineStringM{
               points: [
-                %PointM{x: 5, y: 4, m: 7},
-                %PointM{x: 3.1, y: -44.5, m: -1.1}
+                [5, 4, 7],
+                [3.1, -44.5, -1.1]
               ]
             }
 
     prove LineStringM.from_wkt!("srid=77;LineString M (1.1 -2.2 5, 5 7 1.1)") ==
             {%LineStringM{
                points: [
-                 %PointM{x: 1.1, y: -2.2, m: 5},
-                 %PointM{x: 5, y: 7, m: 1.1}
+                 [1.1, -2.2, 5],
+                 [5, 7, 1.1]
                ]
              }, 77}
+  end
 
+  describe "from_wkt!/1" do
     test "raises an exception" do
       message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'foo'"
 
@@ -118,8 +117,7 @@ defmodule Geometry.LineStringMTest do
   describe "empty?/:" do
     prove LineStringM.empty?(LineStringM.new()) == true
 
-    prove LineStringM.empty?(LineStringM.from_coordinates([{1, 2, 4}, {3, 4, 5}])) ==
-            false
+    prove LineStringM.empty?(LineStringM.new([PointM.new(1, 2, 4), PointM.new(1, 2, 4)])) == false
   end
 
   describe "from_geo_json/1:" do
@@ -141,20 +139,8 @@ defmodule Geometry.LineStringMTest do
       assert LineStringM.from_geo_json(geo_json) ==
                {:ok,
                 %LineStringM{
-                  points: [%PointM{x: 1, y: 2, m: 4}, %PointM{x: 3, y: 4, m: 6}]
+                  points: [[1, 2, 4], [3, 4, 6]]
                 }}
-    end
-
-    test "with invalid data" do
-      geo_json =
-        Jason.decode!("""
-        {
-          "type": "LineString",
-          "coordinates": [[1, 2], [3, 4, 5]]
-        }
-        """)
-
-      assert LineStringM.from_geo_json(geo_json) == {:error, :invalid_data}
     end
   end
 
@@ -172,7 +158,7 @@ defmodule Geometry.LineStringMTest do
 
       assert LineStringM.from_geo_json!(geo_json) ==
                %LineStringM{
-                 points: [%PointM{x: 1, y: 2, m: 4}, %PointM{x: 3, y: 4, m: 6}]
+                 points: [[1, 2, 4], [3, 4, 6]]
                }
     end
 
@@ -187,16 +173,15 @@ defmodule Geometry.LineStringMTest do
   end
 
   describe "to_geo_json/1" do
-    @line_string %LineStringM{
-      points: [%PointM{x: 1, y: 2, m: 4}, %PointM{x: 3, y: 4, m: 6}]
-    }
+    test "returns GeoJson-term from LineStringM" do
+      line_string = LineStringM.new([PointM.new(1, 2, 4), PointM.new(3, 4, 6)])
 
-    prove LineStringM.to_geo_json(@line_string) == %{
-            "coordinates" => [[1, 2, 4], [3, 4, 6]],
-            "type" => "LineString"
-          }
+      assert result =
+               %{"coordinates" => [[1, 2, 4], [3, 4, 6]], "type" => "LineString"} =
+               LineStringM.to_geo_json(line_string)
 
-    prove @line_string |> LineStringM.to_geo_json() |> GeoJsonValidator.valid?() == true
+      assert GeoJsonValidator.valid?(result)
+    end
   end
 
   describe "from_wkb/1" do
@@ -213,8 +198,8 @@ defmodule Geometry.LineStringMTest do
                {:ok,
                 %LineStringM{
                   points: [
-                    %PointM{x: -1.1, y: -2.2, m: -4.4},
-                    %PointM{x: 5.5, y: 6.6, m: 8.8}
+                    [-1.1, -2.2, -4.4],
+                    [5.5, 6.6, 8.8]
                   ]
                 }}
     end
@@ -233,8 +218,8 @@ defmodule Geometry.LineStringMTest do
                {:ok,
                 %LineStringM{
                   points: [
-                    %PointM{x: -1.1, y: -2.2, m: -4.4},
-                    %PointM{x: 5.5, y: 6.6, m: 8.8}
+                    [-1.1, -2.2, -4.4],
+                    [5.5, 6.6, 8.8]
                   ]
                 }, 77}
     end
@@ -253,8 +238,8 @@ defmodule Geometry.LineStringMTest do
       assert LineStringM.from_wkb!(wkb) ==
                %LineStringM{
                  points: [
-                   %PointM{x: -1.1, y: -2.2, m: -4.4},
-                   %PointM{x: 5.5, y: 6.6, m: 8.8}
+                   [-1.1, -2.2, -4.4],
+                   [5.5, 6.6, 8.8]
                  ]
                }
     end
@@ -273,8 +258,8 @@ defmodule Geometry.LineStringMTest do
                {
                  %LineStringM{
                    points: [
-                     %PointM{x: -1.1, y: -2.2, m: -4.4},
-                     %PointM{x: 5.5, y: 6.6, m: 8.8}
+                     [-1.1, -2.2, -4.4],
+                     [5.5, 6.6, 8.8]
                    ]
                  },
                  77
@@ -300,12 +285,15 @@ defmodule Geometry.LineStringMTest do
       00000000000016406666666666661A409A99999999992140\
       """
 
-      assert LineStringM.to_wkb(%LineStringM{
-               points: [
-                 %PointM{x: -1.1, y: -2.2, m: -4.4},
-                 %PointM{x: 5.5, y: 6.6, m: 8.8}
-               ]
-             }) == wkb
+      assert LineStringM.to_wkb(
+               %LineStringM{
+                 points: [
+                   [-1.1, -2.2, -4.4],
+                   [5.5, 6.6, 8.8]
+                 ]
+               },
+               endian: :ndr
+             ) == wkb
     end
 
     test "returns WKB from LineStringM with SRID" do
@@ -321,11 +309,10 @@ defmodule Geometry.LineStringMTest do
       assert LineStringM.to_wkb(
                %LineStringM{
                  points: [
-                   %PointM{x: -1.1, y: -2.2, m: -4.4},
-                   %PointM{x: 5.5, y: 6.6, m: 8.8}
+                   [-1.1, -2.2, -4.4],
+                   [5.5, 6.6, 8.8]
                  ]
                },
-               endian: :xdr,
                srid: 77
              ) == wkb
     end

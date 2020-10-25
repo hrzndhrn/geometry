@@ -4,7 +4,9 @@ defmodule Geometry.PolygonMTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{PointM, PolygonM}
+  import Prove
+
+  alias Geometry.{LineStringM, PointM, PolygonM}
 
   doctest Geometry.PolygonM, import: true
 
@@ -25,17 +27,19 @@ defmodule Geometry.PolygonMTest do
       assert PolygonM.from_wkb(wkb) ==
                {:ok,
                 %PolygonM{
-                  exterior: [
-                    %PointM{x: 30.0, y: 10.0, m: 15.0},
-                    %PointM{x: 40.0, y: 40.0, m: 20.0},
-                    %PointM{x: 20.0, y: 40.0, m: 15.0},
-                    %PointM{x: 10.0, y: 20.0, m: 25.0},
-                    %PointM{x: 30.0, y: 10.0, m: 15.0}
-                  ],
-                  interiors: []
+                  rings: [
+                    [
+                      [30.0, 10.0, 15.0],
+                      [40.0, 40.0, 20.0],
+                      [20.0, 40.0, 15.0],
+                      [10.0, 20.0, 25.0],
+                      [30.0, 10.0, 15.0]
+                    ]
+                  ]
                 }}
     end
 
+    @tag :only
     test "returns PolygonM with hole and SRID (ndr) " do
       wkb = """
       01\
@@ -58,19 +62,19 @@ defmodule Geometry.PolygonMTest do
       assert PolygonM.from_wkb(wkb) ==
                {:ok,
                 %PolygonM{
-                  exterior: [
-                    %PointM{x: 35.0, y: 10.0, m: 25.0},
-                    %PointM{x: 45.0, y: 45.0, m: 20.0},
-                    %PointM{x: 15.0, y: 40.0, m: 10.0},
-                    %PointM{x: 10.0, y: 20.0, m: 25.0},
-                    %PointM{x: 35.0, y: 10.0, m: 25.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointM{x: 20.0, y: 30.0, m: 10.0},
-                      %PointM{x: 35.0, y: 35.0, m: 50.0},
-                      %PointM{x: 30.0, y: 20.0, m: 35.0},
-                      %PointM{x: 20.0, y: 30.0, m: 10.0}
+                      [35.0, 10.0, 25.0],
+                      [45.0, 45.0, 20.0],
+                      [15.0, 40.0, 10.0],
+                      [10.0, 20.0, 25.0],
+                      [35.0, 10.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 10.0],
+                      [35.0, 35.0, 50.0],
+                      [30.0, 20.0, 35.0],
+                      [20.0, 30.0, 10.0]
                     ]
                   ]
                 }, 333}
@@ -92,17 +96,18 @@ defmodule Geometry.PolygonMTest do
       """
 
       polygon = %PolygonM{
-        exterior: [
-          %PointM{x: 30.0, y: 10.0, m: 15.0},
-          %PointM{x: 40.0, y: 40.0, m: 20.0},
-          %PointM{x: 20.0, y: 40.0, m: 15.0},
-          %PointM{x: 10.0, y: 20.0, m: 25.0},
-          %PointM{x: 30.0, y: 10.0, m: 15.0}
-        ],
-        interiors: []
+        rings: [
+          [
+            [30.0, 10.0, 15.0],
+            [40.0, 40.0, 20.0],
+            [20.0, 40.0, 15.0],
+            [10.0, 20.0, 25.0],
+            [30.0, 10.0, 15.0]
+          ]
+        ]
       }
 
-      assert PolygonM.to_wkb(polygon, endian: :xdr) == wkb
+      assert PolygonM.to_wkb(polygon) == wkb
     end
 
     test "returns PolygonM with hole and SRID (ndr) " do
@@ -125,24 +130,24 @@ defmodule Geometry.PolygonMTest do
       """
 
       polygon = %PolygonM{
-        exterior: [
-          %PointM{x: 35.0, y: 10.0, m: 25.0},
-          %PointM{x: 45.0, y: 45.0, m: 20.0},
-          %PointM{x: 15.0, y: 40.0, m: 10.0},
-          %PointM{x: 10.0, y: 20.0, m: 25.0},
-          %PointM{x: 35.0, y: 10.0, m: 25.0}
-        ],
-        interiors: [
+        rings: [
           [
-            %PointM{x: 20.0, y: 30.0, m: 10.0},
-            %PointM{x: 35.0, y: 35.0, m: 50.0},
-            %PointM{x: 30.0, y: 20.0, m: 35.0},
-            %PointM{x: 20.0, y: 30.0, m: 10.0}
+            [35.0, 10.0, 25.0],
+            [45.0, 45.0, 20.0],
+            [15.0, 40.0, 10.0],
+            [10.0, 20.0, 25.0],
+            [35.0, 10.0, 25.0]
+          ],
+          [
+            [20.0, 30.0, 10.0],
+            [35.0, 35.0, 50.0],
+            [30.0, 20.0, 35.0],
+            [20.0, 30.0, 10.0]
           ]
         ]
       }
 
-      assert PolygonM.to_wkb(polygon, srid: 333) == wkb
+      assert PolygonM.to_wkb(polygon, srid: 333, endian: :ndr) == wkb
     end
   end
 
@@ -162,14 +167,15 @@ defmodule Geometry.PolygonMTest do
 
       assert PolygonM.from_wkb!(wkb) ==
                %PolygonM{
-                 exterior: [
-                   %PointM{x: 30.0, y: 10.0, m: 15.0},
-                   %PointM{x: 40.0, y: 40.0, m: 20.0},
-                   %PointM{x: 20.0, y: 40.0, m: 15.0},
-                   %PointM{x: 10.0, y: 20.0, m: 25.0},
-                   %PointM{x: 30.0, y: 10.0, m: 15.0}
-                 ],
-                 interiors: []
+                 rings: [
+                   [
+                     [30.0, 10.0, 15.0],
+                     [40.0, 40.0, 20.0],
+                     [20.0, 40.0, 15.0],
+                     [10.0, 20.0, 25.0],
+                     [30.0, 10.0, 15.0]
+                   ]
+                 ]
                }
     end
 
@@ -194,19 +200,19 @@ defmodule Geometry.PolygonMTest do
 
       assert PolygonM.from_wkb!(wkb) ==
                {%PolygonM{
-                  exterior: [
-                    %PointM{x: 35.0, y: 10.0, m: 25.0},
-                    %PointM{x: 45.0, y: 45.0, m: 20.0},
-                    %PointM{x: 15.0, y: 40.0, m: 10.0},
-                    %PointM{x: 10.0, y: 20.0, m: 25.0},
-                    %PointM{x: 35.0, y: 10.0, m: 25.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointM{x: 20.0, y: 30.0, m: 10.0},
-                      %PointM{x: 35.0, y: 35.0, m: 50.0},
-                      %PointM{x: 30.0, y: 20.0, m: 35.0},
-                      %PointM{x: 20.0, y: 30.0, m: 10.0}
+                      [35.0, 10.0, 25.0],
+                      [45.0, 45.0, 20.0],
+                      [15.0, 40.0, 10.0],
+                      [10.0, 20.0, 25.0],
+                      [35.0, 10.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 10.0],
+                      [35.0, 35.0, 50.0],
+                      [30.0, 20.0, 35.0],
+                      [20.0, 30.0, 10.0]
                     ]
                   ]
                 }, 333}
@@ -241,14 +247,15 @@ defmodule Geometry.PolygonMTest do
       assert PolygonM.from_geo_json!(geo_json)
 
       %PolygonM{
-        exterior: [
-          %PointM{x: 35, y: 10, m: 12},
-          %PointM{x: 45, y: 45, m: 22},
-          %PointM{x: 15, y: 40, m: 33},
-          %PointM{x: 10, y: 20, m: 55},
-          %PointM{x: 35, y: 10, m: 12}
-        ],
-        interiors: []
+        rings: [
+          [
+            [35, 10, 12],
+            [45, 45, 22],
+            [15, 40, 33],
+            [10, 20, 55],
+            [35, 10, 12]
+          ]
+        ]
       }
     end
 
@@ -273,19 +280,19 @@ defmodule Geometry.PolygonMTest do
 
       assert PolygonM.from_wkt!(wkt) ==
                %PolygonM{
-                 exterior: [
-                   %PointM{x: 35, y: 10, m: 22},
-                   %PointM{x: 45, y: 45, m: 33},
-                   %PointM{x: 15, y: 40, m: 44},
-                   %PointM{x: 10, y: 20, m: 66},
-                   %PointM{x: 35, y: 10, m: 22}
-                 ],
-                 interiors: [
+                 rings: [
                    [
-                     %PointM{x: 20, y: 30, m: 55},
-                     %PointM{x: 35, y: 35, m: 66},
-                     %PointM{x: 30, y: 20, m: 99},
-                     %PointM{x: 20, y: 30, m: 55}
+                     [35, 10, 22],
+                     [45, 45, 33],
+                     [15, 40, 44],
+                     [10, 20, 66],
+                     [35, 10, 22]
+                   ],
+                   [
+                     [20, 30, 55],
+                     [35, 35, 66],
+                     [30, 20, 99],
+                     [20, 30, 55]
                    ]
                  ]
                }
@@ -302,19 +309,19 @@ defmodule Geometry.PolygonMTest do
 
       assert PolygonM.from_wkt!(wkt) ==
                {%PolygonM{
-                  exterior: [
-                    %PointM{x: 35, y: 10, m: 22},
-                    %PointM{x: 45, y: 45, m: 33},
-                    %PointM{x: 15, y: 40, m: 44},
-                    %PointM{x: 10, y: 20, m: 66},
-                    %PointM{x: 35, y: 10, m: 22}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointM{x: 20, y: 30, m: 55},
-                      %PointM{x: 35, y: 35, m: 66},
-                      %PointM{x: 30, y: 20, m: 99},
-                      %PointM{x: 20, y: 30, m: 55}
+                      [35, 10, 22],
+                      [45, 45, 33],
+                      [15, 40, 44],
+                      [10, 20, 66],
+                      [35, 10, 22]
+                    ],
+                    [
+                      [20, 30, 55],
+                      [35, 35, 66],
+                      [30, 20, 99],
+                      [20, 30, 55]
                     ]
                   ]
                 }, 789}
@@ -326,6 +333,42 @@ defmodule Geometry.PolygonMTest do
       assert_raise Geometry.Error, message, fn ->
         PolygonM.from_wkt!("Daisy")
       end
+    end
+  end
+
+  describe "to_wkt/2:" do
+    @tag :only
+    prove PolygonM.to_wkt(PolygonM.new()) == "Polygon M EMPTY"
+
+    @tag :only
+    prove PolygonM.to_wkt(PolygonM.new(), srid: 1123) == "SRID=1123;Polygon M EMPTY"
+  end
+
+  describe "to_wkt/2" do
+    @tag :only
+    test "returns WKT" do
+      polygon =
+        PolygonM.new([
+          LineStringM.new([
+            PointM.new(35, 10, 14),
+            PointM.new(45, 45, 24),
+            PointM.new(10, 20, 34),
+            PointM.new(35, 10, 14)
+          ]),
+          LineStringM.new([
+            PointM.new(20, 30, 14),
+            PointM.new(35, 35, 24),
+            PointM.new(30, 20, 34),
+            PointM.new(20, 30, 14)
+          ])
+        ])
+
+      assert PolygonM.to_wkt(polygon) == """
+             Polygon M (\
+             (35 10 14, 45 45 24, 10 20 34, 35 10 14), \
+             (20 30 14, 35 35 24, 30 20 34, 20 30 14)\
+             )\
+             """
     end
   end
 end

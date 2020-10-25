@@ -5,6 +5,7 @@ defmodule Geometry.MultiPolygonMTest do
   use ExUnit.Case, async: true
 
   alias Geometry.{
+    LineStringM,
     MultiPolygonM,
     PointM,
     PolygonM
@@ -15,14 +16,19 @@ defmodule Geometry.MultiPolygonMTest do
   @moduletag :multi_plygon
 
   describe "to_geo_json/1" do
+    @tag :new
     test "returns geo-json-term" do
       geo_json =
         [
-          [{6, 2, 4}, {8, 2, 5}, {8, 4, 6}, {6, 2, 4}],
-          [[{60, 20, 40}, {80, 20, 50}, {80, 40, 60}, {60, 20, 40}]],
           [
-            [{1, 1, 4}, {9, 1, 5}, {9, 8, 6}, {1, 1, 4}],
-            [{6, 2, 3}, {7, 2, 7}, {7, 3, 4}, {6, 2, 3}]
+            [[60, 20, 40], [80, 20, 50], [80, 40, 60], [60, 20, 40]]
+          ],
+          [
+            [[1, 1, 4], [9, 1, 5], [9, 8, 6], [1, 1, 4]],
+            [[6, 2, 3], [7, 2, 7], [7, 3, 4], [6, 2, 3]]
+          ],
+          [
+            [[6, 2, 4], [8, 2, 5], [8, 4, 6], [6, 2, 4]]
           ]
         ]
         |> MultiPolygonM.from_coordinates()
@@ -50,6 +56,7 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "from_geo_json!/1" do
+    @tag :new
     test "returns MultiPolygonM" do
       geo_json =
         Jason.decode!("""
@@ -66,40 +73,36 @@ defmodule Geometry.MultiPolygonMTest do
          }
         """)
 
-      multi_polygon = %MultiPolygonM{
-        polygons:
-          MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 1, y: 1, m: 4},
-                %PointM{x: 9, y: 1, m: 5},
-                %PointM{x: 9, y: 8, m: 6},
-                %PointM{x: 1, y: 1, m: 4}
-              ],
-              interiors: [
-                [
-                  %PointM{x: 6, y: 2, m: 3},
-                  %PointM{x: 7, y: 2, m: 7},
-                  %PointM{x: 7, y: 3, m: 4},
-                  %PointM{x: 6, y: 2, m: 3}
-                ]
-              ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 6, y: 2, m: 4},
-                %PointM{x: 8, y: 2, m: 5},
-                %PointM{x: 8, y: 4, m: 6},
-                %PointM{x: 6, y: 2, m: 4}
-              ],
-              interiors: []
-            }
+      multi_polygon =
+        MultiPolygonM.new([
+          PolygonM.new([
+            LineStringM.new([
+              PointM.new(1, 1, 4),
+              PointM.new(9, 1, 5),
+              PointM.new(9, 8, 6),
+              PointM.new(1, 1, 4)
+            ]),
+            LineStringM.new([
+              PointM.new(6, 2, 3),
+              PointM.new(7, 2, 7),
+              PointM.new(7, 3, 4),
+              PointM.new(6, 2, 3)
+            ])
+          ]),
+          PolygonM.new([
+            LineStringM.new([
+              PointM.new(6, 2, 4),
+              PointM.new(8, 2, 5),
+              PointM.new(8, 4, 6),
+              PointM.new(6, 2, 4)
+            ])
           ])
-      }
+        ])
 
       assert MultiPolygonM.from_geo_json!(geo_json) == multi_polygon
     end
 
+    @tag :new
     test "raises an error for an invalid geo-json-term" do
       message = "type not found"
 
@@ -110,6 +113,7 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "from_wkt/1" do
+    @tag :new
     test "returns MultiPolygonM" do
       wkt = """
       MULTIPOLYGON M (
@@ -125,33 +129,30 @@ defmodule Geometry.MultiPolygonMTest do
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 20, y: 35, m: 10},
-                %PointM{x: 10, y: 30, m: 20},
-                %PointM{x: 10, y: 10, m: 15},
-                %PointM{x: 30, y: 5, m: 15},
-                %PointM{x: 45, y: 20, m: 16},
-                %PointM{x: 20, y: 35, m: 10}
+            [
+              [
+                [20, 35, 10],
+                [10, 30, 20],
+                [10, 10, 15],
+                [30, 5, 15],
+                [45, 20, 16],
+                [20, 35, 10]
               ],
-              interiors: [
-                [
-                  %PointM{x: 30, y: 20, m: 15},
-                  %PointM{x: 20, y: 15, m: 10},
-                  %PointM{x: 20, y: 25, m: 25},
-                  %PointM{x: 30, y: 20, m: 15}
-                ]
+              [
+                [30, 20, 15],
+                [20, 15, 10],
+                [20, 25, 25],
+                [30, 20, 15]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 40, y: 40, m: 20},
-                %PointM{x: 20, y: 45, m: 10},
-                %PointM{x: 45, y: 30, m: 30},
-                %PointM{x: 40, y: 40, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 20],
+                [20, 45, 10],
+                [45, 30, 30],
+                [40, 40, 20]
+              ]
+            ]
           ])
       }
 
@@ -160,6 +161,7 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "from_wkt!/1" do
+    @tag :new
     test "returns MultiPolygonM" do
       wkt = """
        MULTIPOLYGON M (
@@ -175,39 +177,37 @@ defmodule Geometry.MultiPolygonMTest do
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 20, y: 35, m: 10},
-                %PointM{x: 10, y: 30, m: 20},
-                %PointM{x: 10, y: 10, m: 15},
-                %PointM{x: 30, y: 5, m: 15},
-                %PointM{x: 45, y: 20, m: 16},
-                %PointM{x: 20, y: 35, m: 10}
+            [
+              [
+                [20, 35, 10],
+                [10, 30, 20],
+                [10, 10, 15],
+                [30, 5, 15],
+                [45, 20, 16],
+                [20, 35, 10]
               ],
-              interiors: [
-                [
-                  %PointM{x: 30, y: 20, m: 15},
-                  %PointM{x: 20, y: 15, m: 10},
-                  %PointM{x: 20, y: 25, m: 25},
-                  %PointM{x: 30, y: 20, m: 15}
-                ]
+              [
+                [30, 20, 15],
+                [20, 15, 10],
+                [20, 25, 25],
+                [30, 20, 15]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 40, y: 40, m: 20},
-                %PointM{x: 20, y: 45, m: 10},
-                %PointM{x: 45, y: 30, m: 30},
-                %PointM{x: 40, y: 40, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 20],
+                [20, 45, 10],
+                [45, 30, 30],
+                [40, 40, 20]
+              ]
+            ]
           ])
       }
 
       assert MultiPolygonM.from_wkt!(wkt) == multi_polygon
     end
 
+    @tag :new
     test "returns MultiPolygonM with SRID" do
       wkt = """
        SRID=1234;MULTIPOLYGON M (
@@ -223,39 +223,37 @@ defmodule Geometry.MultiPolygonMTest do
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 20, y: 35, m: 10},
-                %PointM{x: 10, y: 30, m: 20},
-                %PointM{x: 10, y: 10, m: 15},
-                %PointM{x: 30, y: 5, m: 15},
-                %PointM{x: 45, y: 20, m: 16},
-                %PointM{x: 20, y: 35, m: 10}
+            [
+              [
+                [20, 35, 10],
+                [10, 30, 20],
+                [10, 10, 15],
+                [30, 5, 15],
+                [45, 20, 16],
+                [20, 35, 10]
               ],
-              interiors: [
-                [
-                  %PointM{x: 30, y: 20, m: 15},
-                  %PointM{x: 20, y: 15, m: 10},
-                  %PointM{x: 20, y: 25, m: 25},
-                  %PointM{x: 30, y: 20, m: 15}
-                ]
+              [
+                [30, 20, 15],
+                [20, 15, 10],
+                [20, 25, 25],
+                [30, 20, 15]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 40, y: 40, m: 20},
-                %PointM{x: 20, y: 45, m: 10},
-                %PointM{x: 45, y: 30, m: 30},
-                %PointM{x: 40, y: 40, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 20],
+                [20, 45, 10],
+                [45, 30, 30],
+                [40, 40, 20]
+              ]
+            ]
           ])
       }
 
       assert MultiPolygonM.from_wkt!(wkt) == {multi_polygon, 1234}
     end
 
+    @tag :new
     test "raises an exception for invalid WKT" do
       message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Pluto'"
 
@@ -266,37 +264,35 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "to_wkt/2" do
+    @tag :new
     test "returns wkt-string" do
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 20, y: 35, m: 10},
-                %PointM{x: 10, y: 30, m: 20},
-                %PointM{x: 10, y: 10, m: 15},
-                %PointM{x: 30, y: 5, m: 15},
-                %PointM{x: 45, y: 20, m: 16},
-                %PointM{x: 20, y: 35, m: 10}
+            [
+              [
+                [20, 35, 10],
+                [10, 30, 20],
+                [10, 10, 15],
+                [30, 5, 15],
+                [45, 20, 16],
+                [20, 35, 10]
               ],
-              interiors: [
-                [
-                  %PointM{x: 30, y: 20, m: 15},
-                  %PointM{x: 20, y: 15, m: 10},
-                  %PointM{x: 20, y: 25, m: 25},
-                  %PointM{x: 30, y: 20, m: 15}
-                ]
+              [
+                [30, 20, 15],
+                [20, 15, 10],
+                [20, 25, 25],
+                [30, 20, 15]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 40, y: 40, m: 20},
-                %PointM{x: 20, y: 45, m: 10},
-                %PointM{x: 45, y: 30, m: 30},
-                %PointM{x: 40, y: 40, m: 20}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [40, 40, 20],
+                [20, 45, 10],
+                [45, 30, 30],
+                [40, 40, 20]
+              ]
+            ]
           ])
       }
 
@@ -323,6 +319,7 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "from_wkb/1" do
+    @tag :new
     test "returns a MultiPolygonM (ndr)" do
       wkb = """
       01\
@@ -354,31 +351,28 @@ defmodule Geometry.MultiPolygonMTest do
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 1.0, y: 1.0, m: 4.0},
-                %PointM{x: 9.0, y: 1.0, m: 5.0},
-                %PointM{x: 9.0, y: 8.0, m: 6.0},
-                %PointM{x: 1.0, y: 1.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 4.0],
+                [9.0, 1.0, 5.0],
+                [9.0, 8.0, 6.0],
+                [1.0, 1.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointM{x: 6.0, y: 2.0, m: 3.0},
-                  %PointM{x: 7.0, y: 2.0, m: 7.0},
-                  %PointM{x: 7.0, y: 3.0, m: 4.0},
-                  %PointM{x: 6.0, y: 2.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 3.0],
+                [7.0, 2.0, 7.0],
+                [7.0, 3.0, 4.0],
+                [6.0, 2.0, 3.0]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 6.0, y: 2.0, m: 4.0},
-                %PointM{x: 8.0, y: 2.0, m: 5.0},
-                %PointM{x: 8.0, y: 4.0, m: 6.0},
-                %PointM{x: 6.0, y: 2.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 4.0],
+                [8.0, 2.0, 5.0],
+                [8.0, 4.0, 6.0],
+                [6.0, 2.0, 4.0]
+              ]
+            ]
           ])
       }
 
@@ -387,47 +381,46 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "to_wkb/2" do
+    @tag :new
     test "returns WKB for PolygonM" do
       wkb_start = "0106000040020000000103000040"
 
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 1.0, y: 1.0, m: 4.0},
-                %PointM{x: 9.0, y: 1.0, m: 5.0},
-                %PointM{x: 9.0, y: 8.0, m: 6.0},
-                %PointM{x: 1.0, y: 1.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 4.0],
+                [9.0, 1.0, 5.0],
+                [9.0, 8.0, 6.0],
+                [1.0, 1.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointM{x: 6.0, y: 2.0, m: 3.0},
-                  %PointM{x: 7.0, y: 2.0, m: 7.0},
-                  %PointM{x: 7.0, y: 3.0, m: 4.0},
-                  %PointM{x: 6.0, y: 2.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 3.0],
+                [7.0, 2.0, 7.0],
+                [7.0, 3.0, 4.0],
+                [6.0, 2.0, 3.0]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 6.0, y: 2.0, m: 4.0},
-                %PointM{x: 8.0, y: 2.0, m: 5.0},
-                %PointM{x: 8.0, y: 4.0, m: 6.0},
-                %PointM{x: 6.0, y: 2.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 4.0],
+                [8.0, 2.0, 5.0],
+                [8.0, 4.0, 6.0],
+                [6.0, 2.0, 4.0]
+              ]
+            ]
           ])
       }
 
-      assert result = MultiPolygonM.to_wkb(multi_polygon)
+      assert result = MultiPolygonM.to_wkb(multi_polygon, endian: :ndr)
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygonM.from_wkb!(result) == multi_polygon
     end
   end
 
   describe "from_wkb!/1" do
+    @tag :new
     test "returns a MultiPolygonM (ndr)" do
       wkb = """
       01\
@@ -459,31 +452,28 @@ defmodule Geometry.MultiPolygonMTest do
       multi_polygon = %MultiPolygonM{
         polygons:
           MapSet.new([
-            %PolygonM{
-              exterior: [
-                %PointM{x: 1.0, y: 1.0, m: 4.0},
-                %PointM{x: 9.0, y: 1.0, m: 5.0},
-                %PointM{x: 9.0, y: 8.0, m: 6.0},
-                %PointM{x: 1.0, y: 1.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 4.0],
+                [9.0, 1.0, 5.0],
+                [9.0, 8.0, 6.0],
+                [1.0, 1.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointM{x: 6.0, y: 2.0, m: 3.0},
-                  %PointM{x: 7.0, y: 2.0, m: 7.0},
-                  %PointM{x: 7.0, y: 3.0, m: 4.0},
-                  %PointM{x: 6.0, y: 2.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 3.0],
+                [7.0, 2.0, 7.0],
+                [7.0, 3.0, 4.0],
+                [6.0, 2.0, 3.0]
               ]
-            },
-            %PolygonM{
-              exterior: [
-                %PointM{x: 6.0, y: 2.0, m: 4.0},
-                %PointM{x: 8.0, y: 2.0, m: 5.0},
-                %PointM{x: 8.0, y: 4.0, m: 6.0},
-                %PointM{x: 6.0, y: 2.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 4.0],
+                [8.0, 2.0, 5.0],
+                [8.0, 4.0, 6.0],
+                [6.0, 2.0, 4.0]
+              ]
+            ]
           ])
       }
 
@@ -503,13 +493,15 @@ defmodule Geometry.MultiPolygonMTest do
     multi_polygon =
       MultiPolygonM.new([
         PolygonM.new([
-          PointM.new(11, 12, 14),
-          PointM.new(21, 22, 24),
-          PointM.new(31, 32, 34),
-          PointM.new(41, 42, 44)
+          LineStringM.new([
+            PointM.new(11, 12, 14),
+            PointM.new(21, 22, 24),
+            PointM.new(31, 32, 34),
+            PointM.new(41, 42, 44)
+          ])
         ])
       ])
 
-    assert [%PolygonM{}] = Enum.slice(multi_polygon, 0, 1)
+    assert [_polygon] = Enum.slice(multi_polygon, 0, 1)
   end
 end

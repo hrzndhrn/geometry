@@ -9,7 +9,7 @@ defmodule Geometry.LineStringZM do
 
   defstruct points: []
 
-  @type t :: %LineStringZM{points: [PointZM.t()]}
+  @type t :: %LineStringZM{points: Geometry.coordinates()}
 
   @doc """
   Creates an empty `LineStringZM`.
@@ -28,14 +28,14 @@ defmodule Geometry.LineStringZM do
   ## Examples
 
       iex> LineStringZM.new([PointZM.new(1, 2, 3, 4), PointZM.new(3, 4, 5, 6)])
-      %LineStringZM{points: [
-        %PointZM{x: 1, y: 2, z: 3, m: 4},
-        %PointZM{x: 3, y: 4, z: 5, m: 6}
-      ]}
+      %LineStringZM{points: [[1, 2, 3, 4], [3, 4, 5, 6]]}
   """
   @spec new([PointZM.t()]) :: t()
   def new([]), do: %LineStringZM{}
-  def new([_, _ | _] = points), do: %LineStringZM{points: points}
+
+  def new([_, _ | _] = points) do
+    %LineStringZM{points: Enum.map(points, fn point -> point.coordinate end)}
+  end
 
   @doc """
   Returns `true` if the given `LineStringZM` is empty.
@@ -47,7 +47,9 @@ defmodule Geometry.LineStringZM do
 
       iex> LineStringZM.empty?(
       ...>   LineStringZM.new(
-      ...>     [PointZM.new(1, 2, 3, 4), PointZM.new(3, 4, 5, 6)]))
+      ...>     [PointZM.new(1, 2, 3, 4), PointZM.new(3, 4, 5, 6)]
+      ...>   )
+      ...> )
       false
   """
   @spec empty?(t()) :: boolean
@@ -59,19 +61,18 @@ defmodule Geometry.LineStringZM do
   ## Examples
 
       iex> LineStringZM.from_coordinates(
-      ...>   [{-1, 1, 1, 1}, {-2, 2, 2, 2}, {-3, 3, 3, 3}])
+      ...>   [[-1, 1, 1, 1], [-2, 2, 2, 2], [-3, 3, 3, 3]]
+      ...> )
       %LineStringZM{
         points: [
-          %PointZM{x: -1, y: 1, z: 1, m: 1},
-          %PointZM{x: -2, y: 2, z: 2, m: 2},
-          %PointZM{x: -3, y: 3, z: 3, m: 3}
+          [-1, 1, 1, 1],
+          [-2, 2, 2, 2],
+          [-3, 3, 3, 3]
         ]
       }
   """
   @spec from_coordinates([Geometry.coordinate()]) :: t()
-  def from_coordinates(coordinates) do
-    %LineStringZM{points: Enum.map(coordinates, &PointZM.new/1)}
-  end
+  def from_coordinates(coordinates), do: %LineStringZM{points: coordinates}
 
   @doc """
   Returns an `:ok` tuple with the `LineStringZM` from the given GeoJSON term.
@@ -91,8 +92,8 @@ defmodule Geometry.LineStringZM do
       iex> |> Jason.decode!()
       iex> |> LineStringZM.from_geo_json()
       {:ok, %LineStringZM{points: [
-        %PointZM{x: 1.1, y: 1.2, z: 1.3, m: 1.4},
-        %PointZM{x: 20.1, y: 20.2, z: 20.3, m: 20.4}
+         [1.1, 1.2, 1.3, 1.4],
+         [20.1, 20.2, 20.3, 20.4]
       ]}}
   """
   @spec from_geo_json(Geometry.geo_json_term()) :: {:ok, t()} | Geometry.geo_json_error()
@@ -118,7 +119,8 @@ defmodule Geometry.LineStringZM do
       ...>   LineStringZM.new([
       ...>     PointZM.new(-1.1, -2.2, -3.3, -4.4),
       ...>     PointZM.new(1.1, 2.2, 3.3, 4.4)
-      ...>   ]))
+      ...>   ])
+      ...> )
       %{
         "type" => "LineString",
         "coordinates" => [
@@ -131,7 +133,7 @@ defmodule Geometry.LineStringZM do
   def to_geo_json(%LineStringZM{points: points}) do
     %{
       "type" => "LineString",
-      "coordinates" => Enum.map(points, &PointZM.to_list/1)
+      "coordinates" => points
     }
   end
 
@@ -144,20 +146,22 @@ defmodule Geometry.LineStringZM do
   ## Examples
 
       iex> LineStringZM.from_wkt(
-      ...>   "LineString ZM (-5.1 7.8 1.1 1, 0.1 0.2 2.2 2)")
+      ...>   "LineString ZM (-5.1 7.8 1.1 1, 0.1 0.2 2.2 2)"
+      ...> )
       {:ok, %LineStringZM{
         points: [
-          %PointZM{x: -5.1, y: 7.8, z: 1.1, m: 1},
-          %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}
+          [-5.1, 7.8, 1.1, 1],
+          [0.1, 0.2, 2.2, 2]
         ]
       }}
 
       iex> LineStringZM.from_wkt(
-      ...>   "SRID=7219;LineString ZM (-5.1 7.8 1.1 1, 0.1 0.2 2.2 2)")
+      ...>   "SRID=7219;LineString ZM (-5.1 7.8 1.1 1, 0.1 0.2 2.2 2)"
+      ...> )
       {:ok, %LineStringZM{
         points: [
-          %PointZM{x: -5.1, y: 7.8, z: 1.1, m: 1},
-          %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}
+          [-5.1, 7.8, 1.1, 1],
+          [0.1, 0.2, 2.2, 2]
         ]
       }, 7219}
 
@@ -208,19 +212,8 @@ defmodule Geometry.LineStringZM do
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
-  def to_wkt(line_string, opts \\ [])
-
-  def to_wkt(%LineStringZM{points: []}, opts) do
-    "EMPTY"
-    |> to_wkt_line_string()
-    |> WKT.to_ewkt(opts)
-  end
-
-  def to_wkt(%LineStringZM{points: points}, opts) do
-    points
-    |> to_wkt_points()
-    |> to_wkt_line_string()
-    |> WKT.to_ewkt(opts)
+  def to_wkt(%LineStringZM{points: points}, opts \\ []) do
+    WKT.to_ewkt(<<"LineString ZM ", to_wkt_points(points)::binary()>>, opts)
   end
 
   @doc """
@@ -229,23 +222,18 @@ defmodule Geometry.LineStringZM do
   With option `:srid` an EWKB representation with the SRID is returned.
 
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:ndr`.
+  endian is returned. The default is `:xdr`.
 
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZM.to_wkb/1` function.
   """
-  @spec to_wkb(t(), opts) :: Geometry.wkb()
+  @spec to_wkb(t() | Geometry.coordinates(), opts) :: Geometry.wkb()
         when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
-  def to_wkb(%LineStringZM{} = line_string, opts \\ []) do
+  def to_wkb(%LineStringZM{points: points}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
 
-    <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_line_string(line_string, endian)::binary()
-    >>
+    to_wkb(points, srid, endian)
   end
 
   @doc """
@@ -273,26 +261,40 @@ defmodule Geometry.LineStringZM do
     end
   end
 
-  defp to_wkt_line_string(wkt), do: <<"LineString ZM ", wkt::binary()>>
+  @doc false
+  @compile {:inline, to_wkt_points: 1}
+  @spec to_wkt_points(Geometry.coordinates()) :: Geometry.wkt()
+  def to_wkt_points([]), do: "EMPTY"
 
-  defp to_wkt_points(points) do
-    wkt =
-      points
-      |> Enum.map(fn point -> PointZM.to_wkt_coordinate(point) end)
-      |> Enum.join(", ")
-
-    <<"(", wkt::binary(), ")">>
+  def to_wkt_points([coordinate | points]) do
+    <<"(",
+      Enum.reduce(points, PointZM.to_wkt_coordinate(coordinate), fn coordinate, acc ->
+        <<acc::binary(), ", ", PointZM.to_wkt_coordinate(coordinate)::binary()>>
+      end)::binary(), ")">>
   end
 
-  defp to_wkb_line_string(%LineStringZM{points: points}, endian) do
-    data =
-      points
-      |> Enum.map(fn point -> PointZM.to_wkb_coordinate(point, endian) end)
-      |> IO.iodata_to_binary()
-
-    <<WKB.length(points, endian)::binary(), data::binary()>>
+  @doc false
+  @compile {:inline, to_wkb: 2}
+  @spec to_wkb(Geometry.coordinates(), Geometry.srid() | nil, Geometry.endian()) :: Geometry.wkb()
+  def to_wkb(points, srid, endian) do
+    <<
+      WKB.byte_order(endian)::binary(),
+      wkb_code(endian, not is_nil(srid))::binary(),
+      WKB.srid(srid, endian)::binary(),
+      to_wkb_points(points, endian)::binary()
+    >>
   end
 
+  @doc false
+  @compile {:inline, to_wkb_points: 2}
+  @spec to_wkb_points(Geometry.coordinates(), Geometry.endian()) :: Geometry.wkt()
+  def to_wkb_points(points, endian) do
+    Enum.reduce(points, WKB.length(points, endian), fn coordinate, acc ->
+      <<acc::binary(), PointZM.to_wkb_coordinate(coordinate, endian)::binary()>>
+    end)
+  end
+
+  @compile {:inline, wkb_code: 2}
   defp wkb_code(endian, srid?) do
     case {endian, srid?} do
       {:xdr, false} -> "C0000002"

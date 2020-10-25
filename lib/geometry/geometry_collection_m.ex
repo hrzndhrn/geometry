@@ -18,12 +18,12 @@ defmodule Geometry.GeometryCollectionM do
       ...>     %PointM{} -> :point
       ...>     %LineStringM{} -> :line_string
       ...>   end
-      ...> )
+      ...> ) |> Enum.sort()
       [:line_string, :point]
 
       iex> Enum.into([PointM.new(1, 2, 4)], GeometryCollectionM.new())
       %GeometryCollectionM{
-        geometries: MapSet.new([%PointM{x: 1, y: 2, m: 4}])
+        geometries: MapSet.new([%PointM{coordinate: [1, 2, 4]}])
       }
   """
 
@@ -59,11 +59,8 @@ defmodule Geometry.GeometryCollectionM do
       ...>   LineStringM.new([PointM.new(1, 1, 1), PointM.new(2, 2, 2)])
       ...> ])
       %GeometryCollectionM{geometries: MapSet.new([
-        %PointM{x: 1, y: 2, m: 4},
-        %LineStringM{points: [
-          %PointM{x: 1, y: 1, m: 1},
-          %PointM{x: 2, y: 2, m: 2}
-        ]}
+        %PointM{coordinate: [1, 2, 4]},
+        %LineStringM{points: [[1, 1, 1], [2, 2, 2]]}
       ])}
   """
   @spec new([Geometry.t()]) :: t()
@@ -92,8 +89,13 @@ defmodule Geometry.GeometryCollectionM do
       iex> GeometryCollectionM.to_wkt(GeometryCollectionM.new())
       "GeometryCollection M EMPTY"
 
-      iex> GeometryCollectionM.to_wkt(GeometryCollectionM.new([PointM.new(1.1, 2.2, 4.4)]))
-      "GeometryCollection M (Point M (1.1 2.2 4.4))"
+      iex> GeometryCollectionM.to_wkt(
+      ...>   GeometryCollectionM.new([
+      ...>     PointM.new(1.1, 1.2, 1.4),
+      ...>     PointM.new(2.1, 2.2, 2.4)
+      ...>   ])
+      ...> )
+      "GeometryCollection M (Point M (1.1 1.2 1.4), Point M (2.1 2.2 2.4))"
 
       iex> GeometryCollectionM.to_wkt(
       ...>   GeometryCollectionM.new([PointM.new(1.1, 2.2, 4.4)]),
@@ -103,14 +105,13 @@ defmodule Geometry.GeometryCollectionM do
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
   def to_wkt(%GeometryCollectionM{geometries: geometries}, opts \\ []) do
-    geometries
-    |> Enum.empty?()
-    |> case do
-      true -> "EMPTY"
-      false -> <<"(", to_wkt_geometries(geometries)::binary(), ")">>
-    end
-    |> to_wkt_geometry_collection()
-    |> WKT.to_ewkt(opts)
+    WKT.to_ewkt(
+      <<
+        "GeometryCollection M ",
+        geometries |> MapSet.to_list() |> to_wkt_geometries()::binary()
+      >>,
+      opts
+    )
   end
 
   @doc """
@@ -126,7 +127,7 @@ defmodule Geometry.GeometryCollectionM do
       {
         :ok,
         %GeometryCollectionM{
-          geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+          geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
         }
       }
 
@@ -135,7 +136,7 @@ defmodule Geometry.GeometryCollectionM do
       {
         :ok,
         %GeometryCollectionM{
-          geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+          geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
         },
         123
       }
@@ -204,7 +205,7 @@ defmodule Geometry.GeometryCollectionM do
       {
         :ok,
         %GeometryCollectionM{
-          geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+          geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
         }
       }
   """
@@ -237,7 +238,7 @@ defmodule Geometry.GeometryCollectionM do
   """
   @spec to_wkb(t(), opts) :: Geometry.wkb()
         when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
-  def to_wkb(%GeometryCollectionM{} = geometry_collection, opts \\ []) do
+  def to_wkb(%GeometryCollectionM{geometries: geometries}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
 
@@ -245,7 +246,7 @@ defmodule Geometry.GeometryCollectionM do
       WKB.byte_order(endian)::binary(),
       wkb_code(endian, not is_nil(srid))::binary(),
       WKB.srid(srid, endian)::binary(),
-      to_wkb_geometry_collection(geometry_collection, endian)::binary()
+      to_wkb_geometries(geometries, endian)::binary()
     >>
   end
 
@@ -333,44 +334,29 @@ defmodule Geometry.GeometryCollectionM do
 
       iex> GeometryCollectionM.to_list(
       ...>   GeometryCollectionM.new([
-      ...>     PointM.new(11, 12, 14),
-      ...>     LineStringM.new([
-      ...>       PointM.new(21, 22, 24),
-      ...>       PointM.new(31, 32, 34)
-      ...>     ])
+      ...>     PointM.new(11, 12, 14)
       ...>   ])
       ...> )
-      [
-        %LineStringM{
-          points: [
-            %PointM{x: 21, y: 22, m: 24},
-            %PointM{x: 31, y: 32, m: 34}
-          ]
-        },
-        %PointM{x: 11, y: 12, m: 14}
-      ]
+      [%PointM{coordinate: [11, 12, 14]}]
   """
   @spec to_list(t()) :: [Geometry.t()]
   def to_list(%GeometryCollectionM{geometries: geometries}), do: MapSet.to_list(geometries)
 
-  @compile {:inline, to_wkt_geometry_collection: 1}
-  defp to_wkt_geometry_collection(wkt), do: <<"GeometryCollection M ", wkt::binary()>>
-
   @compile {:inline, to_wkt_geometries: 1}
-  defp to_wkt_geometries(geometries) do
-    geometries
-    |> Enum.map(fn geometry -> Geometry.to_wkt(geometry) end)
-    |> Enum.join(", ")
+  defp to_wkt_geometries([]), do: "EMPTY"
+
+  defp to_wkt_geometries([geometry | geometries]) do
+    <<"(",
+      Enum.reduce(geometries, Geometry.to_wkt(geometry), fn %module{} = geometry, acc ->
+        <<acc::binary(), ", ", module.to_wkt(geometry)::binary()>>
+      end)::binary(), ")">>
   end
 
-  @compile {:inline, to_wkb_geometry_collection: 2}
-  defp to_wkb_geometry_collection(%GeometryCollectionM{geometries: geometries}, endian) do
-    data =
-      geometries
-      |> Enum.map(fn geometry -> Geometry.to_wkb(geometry, endian: endian) end)
-      |> IO.iodata_to_binary()
-
-    <<WKB.length(geometries, endian)::binary(), data::binary()>>
+  @compile {:inline, to_wkb_geometries: 2}
+  defp to_wkb_geometries(geometries, endian) do
+    Enum.reduce(geometries, WKB.length(geometries, endian), fn %module{} = geometry, acc ->
+      <<acc::binary(), module.to_wkb(geometry, endian: endian)::binary()>>
+    end)
   end
 
   @compile {:inline, wkb_code: 2}

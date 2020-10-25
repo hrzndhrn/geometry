@@ -5,24 +5,26 @@ defmodule Geometry.HexTest do
 
   alias Geometry.Hex
 
-  describe "to_string/4:" do
-    prove Hex.to_string(26, :xdr, 8) == "0000001A"
-    prove Hex.to_string(26, :ndr, 8) == "1A000000"
+  describe "to_integer_string/2:" do
+    prove Hex.to_integer_string(26, :xdr) == "0000001A"
+    prove Hex.to_integer_string(26, :ndr) == "1A000000"
 
-    prove Hex.to_string(999_999, :xdr, 8) == "000F423F"
-    prove Hex.to_string(999_999, :ndr, 8) == "3F420F00"
+    prove Hex.to_integer_string(999_999, :xdr) == "000F423F"
+    prove Hex.to_integer_string(999_999, :ndr) == "3F420F00"
 
-    prove Hex.to_string(0xC0000001, :xdr, 8) == "C0000001"
-    prove Hex.to_string(0xC0000001, :ndr, 8) == "010000C0"
+    prove Hex.to_integer_string(0xC0000001, :xdr) == "C0000001"
+    prove Hex.to_integer_string(0xC0000001, :ndr) == "010000C0"
+  end
 
-    prove Hex.to_string(123.321, :xdr, 16) == "405ED48B43958106"
-    prove Hex.to_string(123.321, :ndr, 16) == "068195438BD45E40"
+  describe "to_float_string/2:" do
+    prove Hex.to_float_string(123.321, :xdr) == "405ED48B43958106"
+    prove Hex.to_float_string(123.321, :ndr) == "068195438BD45E40"
 
-    prove Hex.to_string(3.0, :xdr, 16) == "4008000000000000"
-    prove Hex.to_string(3.0, :ndr, 16) == "0000000000000840"
+    prove Hex.to_float_string(3.0, :xdr) == "4008000000000000"
+    prove Hex.to_float_string(3.0, :ndr) == "0000000000000840"
 
-    prove Hex.to_string(3, :xdr, 16, :float) == "4008000000000000"
-    prove Hex.to_string(3, :ndr, 16, :float) == "0000000000000840"
+    prove Hex.to_float_string(3, :xdr) == "4008000000000000"
+    prove Hex.to_float_string(3, :ndr) == "0000000000000840"
   end
 
   describe "to_float/2:" do

@@ -378,7 +378,7 @@ defmodule Geometry.WKB.Parser do
     defp unquote(points)(n, str, endian, offset, acc) do
       with {:ok, rest, offset} <- check_endian(str, offset, endian),
            {:ok, rest, offset} <- check_code(rest, offset, endian, unquote(point)),
-           {:ok, [coordinates], rest, offset} <- unquote(coordinate)(rest, endian, offset) do
+           {:ok, coordinates, rest, offset} <- unquote(coordinate)(rest, endian, offset) do
         unquote(points)(n - 1, rest, endian, offset, [coordinates | acc])
       end
     end
@@ -430,7 +430,7 @@ defmodule Geometry.WKB.Parser do
     end
 
     defp unquote(coordinates)(n, str, endian, offset, acc) do
-      with {:ok, [coordinate], rest, offset} <- unquote(coordinate)(str, endian, offset) do
+      with {:ok, coordinate, rest, offset} <- unquote(coordinate)(str, endian, offset) do
         unquote(coordinates)(n - 1, rest, endian, offset, [coordinate | acc])
       end
     end
@@ -457,7 +457,7 @@ defmodule Geometry.WKB.Parser do
          {:y, {:ok, y}} <- {:y, Hex.to_float(y, endian)},
          {:z, {:ok, z}} <- {:z, Hex.to_float(z, endian)},
          {:m, {:ok, m}} <- {:m, Hex.to_float(m, endian)} do
-      {:ok, [{x, y, z, m}], rest, offset + 64}
+      {:ok, [x, y, z, m], rest, offset + 64}
     else
       {:x, :error} -> {:error, "expected float, got '#{x}'", rest, offset}
       {:y, :error} -> {:error, "expected float, got '#{y}'", rest, offset + 16}
@@ -474,7 +474,7 @@ defmodule Geometry.WKB.Parser do
     with {:x, {:ok, x}} <- {:x, Hex.to_float(x, endian)},
          {:y, {:ok, y}} <- {:y, Hex.to_float(y, endian)},
          {:z, {:ok, z}} <- {:z, Hex.to_float(z, endian)} do
-      {:ok, [{x, y, z}], rest, offset + 48}
+      {:ok, [x, y, z], rest, offset + 48}
     else
       {:x, :error} -> {:error, "expected float, got '#{x}'", rest, offset}
       {:y, :error} -> {:error, "expected float, got '#{y}'", rest, offset + 16}
@@ -490,7 +490,7 @@ defmodule Geometry.WKB.Parser do
     with {:x, {:ok, x}} <- {:x, Hex.to_float(x, endian)},
          {:y, {:ok, y}} <- {:y, Hex.to_float(y, endian)},
          {:m, {:ok, m}} <- {:m, Hex.to_float(m, endian)} do
-      {:ok, [{x, y, m}], rest, offset + 48}
+      {:ok, [x, y, m], rest, offset + 48}
     else
       {:x, :error} -> {:error, "expected float, got '#{x}'", rest, offset}
       {:y, :error} -> {:error, "expected float, got '#{y}'", rest, offset + 16}
@@ -505,7 +505,7 @@ defmodule Geometry.WKB.Parser do
        ) do
     with {:x, {:ok, x}} <- {:x, Hex.to_float(x, endian)},
          {:y, {:ok, y}} <- {:y, Hex.to_float(y, endian)} do
-      {:ok, [{x, y}], rest, offset + 32}
+      {:ok, [x, y], rest, offset + 32}
     else
       {:x, :error} -> {:error, "expected float, got '#{x}'", rest, offset}
       {:y, :error} -> {:error, "expected float, got '#{y}'", rest, offset + 16}
@@ -516,7 +516,7 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [coordinate] ->
     defp unquote(coordinate)(rest, _endian, offset) do
-      {:error, "invalid coordiante", rest, offset}
+      {:error, "invalid coordinate", rest, offset}
     end
   end)
 

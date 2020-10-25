@@ -15,8 +15,8 @@ defmodule Geometry.MultiLineStringZTest do
       geo_json =
         MultiLineStringZ.to_geo_json(
           MultiLineStringZ.from_coordinates([
-            [{-1, 1, 1}, {2, 2, 2}, {-3, 3, 3}],
-            [{-10, 10, 10}, {-20, 20, 20}]
+            [[-1, 1, 1], [2, 2, 2], [-3, 3, 3]],
+            [[-10, 10, 10], [-20, 20, 20]]
           ])
         )
 
@@ -45,24 +45,18 @@ defmodule Geometry.MultiLineStringZTest do
            }
         """)
 
-      multi_line_string = %MultiLineStringZ{
-        line_strings:
-          MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: -1, y: 1, z: 1},
-                %PointZ{x: 2, y: 2, z: 2},
-                %PointZ{x: -3, y: 3, z: 3}
-              ]
-            },
-            %LineStringZ{
-              points: [
-                %PointZ{x: -10, y: 10, z: 10},
-                %PointZ{x: -20, y: 20, z: 20}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringZ.new([
+          LineStringZ.new([
+            PointZ.new(-1, 1, 1),
+            PointZ.new(2, 2, 2),
+            PointZ.new(-3, 3, 3)
+          ]),
+          LineStringZ.new([
+            PointZ.new(-10, 10, 10),
+            PointZ.new(-20, 20, 20)
           ])
-      }
+        ])
 
       assert MultiLineStringZ.from_geo_json!(geo_json) == multi_line_string
     end
@@ -86,8 +80,8 @@ defmodule Geometry.MultiLineStringZTest do
       wkt =
         MultiLineStringZ.to_wkt(
           MultiLineStringZ.new([
-            [PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)],
-            [PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)]
+            LineStringZ.new([PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)]),
+            LineStringZ.new([PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)])
           ])
         )
 
@@ -96,12 +90,13 @@ defmodule Geometry.MultiLineStringZTest do
       assert wkt =~ "(7.1 8.1 1.1, 9.2 5.2 2.2)"
     end
 
+    @tag :only
     test "returns WKT with SRID for a MultiLineStringZ" do
       wkt =
         MultiLineStringZ.to_wkt(
           MultiLineStringZ.new([
-            [PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)],
-            [PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)]
+            LineStringZ.new([PointZ.new(7.1, 8.1, 1.1), PointZ.new(9.2, 5.2, 2.2)]),
+            LineStringZ.new([PointZ.new(5.5, 9.2, 3.1), PointZ.new(1.2, 3.2, 4.2)])
           ]),
           srid: 555
         )
@@ -124,19 +119,15 @@ defmodule Geometry.MultiLineStringZTest do
       multi_line_string = %MultiLineStringZ{
         line_strings:
           MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: 40, y: 30, z: 10},
-                %PointZ{x: 30, y: 30, z: 25}
-              ]
-            },
-            %LineStringZ{
-              points: [
-                %PointZ{x: 10, y: 20, z: 10},
-                %PointZ{x: 20, y: 10, z: 35},
-                %PointZ{x: 20, y: 40, z: 10}
-              ]
-            }
+            [
+              [40, 30, 10],
+              [30, 30, 25]
+            ],
+            [
+              [10, 20, 10],
+              [20, 10, 35],
+              [20, 40, 10]
+            ]
           ])
       }
 
@@ -154,19 +145,15 @@ defmodule Geometry.MultiLineStringZTest do
       multi_line_string = %MultiLineStringZ{
         line_strings:
           MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: 40, y: 30, z: 10},
-                %PointZ{x: 30, y: 30, z: 25}
-              ]
-            },
-            %LineStringZ{
-              points: [
-                %PointZ{x: 10, y: 20, z: 10},
-                %PointZ{x: 20, y: 10, z: 35},
-                %PointZ{x: 20, y: 40, z: 10}
-              ]
-            }
+            [
+              [40, 30, 10],
+              [30, 30, 25]
+            ],
+            [
+              [10, 20, 10],
+              [20, 10, 35],
+              [20, 40, 10]
+            ]
           ])
       }
 
@@ -189,19 +176,15 @@ defmodule Geometry.MultiLineStringZTest do
       multi_line_string = %MultiLineStringZ{
         line_strings:
           MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: 40.0, y: 40.0, z: 30.0},
-                %PointZ{x: 30.0, y: 30.0, z: 40.0}
-              ]
-            },
-            %LineStringZ{
-              points: [
-                %PointZ{x: 10.0, y: 10.0, z: 20.0},
-                %PointZ{x: 20.0, y: 20.0, z: 40.0},
-                %PointZ{x: 10.0, y: 40.0, z: 10.0}
-              ]
-            }
+            [
+              [40.0, 40.0, 30.0],
+              [30.0, 30.0, 40.0]
+            ],
+            [
+              [10.0, 10.0, 20.0],
+              [20.0, 20.0, 40.0],
+              [10.0, 40.0, 10.0]
+            ]
           ])
       }
 
@@ -232,24 +215,18 @@ defmodule Geometry.MultiLineStringZTest do
       403E000000000000403E0000000000004044000000000000\
       """
 
-      multi_line_string = %MultiLineStringZ{
-        line_strings:
-          MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: 40.0, y: 40.0, z: 30.0},
-                %PointZ{x: 30.0, y: 30.0, z: 40.0}
-              ]
-            },
-            %LineStringZ{
-              points: [
-                %PointZ{x: 10.0, y: 10.0, z: 20.0},
-                %PointZ{x: 20.0, y: 20.0, z: 40.0},
-                %PointZ{x: 10.0, y: 40.0, z: 10.0}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringZ.new([
+          LineStringZ.new([
+            PointZ.new(40.0, 40.0, 30.0),
+            PointZ.new(30.0, 30.0, 40.0)
+          ]),
+          LineStringZ.new([
+            PointZ.new(10.0, 10.0, 20.0),
+            PointZ.new(20.0, 20.0, 40.0),
+            PointZ.new(10.0, 40.0, 10.0)
           ])
-      }
+        ])
 
       assert MultiLineStringZ.from_wkb(wkb) == {:ok, multi_line_string}
     end
@@ -274,24 +251,18 @@ defmodule Geometry.MultiLineStringZTest do
       403E000000000000403E0000000000004044000000000000\
       """
 
-      multi_line_string = %MultiLineStringZ{
-        line_strings:
-          MapSet.new([
-            %LineStringZ{
-              points: [
-                %PointZ{x: 40.0, y: 40.0, z: 30.0},
-                %PointZ{x: 30.0, y: 30.0, z: 40.0}
-              ]
-            },
-            %LineStringZ{
-              points: [
-                %PointZ{x: 10.0, y: 10.0, z: 20.0},
-                %PointZ{x: 20.0, y: 20.0, z: 40.0},
-                %PointZ{x: 10.0, y: 40.0, z: 10.0}
-              ]
-            }
+      multi_line_string =
+        MultiLineStringZ.new([
+          LineStringZ.new([
+            PointZ.new(40.0, 40.0, 30.0),
+            PointZ.new(30.0, 30.0, 40.0)
+          ]),
+          LineStringZ.new([
+            PointZ.new(10.0, 10.0, 20.0),
+            PointZ.new(20.0, 20.0, 40.0),
+            PointZ.new(10.0, 40.0, 10.0)
           ])
-      }
+        ])
 
       assert MultiLineStringZ.from_wkb!(wkb) == multi_line_string
     end
@@ -319,6 +290,6 @@ defmodule Geometry.MultiLineStringZTest do
         ])
       ])
 
-    assert [%LineStringZ{}] = Enum.slice(multi_line_string, 1, 1)
+    assert [_line_string] = Enum.slice(multi_line_string, 1, 1)
   end
 end

@@ -25,10 +25,12 @@ defmodule Geometry.GeometryCollectionTest do
             Point.new(2.1, 2.2)
           ]),
           Polygon.new([
-            Point.new(1.1, 1.2),
-            Point.new(2.1, 2.2),
-            Point.new(3.3, 2.2),
-            Point.new(1.1, 1.2)
+            LineString.new([
+              Point.new(1.1, 1.2),
+              Point.new(2.1, 2.2),
+              Point.new(3.3, 2.2),
+              Point.new(1.1, 1.2)
+            ])
           ])
         ])
 
@@ -38,7 +40,7 @@ defmodule Geometry.GeometryCollectionTest do
       03000000\
       """
 
-      assert result = GeometryCollection.to_wkb(collection)
+      assert result = GeometryCollection.to_wkb(collection, endian: :ndr)
       assert String.starts_with?(result, wkb)
       assert GeometryCollection.from_wkb!(result) == collection
     end
@@ -63,7 +65,7 @@ defmodule Geometry.GeometryCollectionTest do
 
       assert GeometryCollection.from_wkb!(wkb) ==
                %GeometryCollection{
-                 geometries: MapSet.new([%Point{x: 1.0, y: 2.0}])
+                 geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
                }
     end
 
@@ -80,7 +82,7 @@ defmodule Geometry.GeometryCollectionTest do
 
       assert GeometryCollection.from_wkb!(wkb) ==
                {%GeometryCollection{
-                  geometries: MapSet.new([%Point{x: 1.0, y: 2.0}])
+                  geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
                 }, 55}
     end
 
@@ -123,7 +125,7 @@ defmodule Geometry.GeometryCollectionTest do
       assert GeometryCollection.from_wkb(wkb) ==
                {:ok,
                 %GeometryCollection{
-                  geometries: MapSet.new([%Point{x: 1.0, y: 2.0}])
+                  geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
                 }}
     end
 
@@ -141,7 +143,7 @@ defmodule Geometry.GeometryCollectionTest do
       assert GeometryCollection.from_wkb(wkb) ==
                {:ok,
                 %GeometryCollection{
-                  geometries: MapSet.new([%Point{x: 1.0, y: 2.0}])
+                  geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
                 }, 55}
     end
 
@@ -167,7 +169,7 @@ defmodule Geometry.GeometryCollectionTest do
                {
                  :ok,
                  %GeometryCollection{
-                   geometries: MapSet.new([%Point{x: 1.1, y: 2.2}])
+                   geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                  }
                }
     end
@@ -177,7 +179,7 @@ defmodule Geometry.GeometryCollectionTest do
                {
                  :ok,
                  %GeometryCollection{
-                   geometries: MapSet.new([%Point{x: 1.1, y: 2.2}])
+                   geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                  },
                  123
                }
@@ -195,14 +197,14 @@ defmodule Geometry.GeometryCollectionTest do
     test "returns a GeometryCollection" do
       assert GeometryCollection.from_wkt!("GeometryCollection (Point (1.1 2.2))") ==
                %GeometryCollection{
-                 geometries: MapSet.new([%Point{x: 1.1, y: 2.2}])
+                 geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                }
     end
 
     test "returns a GeometryCollection with an SRID" do
       assert GeometryCollection.from_wkt!("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
                {%GeometryCollection{
-                  geometries: MapSet.new([%Point{x: 1.1, y: 2.2}])
+                  geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                 }, 123}
     end
 
@@ -229,7 +231,7 @@ defmodule Geometry.GeometryCollectionTest do
 
       assert GeometryCollection.from_geo_json!(geo_json) ==
                %GeometryCollection{
-                 geometries: MapSet.new([%Point{x: 1.1, y: 2.2}])
+                 geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                }
     end
 

@@ -4,7 +4,9 @@ defmodule Geometry.PolygonZTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{PointZ, PolygonZ}
+  import Prove
+
+  alias Geometry.{LineStringZ, PointZ, PolygonZ}
 
   doctest Geometry.PolygonZ, import: true
 
@@ -25,17 +27,19 @@ defmodule Geometry.PolygonZTest do
       assert PolygonZ.from_wkb(wkb) ==
                {:ok,
                 %PolygonZ{
-                  exterior: [
-                    %PointZ{x: 30.0, y: 10.0, z: 20.0},
-                    %PointZ{x: 40.0, y: 40.0, z: 10.0},
-                    %PointZ{x: 20.0, y: 40.0, z: 25.0},
-                    %PointZ{x: 10.0, y: 20.0, z: 15.0},
-                    %PointZ{x: 30.0, y: 10.0, z: 20.0}
-                  ],
-                  interiors: []
+                  rings: [
+                    [
+                      [30.0, 10.0, 20.0],
+                      [40.0, 40.0, 10.0],
+                      [20.0, 40.0, 25.0],
+                      [10.0, 20.0, 15.0],
+                      [30.0, 10.0, 20.0]
+                    ]
+                  ]
                 }}
     end
 
+    @tag :only
     test "returns PolygonZ with hole and SRID (ndr) " do
       wkb = """
       01\
@@ -58,19 +62,19 @@ defmodule Geometry.PolygonZTest do
       assert PolygonZ.from_wkb(wkb) ==
                {:ok,
                 %PolygonZ{
-                  exterior: [
-                    %PointZ{x: 35.0, y: 10.0, z: 15.0},
-                    %PointZ{x: 45.0, y: 45.0, z: 10.0},
-                    %PointZ{x: 15.0, y: 40.0, z: 20.0},
-                    %PointZ{x: 10.0, y: 20.0, z: 15.0},
-                    %PointZ{x: 35.0, y: 10.0, z: 15.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZ{x: 20.0, y: 30.0, z: 15.0},
-                      %PointZ{x: 35.0, y: 35.0, z: 10.0},
-                      %PointZ{x: 30.0, y: 20.0, z: 25.0},
-                      %PointZ{x: 20.0, y: 30.0, z: 15.0}
+                      [35.0, 10.0, 15.0],
+                      [45.0, 45.0, 10.0],
+                      [15.0, 40.0, 20.0],
+                      [10.0, 20.0, 15.0],
+                      [35.0, 10.0, 15.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0],
+                      [35.0, 35.0, 10.0],
+                      [30.0, 20.0, 25.0],
+                      [20.0, 30.0, 15.0]
                     ]
                   ]
                 }, 333}
@@ -92,17 +96,18 @@ defmodule Geometry.PolygonZTest do
       """
 
       polygon = %PolygonZ{
-        exterior: [
-          %PointZ{x: 30.0, y: 10.0, z: 20.0},
-          %PointZ{x: 40.0, y: 40.0, z: 10.0},
-          %PointZ{x: 20.0, y: 40.0, z: 25.0},
-          %PointZ{x: 10.0, y: 20.0, z: 15.0},
-          %PointZ{x: 30.0, y: 10.0, z: 20.0}
-        ],
-        interiors: []
+        rings: [
+          [
+            [30.0, 10.0, 20.0],
+            [40.0, 40.0, 10.0],
+            [20.0, 40.0, 25.0],
+            [10.0, 20.0, 15.0],
+            [30.0, 10.0, 20.0]
+          ]
+        ]
       }
 
-      assert PolygonZ.to_wkb(polygon, endian: :xdr) == wkb
+      assert PolygonZ.to_wkb(polygon) == wkb
     end
 
     test "returns PolygonZ with hole and SRID (ndr) " do
@@ -125,24 +130,24 @@ defmodule Geometry.PolygonZTest do
       """
 
       polygon = %PolygonZ{
-        exterior: [
-          %PointZ{x: 35.0, y: 10.0, z: 15.0},
-          %PointZ{x: 45.0, y: 45.0, z: 10.0},
-          %PointZ{x: 15.0, y: 40.0, z: 20.0},
-          %PointZ{x: 10.0, y: 20.0, z: 15.0},
-          %PointZ{x: 35.0, y: 10.0, z: 15.0}
-        ],
-        interiors: [
+        rings: [
           [
-            %PointZ{x: 20.0, y: 30.0, z: 15.0},
-            %PointZ{x: 35.0, y: 35.0, z: 10.0},
-            %PointZ{x: 30.0, y: 20.0, z: 25.0},
-            %PointZ{x: 20.0, y: 30.0, z: 15.0}
+            [35.0, 10.0, 15.0],
+            [45.0, 45.0, 10.0],
+            [15.0, 40.0, 20.0],
+            [10.0, 20.0, 15.0],
+            [35.0, 10.0, 15.0]
+          ],
+          [
+            [20.0, 30.0, 15.0],
+            [35.0, 35.0, 10.0],
+            [30.0, 20.0, 25.0],
+            [20.0, 30.0, 15.0]
           ]
         ]
       }
 
-      assert PolygonZ.to_wkb(polygon, srid: 333) == wkb
+      assert PolygonZ.to_wkb(polygon, srid: 333, endian: :ndr) == wkb
     end
   end
 
@@ -162,14 +167,15 @@ defmodule Geometry.PolygonZTest do
 
       assert PolygonZ.from_wkb!(wkb) ==
                %PolygonZ{
-                 exterior: [
-                   %PointZ{x: 30.0, y: 10.0, z: 20.0},
-                   %PointZ{x: 40.0, y: 40.0, z: 10.0},
-                   %PointZ{x: 20.0, y: 40.0, z: 25.0},
-                   %PointZ{x: 10.0, y: 20.0, z: 15.0},
-                   %PointZ{x: 30.0, y: 10.0, z: 20.0}
-                 ],
-                 interiors: []
+                 rings: [
+                   [
+                     [30.0, 10.0, 20.0],
+                     [40.0, 40.0, 10.0],
+                     [20.0, 40.0, 25.0],
+                     [10.0, 20.0, 15.0],
+                     [30.0, 10.0, 20.0]
+                   ]
+                 ]
                }
     end
 
@@ -194,19 +200,19 @@ defmodule Geometry.PolygonZTest do
 
       assert PolygonZ.from_wkb!(wkb) ==
                {%PolygonZ{
-                  exterior: [
-                    %PointZ{x: 35.0, y: 10.0, z: 15.0},
-                    %PointZ{x: 45.0, y: 45.0, z: 10.0},
-                    %PointZ{x: 15.0, y: 40.0, z: 20.0},
-                    %PointZ{x: 10.0, y: 20.0, z: 15.0},
-                    %PointZ{x: 35.0, y: 10.0, z: 15.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZ{x: 20.0, y: 30.0, z: 15.0},
-                      %PointZ{x: 35.0, y: 35.0, z: 10.0},
-                      %PointZ{x: 30.0, y: 20.0, z: 25.0},
-                      %PointZ{x: 20.0, y: 30.0, z: 15.0}
+                      [35.0, 10.0, 15.0],
+                      [45.0, 45.0, 10.0],
+                      [15.0, 40.0, 20.0],
+                      [10.0, 20.0, 15.0],
+                      [35.0, 10.0, 15.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0],
+                      [35.0, 35.0, 10.0],
+                      [30.0, 20.0, 25.0],
+                      [20.0, 30.0, 15.0]
                     ]
                   ]
                 }, 333}
@@ -241,14 +247,15 @@ defmodule Geometry.PolygonZTest do
       assert PolygonZ.from_geo_json!(geo_json)
 
       %PolygonZ{
-        exterior: [
-          %PointZ{x: 35, y: 10, z: 11},
-          %PointZ{x: 45, y: 45, z: 21},
-          %PointZ{x: 15, y: 40, z: 31},
-          %PointZ{x: 10, y: 20, z: 11},
-          %PointZ{x: 35, y: 10, z: 11}
-        ],
-        interiors: []
+        rings: [
+          [
+            [35, 10, 11],
+            [45, 45, 21],
+            [15, 40, 31],
+            [10, 20, 11],
+            [35, 10, 11]
+          ]
+        ]
       }
     end
 
@@ -273,19 +280,19 @@ defmodule Geometry.PolygonZTest do
 
       assert PolygonZ.from_wkt!(wkt) ==
                %PolygonZ{
-                 exterior: [
-                   %PointZ{x: 35, y: 10, z: 11},
-                   %PointZ{x: 45, y: 45, z: 22},
-                   %PointZ{x: 15, y: 40, z: 33},
-                   %PointZ{x: 10, y: 20, z: 55},
-                   %PointZ{x: 35, y: 10, z: 11}
-                 ],
-                 interiors: [
+                 rings: [
                    [
-                     %PointZ{x: 20, y: 30, z: 22},
-                     %PointZ{x: 35, y: 35, z: 33},
-                     %PointZ{x: 30, y: 20, z: 88},
-                     %PointZ{x: 20, y: 30, z: 22}
+                     [35, 10, 11],
+                     [45, 45, 22],
+                     [15, 40, 33],
+                     [10, 20, 55],
+                     [35, 10, 11]
+                   ],
+                   [
+                     [20, 30, 22],
+                     [35, 35, 33],
+                     [30, 20, 88],
+                     [20, 30, 22]
                    ]
                  ]
                }
@@ -302,19 +309,19 @@ defmodule Geometry.PolygonZTest do
 
       assert PolygonZ.from_wkt!(wkt) ==
                {%PolygonZ{
-                  exterior: [
-                    %PointZ{x: 35, y: 10, z: 11},
-                    %PointZ{x: 45, y: 45, z: 22},
-                    %PointZ{x: 15, y: 40, z: 33},
-                    %PointZ{x: 10, y: 20, z: 55},
-                    %PointZ{x: 35, y: 10, z: 11}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZ{x: 20, y: 30, z: 22},
-                      %PointZ{x: 35, y: 35, z: 33},
-                      %PointZ{x: 30, y: 20, z: 88},
-                      %PointZ{x: 20, y: 30, z: 22}
+                      [35, 10, 11],
+                      [45, 45, 22],
+                      [15, 40, 33],
+                      [10, 20, 55],
+                      [35, 10, 11]
+                    ],
+                    [
+                      [20, 30, 22],
+                      [35, 35, 33],
+                      [30, 20, 88],
+                      [20, 30, 22]
                     ]
                   ]
                 }, 789}
@@ -326,6 +333,42 @@ defmodule Geometry.PolygonZTest do
       assert_raise Geometry.Error, message, fn ->
         PolygonZ.from_wkt!("Daisy")
       end
+    end
+  end
+
+  describe "to_wkt/2:" do
+    @tag :only
+    prove PolygonZ.to_wkt(PolygonZ.new()) == "Polygon Z EMPTY"
+
+    @tag :only
+    prove PolygonZ.to_wkt(PolygonZ.new(), srid: 1123) == "SRID=1123;Polygon Z EMPTY"
+  end
+
+  describe "to_wkt/2" do
+    @tag :only
+    test "returns WKT" do
+      polygon =
+        PolygonZ.new([
+          LineStringZ.new([
+            PointZ.new(35, 10, 13),
+            PointZ.new(45, 45, 23),
+            PointZ.new(10, 20, 33),
+            PointZ.new(35, 10, 13)
+          ]),
+          LineStringZ.new([
+            PointZ.new(20, 30, 13),
+            PointZ.new(35, 35, 23),
+            PointZ.new(30, 20, 33),
+            PointZ.new(20, 30, 13)
+          ])
+        ])
+
+      assert PolygonZ.to_wkt(polygon) == """
+             Polygon Z (\
+             (35 10 13, 45 45 23, 10 20 33, 35 10 13), \
+             (20 30 13, 35 35 23, 30 20 33, 20 30 13)\
+             )\
+             """
     end
   end
 end

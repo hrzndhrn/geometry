@@ -6,7 +6,7 @@ defmodule Geometry.MultiPointTest do
 
   alias Geometry.{MultiPoint, Point}
 
-  doctest Geometry.MultiPoint, import: true
+  doctest MultiPoint, import: true
 
   @moduletag :multi_point
 
@@ -47,8 +47,8 @@ defmodule Geometry.MultiPointTest do
                %MultiPoint{
                  points:
                    MapSet.new([
-                     %Point{x: 1.1, y: 1.2},
-                     %Point{x: 20.1, y: 20.2}
+                     [1.1, 1.2],
+                     [20.1, 20.2]
                    ])
                }
     end
@@ -91,6 +91,7 @@ defmodule Geometry.MultiPointTest do
   end
 
   describe "from_wkb/1" do
+    @tag :only
     test "returns a MultiPoint (xdr)" do
       wkb = """
       00\
@@ -110,9 +111,9 @@ defmodule Geometry.MultiPointTest do
       multi_point = %MultiPoint{
         points:
           MapSet.new([
-            %Point{x: 30.0, y: 10.0},
-            %Point{x: 20.0, y: 40.0},
-            %Point{x: 40.0, y: 40.0}
+            [30.0, 10.0],
+            [20.0, 40.0],
+            [40.0, 40.0]
           ])
       }
 
@@ -160,9 +161,9 @@ defmodule Geometry.MultiPointTest do
       multi_point = %MultiPoint{
         points:
           MapSet.new([
-            %Point{x: 30.0, y: 10.0},
-            %Point{x: 20.0, y: 40.0},
-            %Point{x: 40.0, y: 40.0}
+            [30.0, 10.0],
+            [20.0, 40.0],
+            [40.0, 40.0]
           ])
       }
 
@@ -181,7 +182,7 @@ defmodule Geometry.MultiPointTest do
       """
 
       multi_point = %MultiPoint{
-        points: MapSet.new([%Point{x: 30.0, y: 10.0}])
+        points: MapSet.new([[30.0, 10.0]])
       }
 
       assert MultiPoint.from_wkb!(wkb) == {multi_point, 9999}
@@ -203,9 +204,9 @@ defmodule Geometry.MultiPointTest do
       multi_point = %MultiPoint{
         points:
           MapSet.new([
-            %Point{x: 30.0, y: 10.0},
-            %Point{x: 20.0, y: 40.0},
-            %Point{x: 40.0, y: 40.0}
+            [30.0, 10.0],
+            [20.0, 40.0],
+            [40.0, 40.0]
           ])
       }
 
@@ -228,10 +229,10 @@ defmodule Geometry.MultiPointTest do
       """
 
       multi_point = %MultiPoint{
-        points: MapSet.new([%Point{x: 30.0, y: 10.0}])
+        points: MapSet.new([[30.0, 10.0]])
       }
 
-      assert MultiPoint.to_wkb(multi_point, srid: 9999) == wkb
+      assert MultiPoint.to_wkb(multi_point, srid: 9999, endian: :ndr) == wkb
     end
 
     test "returns a WKB for an empty MultiPoint (xdr)" do
@@ -251,7 +252,7 @@ defmodule Geometry.MultiPointTest do
       00000000\
       """
 
-      assert MultiPoint.to_wkb(%MultiPoint{}) == wkb
+      assert MultiPoint.to_wkb(%MultiPoint{}, endian: :ndr) == wkb
     end
   end
 
@@ -261,8 +262,8 @@ defmodule Geometry.MultiPointTest do
                %MultiPoint{
                  points:
                    MapSet.new([
-                     %Point{x: -5.1, y: 7.8},
-                     %Point{x: 0.1, y: 0.2}
+                     [-5.1, 7.8],
+                     [0.1, 0.2]
                    ])
                }
     end
@@ -272,8 +273,8 @@ defmodule Geometry.MultiPointTest do
                {%MultiPoint{
                   points:
                     MapSet.new([
-                      %Point{x: -5.1, y: 7.8},
-                      %Point{x: 0.1, y: 0.2}
+                      [-5.1, 7.8],
+                      [0.1, 0.2]
                     ])
                 }, 7219}
     end
@@ -294,6 +295,6 @@ defmodule Geometry.MultiPointTest do
         Point.new(1.1, 2.2)
       ])
 
-    assert [%Point{}] = Enum.slice(multi_point, 0, 1)
+    assert [_point] = Enum.slice(multi_point, 0, 1)
   end
 end

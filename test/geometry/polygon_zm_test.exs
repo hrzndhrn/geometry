@@ -1,7 +1,9 @@
 defmodule Geometry.PolygonZMTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{PointZM, PolygonZM}
+  import Prove
+
+  alias Geometry.{LineStringZM, PointZM, PolygonZM}
 
   doctest Geometry.PolygonZM, import: true
 
@@ -22,17 +24,19 @@ defmodule Geometry.PolygonZMTest do
       assert PolygonZM.from_wkb(wkb) ==
                {:ok,
                 %PolygonZM{
-                  exterior: [
-                    %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0},
-                    %PointZM{x: 40.0, y: 40.0, z: 10.0, m: 20.0},
-                    %PointZM{x: 20.0, y: 40.0, z: 25.0, m: 15.0},
-                    %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0}
-                  ],
-                  interiors: []
+                  rings: [
+                    [
+                      [30.0, 10.0, 20.0, 15.0],
+                      [40.0, 40.0, 10.0, 20.0],
+                      [20.0, 40.0, 25.0, 15.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [30.0, 10.0, 20.0, 15.0]
+                    ]
+                  ]
                 }}
     end
 
+    @tag :only
     test "returns PolygonZM with hole and SRID (ndr) " do
       wkb = """
       01\
@@ -55,19 +59,19 @@ defmodule Geometry.PolygonZMTest do
       assert PolygonZM.from_wkb(wkb) ==
                {:ok,
                 %PolygonZM{
-                  exterior: [
-                    %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 45.0, y: 45.0, z: 10.0, m: 20.0},
-                    %PointZM{x: 15.0, y: 40.0, z: 20.0, m: 10.0},
-                    %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0},
-                      %PointZM{x: 35.0, y: 35.0, z: 10.0, m: 50.0},
-                      %PointZM{x: 30.0, y: 20.0, z: 25.0, m: 35.0},
-                      %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0}
+                      [35.0, 10.0, 15.0, 25.0],
+                      [45.0, 45.0, 10.0, 20.0],
+                      [15.0, 40.0, 20.0, 10.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [35.0, 10.0, 15.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0, 10.0],
+                      [35.0, 35.0, 10.0, 50.0],
+                      [30.0, 20.0, 25.0, 35.0],
+                      [20.0, 30.0, 15.0, 10.0]
                     ]
                   ]
                 }, 333}
@@ -89,17 +93,18 @@ defmodule Geometry.PolygonZMTest do
       """
 
       polygon = %PolygonZM{
-        exterior: [
-          %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0},
-          %PointZM{x: 40.0, y: 40.0, z: 10.0, m: 20.0},
-          %PointZM{x: 20.0, y: 40.0, z: 25.0, m: 15.0},
-          %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-          %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0}
-        ],
-        interiors: []
+        rings: [
+          [
+            [30.0, 10.0, 20.0, 15.0],
+            [40.0, 40.0, 10.0, 20.0],
+            [20.0, 40.0, 25.0, 15.0],
+            [10.0, 20.0, 15.0, 25.0],
+            [30.0, 10.0, 20.0, 15.0]
+          ]
+        ]
       }
 
-      assert PolygonZM.to_wkb(polygon, endian: :xdr) == wkb
+      assert PolygonZM.to_wkb(polygon) == wkb
     end
 
     test "returns PolygonZM with hole and SRID (ndr) " do
@@ -122,24 +127,24 @@ defmodule Geometry.PolygonZMTest do
       """
 
       polygon = %PolygonZM{
-        exterior: [
-          %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0},
-          %PointZM{x: 45.0, y: 45.0, z: 10.0, m: 20.0},
-          %PointZM{x: 15.0, y: 40.0, z: 20.0, m: 10.0},
-          %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-          %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0}
-        ],
-        interiors: [
+        rings: [
           [
-            %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0},
-            %PointZM{x: 35.0, y: 35.0, z: 10.0, m: 50.0},
-            %PointZM{x: 30.0, y: 20.0, z: 25.0, m: 35.0},
-            %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0}
+            [35.0, 10.0, 15.0, 25.0],
+            [45.0, 45.0, 10.0, 20.0],
+            [15.0, 40.0, 20.0, 10.0],
+            [10.0, 20.0, 15.0, 25.0],
+            [35.0, 10.0, 15.0, 25.0]
+          ],
+          [
+            [20.0, 30.0, 15.0, 10.0],
+            [35.0, 35.0, 10.0, 50.0],
+            [30.0, 20.0, 25.0, 35.0],
+            [20.0, 30.0, 15.0, 10.0]
           ]
         ]
       }
 
-      assert PolygonZM.to_wkb(polygon, srid: 333) == wkb
+      assert PolygonZM.to_wkb(polygon, srid: 333, endian: :ndr) == wkb
     end
   end
 
@@ -159,14 +164,15 @@ defmodule Geometry.PolygonZMTest do
 
       assert PolygonZM.from_wkb!(wkb) ==
                %PolygonZM{
-                 exterior: [
-                   %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0},
-                   %PointZM{x: 40.0, y: 40.0, z: 10.0, m: 20.0},
-                   %PointZM{x: 20.0, y: 40.0, z: 25.0, m: 15.0},
-                   %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-                   %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0}
-                 ],
-                 interiors: []
+                 rings: [
+                   [
+                     [30.0, 10.0, 20.0, 15.0],
+                     [40.0, 40.0, 10.0, 20.0],
+                     [20.0, 40.0, 25.0, 15.0],
+                     [10.0, 20.0, 15.0, 25.0],
+                     [30.0, 10.0, 20.0, 15.0]
+                   ]
+                 ]
                }
     end
 
@@ -191,19 +197,19 @@ defmodule Geometry.PolygonZMTest do
 
       assert PolygonZM.from_wkb!(wkb) ==
                {%PolygonZM{
-                  exterior: [
-                    %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 45.0, y: 45.0, z: 10.0, m: 20.0},
-                    %PointZM{x: 15.0, y: 40.0, z: 20.0, m: 10.0},
-                    %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0},
-                      %PointZM{x: 35.0, y: 35.0, z: 10.0, m: 50.0},
-                      %PointZM{x: 30.0, y: 20.0, z: 25.0, m: 35.0},
-                      %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0}
+                      [35.0, 10.0, 15.0, 25.0],
+                      [45.0, 45.0, 10.0, 20.0],
+                      [15.0, 40.0, 20.0, 10.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [35.0, 10.0, 15.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0, 10.0],
+                      [35.0, 35.0, 10.0, 50.0],
+                      [30.0, 20.0, 25.0, 35.0],
+                      [20.0, 30.0, 15.0, 10.0]
                     ]
                   ]
                 }, 333}
@@ -238,14 +244,15 @@ defmodule Geometry.PolygonZMTest do
       assert PolygonZM.from_geo_json!(geo_json)
 
       %PolygonZM{
-        exterior: [
-          %PointZM{x: 35, y: 10, z: 11, m: 12},
-          %PointZM{x: 45, y: 45, z: 21, m: 22},
-          %PointZM{x: 15, y: 40, z: 31, m: 33},
-          %PointZM{x: 10, y: 20, z: 11, m: 55},
-          %PointZM{x: 35, y: 10, z: 11, m: 12}
-        ],
-        interiors: []
+        rings: [
+          [
+            [35, 10, 11, 12],
+            [45, 45, 21, 22],
+            [15, 40, 31, 33],
+            [10, 20, 11, 55],
+            [35, 10, 11, 12]
+          ]
+        ]
       }
     end
 
@@ -270,19 +277,19 @@ defmodule Geometry.PolygonZMTest do
 
       assert PolygonZM.from_wkt!(wkt) ==
                %PolygonZM{
-                 exterior: [
-                   %PointZM{x: 35, y: 10, z: 11, m: 22},
-                   %PointZM{x: 45, y: 45, z: 22, m: 33},
-                   %PointZM{x: 15, y: 40, z: 33, m: 44},
-                   %PointZM{x: 10, y: 20, z: 55, m: 66},
-                   %PointZM{x: 35, y: 10, z: 11, m: 22}
-                 ],
-                 interiors: [
+                 rings: [
                    [
-                     %PointZM{x: 20, y: 30, z: 22, m: 55},
-                     %PointZM{x: 35, y: 35, z: 33, m: 66},
-                     %PointZM{x: 30, y: 20, z: 88, m: 99},
-                     %PointZM{x: 20, y: 30, z: 22, m: 55}
+                     [35, 10, 11, 22],
+                     [45, 45, 22, 33],
+                     [15, 40, 33, 44],
+                     [10, 20, 55, 66],
+                     [35, 10, 11, 22]
+                   ],
+                   [
+                     [20, 30, 22, 55],
+                     [35, 35, 33, 66],
+                     [30, 20, 88, 99],
+                     [20, 30, 22, 55]
                    ]
                  ]
                }
@@ -299,19 +306,19 @@ defmodule Geometry.PolygonZMTest do
 
       assert PolygonZM.from_wkt!(wkt) ==
                {%PolygonZM{
-                  exterior: [
-                    %PointZM{x: 35, y: 10, z: 11, m: 22},
-                    %PointZM{x: 45, y: 45, z: 22, m: 33},
-                    %PointZM{x: 15, y: 40, z: 33, m: 44},
-                    %PointZM{x: 10, y: 20, z: 55, m: 66},
-                    %PointZM{x: 35, y: 10, z: 11, m: 22}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZM{x: 20, y: 30, z: 22, m: 55},
-                      %PointZM{x: 35, y: 35, z: 33, m: 66},
-                      %PointZM{x: 30, y: 20, z: 88, m: 99},
-                      %PointZM{x: 20, y: 30, z: 22, m: 55}
+                      [35, 10, 11, 22],
+                      [45, 45, 22, 33],
+                      [15, 40, 33, 44],
+                      [10, 20, 55, 66],
+                      [35, 10, 11, 22]
+                    ],
+                    [
+                      [20, 30, 22, 55],
+                      [35, 35, 33, 66],
+                      [30, 20, 88, 99],
+                      [20, 30, 22, 55]
                     ]
                   ]
                 }, 789}
@@ -323,6 +330,42 @@ defmodule Geometry.PolygonZMTest do
       assert_raise Geometry.Error, message, fn ->
         PolygonZM.from_wkt!("Daisy")
       end
+    end
+  end
+
+  describe "to_wkt/2:" do
+    @tag :only
+    prove PolygonZM.to_wkt(PolygonZM.new()) == "Polygon ZM EMPTY"
+
+    @tag :only
+    prove PolygonZM.to_wkt(PolygonZM.new(), srid: 1123) == "SRID=1123;Polygon ZM EMPTY"
+  end
+
+  describe "to_wkt/2" do
+    @tag :only
+    test "returns WKT" do
+      polygon =
+        PolygonZM.new([
+          LineStringZM.new([
+            PointZM.new(35, 10, 13, 14),
+            PointZM.new(45, 45, 23, 24),
+            PointZM.new(10, 20, 33, 34),
+            PointZM.new(35, 10, 13, 14)
+          ]),
+          LineStringZM.new([
+            PointZM.new(20, 30, 13, 14),
+            PointZM.new(35, 35, 23, 24),
+            PointZM.new(30, 20, 33, 34),
+            PointZM.new(20, 30, 13, 14)
+          ])
+        ])
+
+      assert PolygonZM.to_wkt(polygon) == """
+             Polygon ZM (\
+             (35 10 13 14, 45 45 23 24, 10 20 33 34, 35 10 13 14), \
+             (20 30 13 14, 35 35 23 24, 30 20 33 34, 20 30 13 14)\
+             )\
+             """
     end
   end
 end

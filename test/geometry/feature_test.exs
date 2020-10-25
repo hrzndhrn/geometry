@@ -18,7 +18,7 @@ defmodule Geometry.FeatureTest do
 
       assert Feature.from_geo_json!(geo_json, type: :m) ==
                %Feature{
-                 geometry: %PointM{x: 1, y: 2, m: 3},
+                 geometry: %PointM{coordinate: [1, 2, 3]},
                  properties: %{"facility" => "Hotel"}
                }
     end

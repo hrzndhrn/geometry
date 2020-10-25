@@ -39,23 +39,23 @@ defmodule GeometryTest do
   doctest Geometry, import: true
 
   describe "from_wkt/1:" do
-    prove Geometry.from_wkt("Point (4 5)") == {:ok, %Point{x: 4, y: 5}}
-    prove Geometry.from_wkt("Point (4 5) \n") == {:ok, %Point{x: 4, y: 5}}
-    prove Geometry.from_wkt("Point Z (4 5 9)") == {:ok, %PointZ{x: 4, y: 5, z: 9}}
-    prove Geometry.from_wkt("Point M (4 6 7)") == {:ok, %PointM{x: 4, y: 6, m: 7}}
-    prove Geometry.from_wkt("Point ZM (5 4 1 3)") == {:ok, %PointZM{x: 5, y: 4, z: 1, m: 3}}
-    prove Geometry.from_wkt("SRID=44;Point (4 5)") == {:ok, %Point{x: 4, y: 5}, 44}
+    prove Geometry.from_wkt("Point (4 5)") == {:ok, %Point{coordinate: [4, 5]}}
+    prove Geometry.from_wkt("Point (4 5) \n") == {:ok, %Point{coordinate: [4, 5]}}
+    prove Geometry.from_wkt("Point Z (4 5 9)") == {:ok, %PointZ{coordinate: [4, 5, 9]}}
+    prove Geometry.from_wkt("Point M (4 6 7)") == {:ok, %PointM{coordinate: [4, 6, 7]}}
+    prove Geometry.from_wkt("Point ZM (5 4 1 3)") == {:ok, %PointZM{coordinate: [5, 4, 1, 3]}}
+    prove Geometry.from_wkt("SRID=44;Point (4 5)") == {:ok, %Point{coordinate: [4, 5]}, 44}
   end
 
   describe "from_wkt/1" do
-    test "returns an error tuple for an invalid coordiante" do
+    test "returns an error tuple for an invalid coordinate" do
       assert Geometry.from_wkt("Point (x 5)") ==
                {:error, "expected Point data", "(x 5)", {1, 0}, 6}
     end
   end
 
   describe "from_wkt!/2" do
-    test "returns an exception for an invalid coordiante in Point" do
+    test "returns an exception for an invalid coordinate in Point" do
       message = "expected Point data at 2:2, got: '(7 X)\n'"
 
       assert_raise Geometry.Error, message, fn ->
@@ -66,7 +66,7 @@ defmodule GeometryTest do
       end
     end
 
-    test "returns an exception for an invalid coordiante in LineString" do
+    test "returns an exception for an invalid coordinate in LineString" do
       message = "expected LineString data at 1:10, got: '(x 1, 2 2...'"
 
       assert_raise Geometry.Error, message, fn ->
@@ -76,11 +76,11 @@ defmodule GeometryTest do
   end
 
   describe "from_wkt!/2:" do
-    prove Geometry.from_wkt!("Point (4 5)") == %Point{x: 4, y: 5}
-    prove Geometry.from_wkt!("Point Z (4 5 9)") == %PointZ{x: 4, y: 5, z: 9}
-    prove Geometry.from_wkt!("Point M (4 6 7)") == %PointM{x: 4, y: 6, m: 7}
-    prove Geometry.from_wkt!("Point ZM (5 4 1 3)") == %PointZM{x: 5, y: 4, z: 1, m: 3}
-    prove Geometry.from_wkt!("SRID=44;Point (4 5)") == {%Point{x: 4, y: 5}, 44}
+    prove Geometry.from_wkt!("Point (4 5)") == %Point{coordinate: [4, 5]}
+    prove Geometry.from_wkt!("Point Z (4 5 9)") == %PointZ{coordinate: [4, 5, 9]}
+    prove Geometry.from_wkt!("Point M (4 6 7)") == %PointM{coordinate: [4, 6, 7]}
+    prove Geometry.from_wkt!("Point ZM (5 4 1 3)") == %PointZM{coordinate: [5, 4, 1, 3]}
+    prove Geometry.from_wkt!("SRID=44;Point (4 5)") == {%Point{coordinate: [4, 5]}, 44}
   end
 
   describe "to_wkt/2:" do
@@ -134,7 +134,7 @@ defmodule GeometryTest do
 
       assert GeoJsonValidator.valid?(geo_json)
 
-      assert Geometry.from_geo_json(geo_json) == {:ok, %Point{x: 1, y: 2}}
+      assert Geometry.from_geo_json(geo_json) == {:ok, %Point{coordinate: [1, 2]}}
     end
 
     test "returns PointZ" do
@@ -145,7 +145,7 @@ defmodule GeometryTest do
 
       assert GeoJsonValidator.valid?(geo_json)
 
-      assert Geometry.from_geo_json(geo_json, type: :z) == {:ok, %PointZ{x: 1, y: 2, z: 3}}
+      assert Geometry.from_geo_json(geo_json, type: :z) == {:ok, %PointZ{coordinate: [1, 2, 3]}}
     end
 
     test "returns PointM" do
@@ -156,7 +156,7 @@ defmodule GeometryTest do
 
       assert GeoJsonValidator.valid?(geo_json)
 
-      assert Geometry.from_geo_json(geo_json, type: :m) == {:ok, %PointM{x: 1, y: 2, m: 3}}
+      assert Geometry.from_geo_json(geo_json, type: :m) == {:ok, %PointM{coordinate: [1, 2, 3]}}
     end
 
     test "returns PointZM" do
@@ -168,7 +168,7 @@ defmodule GeometryTest do
       assert GeoJsonValidator.valid?(geo_json)
 
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
-               {:ok, %PointZM{x: 1, y: 2, z: 3, m: 4}}
+               {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
     end
 
     test "returns LineString" do
@@ -180,7 +180,7 @@ defmodule GeometryTest do
       assert GeoJsonValidator.valid?(geo_json)
 
       assert Geometry.from_geo_json(geo_json) ==
-               {:ok, %LineString{points: [%Point{x: 1, y: 2}, %Point{x: 3, y: 4}]}}
+               {:ok, %LineString{points: [[1, 2], [3, 4]]}}
     end
 
     test "returns LineStringM" do
@@ -192,7 +192,7 @@ defmodule GeometryTest do
       assert GeoJsonValidator.valid?(geo_json)
 
       assert Geometry.from_geo_json(geo_json, type: :m) ==
-               {:ok, %LineStringM{points: [%PointM{x: 1, y: 2, m: 3}, %PointM{x: 3, y: 4, m: 5}]}}
+               {:ok, %LineStringM{points: [[1, 2, 3], [3, 4, 5]]}}
     end
 
     test "returns LineStringZ" do
@@ -204,7 +204,7 @@ defmodule GeometryTest do
       assert GeoJsonValidator.valid?(geo_json)
 
       assert Geometry.from_geo_json(geo_json, type: :z) ==
-               {:ok, %LineStringZ{points: [%PointZ{x: 1, y: 2, z: 3}, %PointZ{x: 3, y: 4, z: 5}]}}
+               {:ok, %LineStringZ{points: [[1, 2, 3], [3, 4, 5]]}}
     end
 
     test "returns LineStringZM" do
@@ -218,7 +218,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
                 %LineStringZM{
-                  points: [%PointZM{x: 1, y: 2, z: 3, m: 4}, %PointZM{x: 3, y: 4, z: 5, m: 6}]
+                  points: [[1, 2, 3, 4], [3, 4, 5, 6]]
                 }}
     end
 
@@ -246,19 +246,19 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json) ==
                {:ok,
                 %Polygon{
-                  exterior: [
-                    %Point{x: 35, y: 10},
-                    %Point{x: 45, y: 45},
-                    %Point{x: 15, y: 40},
-                    %Point{x: 10, y: 20},
-                    %Point{x: 35, y: 10}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %Point{x: 20, y: 30},
-                      %Point{x: 35, y: 35},
-                      %Point{x: 30, y: 20},
-                      %Point{x: 20, y: 30}
+                      [35, 10],
+                      [45, 45],
+                      [15, 40],
+                      [10, 20],
+                      [35, 10]
+                    ],
+                    [
+                      [20, 30],
+                      [35, 35],
+                      [30, 20],
+                      [20, 30]
                     ]
                   ]
                 }}
@@ -288,19 +288,19 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :m) ==
                {:ok,
                 %PolygonM{
-                  exterior: [
-                    %PointM{x: 35, y: 10, m: 1},
-                    %PointM{x: 45, y: 45, m: 2},
-                    %PointM{x: 15, y: 40, m: 1},
-                    %PointM{x: 10, y: 20, m: 2},
-                    %PointM{x: 35, y: 10, m: 1}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointM{x: 20, y: 30, m: 1},
-                      %PointM{x: 35, y: 35, m: 2},
-                      %PointM{x: 30, y: 20, m: 3},
-                      %PointM{x: 20, y: 30, m: 1}
+                      [35, 10, 1],
+                      [45, 45, 2],
+                      [15, 40, 1],
+                      [10, 20, 2],
+                      [35, 10, 1]
+                    ],
+                    [
+                      [20, 30, 1],
+                      [35, 35, 2],
+                      [30, 20, 3],
+                      [20, 30, 1]
                     ]
                   ]
                 }}
@@ -330,19 +330,19 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :z) ==
                {:ok,
                 %PolygonZ{
-                  exterior: [
-                    %PointZ{x: 35, y: 10, z: 1},
-                    %PointZ{x: 45, y: 45, z: 2},
-                    %PointZ{x: 15, y: 40, z: 1},
-                    %PointZ{x: 10, y: 20, z: 2},
-                    %PointZ{x: 35, y: 10, z: 1}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZ{x: 20, y: 30, z: 1},
-                      %PointZ{x: 35, y: 35, z: 2},
-                      %PointZ{x: 30, y: 20, z: 3},
-                      %PointZ{x: 20, y: 30, z: 1}
+                      [35, 10, 1],
+                      [45, 45, 2],
+                      [15, 40, 1],
+                      [10, 20, 2],
+                      [35, 10, 1]
+                    ],
+                    [
+                      [20, 30, 1],
+                      [35, 35, 2],
+                      [30, 20, 3],
+                      [20, 30, 1]
                     ]
                   ]
                 }}
@@ -372,19 +372,19 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
                 %PolygonZM{
-                  exterior: [
-                    %PointZM{x: 35, y: 10, z: 1, m: 2},
-                    %PointZM{x: 45, y: 45, z: 2, m: 2},
-                    %PointZM{x: 15, y: 40, z: 1, m: 3},
-                    %PointZM{x: 10, y: 20, z: 2, m: 4},
-                    %PointZM{x: 35, y: 10, z: 1, m: 2}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZM{x: 20, y: 30, z: 1, m: 4},
-                      %PointZM{x: 35, y: 35, z: 2, m: 3},
-                      %PointZM{x: 30, y: 20, z: 3, m: 2},
-                      %PointZM{x: 20, y: 30, z: 1, m: 4}
+                      [35, 10, 1, 2],
+                      [45, 45, 2, 2],
+                      [15, 40, 1, 3],
+                      [10, 20, 2, 4],
+                      [35, 10, 1, 2]
+                    ],
+                    [
+                      [20, 30, 1, 4],
+                      [35, 35, 2, 3],
+                      [30, 20, 3, 2],
+                      [20, 30, 1, 4]
                     ]
                   ]
                 }}
@@ -409,8 +409,8 @@ defmodule GeometryTest do
                 %MultiPoint{
                   points:
                     MapSet.new([
-                      %Point{x: 1.1, y: 1.2},
-                      %Point{x: 20.1, y: 20.2}
+                      [1.1, 1.2],
+                      [20.1, 20.2]
                     ])
                 }}
     end
@@ -434,8 +434,8 @@ defmodule GeometryTest do
                 %MultiPointM{
                   points:
                     MapSet.new([
-                      %PointM{x: 1.1, y: 1.2, m: 1.3},
-                      %PointM{x: 20.1, y: 20.2, m: 20.3}
+                      [1.1, 1.2, 1.3],
+                      [20.1, 20.2, 20.3]
                     ])
                 }}
     end
@@ -459,8 +459,8 @@ defmodule GeometryTest do
                 %MultiPointZ{
                   points:
                     MapSet.new([
-                      %PointZ{x: 1.1, y: 1.2, z: 1.3},
-                      %PointZ{x: 20.1, y: 20.2, z: 20.3}
+                      [1.1, 1.2, 1.3],
+                      [20.1, 20.2, 20.3]
                     ])
                 }}
     end
@@ -484,8 +484,8 @@ defmodule GeometryTest do
                 %MultiPointZM{
                   points:
                     MapSet.new([
-                      %PointZM{x: 1.1, y: 1.2, z: 1.3, m: 1.4},
-                      %PointZM{x: 20.1, y: 20.2, z: 20.3, m: 20.4}
+                      [1.1, 1.2, 1.3, 1.4],
+                      [20.1, 20.2, 20.3, 20.4]
                     ])
                 }}
     end
@@ -508,12 +508,10 @@ defmodule GeometryTest do
                 %MultiLineStringZM{
                   line_strings:
                     MapSet.new([
-                      %LineStringZM{
-                        points: [
-                          %PointZM{x: 40, y: 30, z: 10, m: 20},
-                          %PointZM{x: 30, y: 30, z: 25, m: 30}
-                        ]
-                      }
+                      [
+                        [40, 30, 10, 20],
+                        [30, 30, 25, 30]
+                      ]
                     ])
                 }}
     end
@@ -536,12 +534,10 @@ defmodule GeometryTest do
                 %MultiLineStringZ{
                   line_strings:
                     MapSet.new([
-                      %LineStringZ{
-                        points: [
-                          %PointZ{x: 40, y: 30, z: 10},
-                          %PointZ{x: 30, y: 30, z: 25}
-                        ]
-                      }
+                      [
+                        [40, 30, 10],
+                        [30, 30, 25]
+                      ]
                     ])
                 }}
     end
@@ -564,12 +560,10 @@ defmodule GeometryTest do
                 %MultiLineStringM{
                   line_strings:
                     MapSet.new([
-                      %LineStringM{
-                        points: [
-                          %PointM{x: 40, y: 30, m: 10},
-                          %PointM{x: 30, y: 30, m: 25}
-                        ]
-                      }
+                      [
+                        [40, 30, 10],
+                        [30, 30, 25]
+                      ]
                     ])
                 }}
     end
@@ -592,12 +586,10 @@ defmodule GeometryTest do
                 %MultiLineString{
                   line_strings:
                     MapSet.new([
-                      %LineString{
-                        points: [
-                          %Point{x: 40, y: 30},
-                          %Point{x: 30, y: 30}
-                        ]
-                      }
+                      [
+                        [40, 30],
+                        [30, 30]
+                      ]
                     ])
                 }}
     end
@@ -609,10 +601,10 @@ defmodule GeometryTest do
           "type": "MultiPolygon",
           "coordinates": [
             [
-              [[6, 2], [8, 2], [8, 4], [6, 2]]
-            ], [
               [[1, 1], [9, 1], [9, 8], [1, 1]],
               [[6, 2], [7, 2], [7, 3], [6, 2]]
+            ], [
+              [[6, 2], [8, 2], [8, 4], [6, 2]]
             ]
           ]
         }
@@ -625,31 +617,13 @@ defmodule GeometryTest do
                 %MultiPolygon{
                   polygons:
                     MapSet.new([
-                      %Polygon{
-                        exterior: [
-                          %Point{x: 1, y: 1},
-                          %Point{x: 9, y: 1},
-                          %Point{x: 9, y: 8},
-                          %Point{x: 1, y: 1}
-                        ],
-                        interiors: [
-                          [
-                            %Point{x: 6, y: 2},
-                            %Point{x: 7, y: 2},
-                            %Point{x: 7, y: 3},
-                            %Point{x: 6, y: 2}
-                          ]
-                        ]
-                      },
-                      %Polygon{
-                        exterior: [
-                          %Point{x: 6, y: 2},
-                          %Point{x: 8, y: 2},
-                          %Point{x: 8, y: 4},
-                          %Point{x: 6, y: 2}
-                        ],
-                        interiors: []
-                      }
+                      [
+                        [[6, 2], [8, 2], [8, 4], [6, 2]]
+                      ],
+                      [
+                        [[1, 1], [9, 1], [9, 8], [1, 1]],
+                        [[6, 2], [7, 2], [7, 3], [6, 2]]
+                      ]
                     ])
                 }}
     end
@@ -677,31 +651,28 @@ defmodule GeometryTest do
                 %MultiPolygonM{
                   polygons:
                     MapSet.new([
-                      %PolygonM{
-                        exterior: [
-                          %PointM{x: 1, y: 1, m: 3},
-                          %PointM{x: 9, y: 1, m: 4},
-                          %PointM{x: 9, y: 8, m: 5},
-                          %PointM{x: 1, y: 1, m: 3}
+                      [
+                        [
+                          [1, 1, 3],
+                          [9, 1, 4],
+                          [9, 8, 5],
+                          [1, 1, 3]
                         ],
-                        interiors: [
-                          [
-                            %PointM{x: 6, y: 2, m: 4},
-                            %PointM{x: 7, y: 2, m: 6},
-                            %PointM{x: 7, y: 3, m: 3},
-                            %PointM{x: 6, y: 2, m: 4}
-                          ]
+                        [
+                          [6, 2, 4],
+                          [7, 2, 6],
+                          [7, 3, 3],
+                          [6, 2, 4]
                         ]
-                      },
-                      %PolygonM{
-                        exterior: [
-                          %PointM{x: 6, y: 2, m: 3},
-                          %PointM{x: 8, y: 2, m: 4},
-                          %PointM{x: 8, y: 4, m: 5},
-                          %PointM{x: 6, y: 2, m: 3}
-                        ],
-                        interiors: []
-                      }
+                      ],
+                      [
+                        [
+                          [6, 2, 3],
+                          [8, 2, 4],
+                          [8, 4, 5],
+                          [6, 2, 3]
+                        ]
+                      ]
                     ])
                 }}
     end
@@ -729,31 +700,28 @@ defmodule GeometryTest do
                 %MultiPolygonZ{
                   polygons:
                     MapSet.new([
-                      %PolygonZ{
-                        exterior: [
-                          %PointZ{x: 1, y: 1, z: 3},
-                          %PointZ{x: 9, y: 1, z: 4},
-                          %PointZ{x: 9, y: 8, z: 5},
-                          %PointZ{x: 1, y: 1, z: 3}
+                      [
+                        [
+                          [1, 1, 3],
+                          [9, 1, 4],
+                          [9, 8, 5],
+                          [1, 1, 3]
                         ],
-                        interiors: [
-                          [
-                            %PointZ{x: 6, y: 2, z: 4},
-                            %PointZ{x: 7, y: 2, z: 6},
-                            %PointZ{x: 7, y: 3, z: 3},
-                            %PointZ{x: 6, y: 2, z: 4}
-                          ]
+                        [
+                          [6, 2, 4],
+                          [7, 2, 6],
+                          [7, 3, 3],
+                          [6, 2, 4]
                         ]
-                      },
-                      %PolygonZ{
-                        exterior: [
-                          %PointZ{x: 6, y: 2, z: 3},
-                          %PointZ{x: 8, y: 2, z: 4},
-                          %PointZ{x: 8, y: 4, z: 5},
-                          %PointZ{x: 6, y: 2, z: 3}
-                        ],
-                        interiors: []
-                      }
+                      ],
+                      [
+                        [
+                          [6, 2, 3],
+                          [8, 2, 4],
+                          [8, 4, 5],
+                          [6, 2, 3]
+                        ]
+                      ]
                     ])
                 }}
     end
@@ -778,34 +746,14 @@ defmodule GeometryTest do
 
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
-                %MultiPolygonZM{
+                %Geometry.MultiPolygonZM{
                   polygons:
                     MapSet.new([
-                      %PolygonZM{
-                        exterior: [
-                          %PointZM{x: 1, y: 1, z: 3, m: 4},
-                          %PointZM{x: 9, y: 1, z: 4, m: 5},
-                          %PointZM{x: 9, y: 8, z: 5, m: 6},
-                          %PointZM{x: 1, y: 1, z: 3, m: 4}
-                        ],
-                        interiors: [
-                          [
-                            %PointZM{x: 6, y: 2, z: 4, m: 3},
-                            %PointZM{x: 7, y: 2, z: 6, m: 7},
-                            %PointZM{x: 7, y: 3, z: 3, m: 4},
-                            %PointZM{x: 6, y: 2, z: 4, m: 3}
-                          ]
-                        ]
-                      },
-                      %PolygonZM{
-                        exterior: [
-                          %PointZM{x: 6, y: 2, z: 3, m: 4},
-                          %PointZM{x: 8, y: 2, z: 4, m: 5},
-                          %PointZM{x: 8, y: 4, z: 5, m: 6},
-                          %PointZM{x: 6, y: 2, z: 3, m: 4}
-                        ],
-                        interiors: []
-                      }
+                      [
+                        [[1, 1, 3, 4], [9, 1, 4, 5], [9, 8, 5, 6], [1, 1, 3, 4]],
+                        [[6, 2, 4, 3], [7, 2, 6, 7], [7, 3, 3, 4], [6, 2, 4, 3]]
+                      ],
+                      [[[6, 2, 3, 4], [8, 2, 4, 5], [8, 4, 5, 6], [6, 2, 3, 4]]]
                     ])
                 }}
     end
@@ -824,7 +772,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :zm) ==
                {:ok,
                 %GeometryCollectionZM{
-                  geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                  geometries: MapSet.new([%PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}])
                 }}
     end
 
@@ -841,7 +789,7 @@ defmodule GeometryTest do
       assert Geometry.from_geo_json(geo_json, type: :z) ==
                {:ok,
                 %Feature{
-                  geometry: %PointZ{x: 1, y: 2, z: 3},
+                  geometry: %PointZ{coordinate: [1, 2, 3]},
                   properties: %{"facility" => "Hotel"}
                 }}
     end
@@ -872,11 +820,11 @@ defmodule GeometryTest do
                    features:
                      MapSet.new([
                        %Feature{
-                         geometry: %Geometry.PointZ{x: 1, y: 2, z: 3},
+                         geometry: %PointZ{coordinate: [1, 2, 3]},
                          properties: %{"facility" => "Hotel"}
                        },
                        %Feature{
-                         geometry: %Geometry.PointZ{x: 4, y: 3, z: 2},
+                         geometry: %PointZ{coordinate: [4, 3, 2]},
                          properties: %{"facility" => "School"}
                        }
                      ])
@@ -896,33 +844,6 @@ defmodule GeometryTest do
         """)
 
       assert Geometry.from_geo_json(geo_json, type: :zm) == {:error, :invalid_data}
-    end
-
-    test "returns an error for an invalid Polygon" do
-      json =
-        Jason.decode!("""
-        {
-          "type": "Polygon",
-          "coordinates": [ [1.1, 1.2, 1.3] ]
-        }
-        """)
-
-      assert Geometry.from_geo_json(json, type: :zm) == {:error, :invalid_data}
-    end
-
-    test "returns an error for an invalid MultiPoint" do
-      json =
-        Jason.decode!("""
-        {
-          "type": "MultiPoint",
-          "coordinates": [
-            [1.1, 1.2, 1.3],
-            [20.1, 20.2, 20.3, 20.4]
-          ]
-        }
-        """)
-
-      assert Geometry.from_geo_json(json, type: :zm) == {:error, :invalid_data}
     end
 
     test "returns an error for an unknown type" do
@@ -953,26 +874,7 @@ defmodule GeometryTest do
 
       assert GeoJsonValidator.valid?(geo_json)
 
-      assert Geometry.from_geo_json!(geo_json) == %Point{x: 1, y: 2}
-    end
-
-    test "returns an exception for an invalid MultiPoint" do
-      json =
-        Jason.decode!("""
-        {
-          "type": "MultiPoint",
-          "coordinates": [
-            [1.1, 1.2, 1.3],
-            [20.1, 20.2, 20.3, 20.4]
-          ]
-        }
-        """)
-
-      message = "invalid data"
-
-      assert_raise Geometry.Error, message, fn ->
-        Geometry.from_geo_json!(json, type: :zm)
-      end
+      assert Geometry.from_geo_json!(geo_json) == %Point{coordinate: [1, 2]}
     end
 
     test "returns an error for an unknown type" do
@@ -992,17 +894,17 @@ defmodule GeometryTest do
   describe "from_wkb/1" do
     test "returns Point" do
       wkb = "0000000001BFF3333333333333400B333333333333"
-      assert Geometry.from_wkb(wkb) == {:ok, %Point{x: -1.2, y: 3.4}}
+      assert Geometry.from_wkb(wkb) == {:ok, %Point{coordinate: [-1.2, 3.4]}}
     end
 
     test "returns Point from WKB with trailing whitespace" do
       wkb = "0000000001BFF3333333333333400B333333333333 \n"
-      assert Geometry.from_wkb(wkb) == {:ok, %Point{x: -1.2, y: 3.4}}
+      assert Geometry.from_wkb(wkb) == {:ok, %Point{coordinate: [-1.2, 3.4]}}
     end
 
     test "returns Point with SRID" do
       wkb = "00200000010000014DBFF3333333333333400B333333333333"
-      assert Geometry.from_wkb(wkb) == {:ok, %Point{x: -1.2, y: 3.4}, 333}
+      assert Geometry.from_wkb(wkb) == {:ok, %Point{coordinate: [-1.2, 3.4]}, 333}
     end
 
     test "returns empty LineStringZM" do
@@ -1024,8 +926,8 @@ defmodule GeometryTest do
                :ok,
                %LineStringZM{
                  points: [
-                   %PointZM{x: 1.0, y: 2.0, z: 3.0, m: 4.0},
-                   %PointZM{x: 5.0, y: 6.0, z: 7.0, m: 8.0}
+                   [1.0, 2.0, 3.0, 4.0],
+                   [5.0, 6.0, 7.0, 8.0]
                  ]
                }
              }
@@ -1044,8 +946,8 @@ defmodule GeometryTest do
                :ok,
                %LineStringZM{
                  points: [
-                   %PointZM{x: 1.0, y: 2.0, z: 3.0, m: 4.0},
-                   %PointZM{x: 5.0, y: 6.0, z: 7.0, m: 8.0}
+                   [1.0, 2.0, 3.0, 4.0],
+                   [5.0, 6.0, 7.0, 8.0]
                  ]
                }
              }
@@ -1064,8 +966,8 @@ defmodule GeometryTest do
                :ok,
                %LineStringZ{
                  points: [
-                   %PointZ{x: 1.0, y: 2.0, z: 3.0},
-                   %PointZ{x: 5.0, y: 6.0, z: 7.0}
+                   [1.0, 2.0, 3.0],
+                   [5.0, 6.0, 7.0]
                  ]
                }
              }
@@ -1084,8 +986,8 @@ defmodule GeometryTest do
                :ok,
                %LineStringM{
                  points: [
-                   %PointM{x: 1.0, y: 2.0, m: 3.0},
-                   %PointM{x: 5.0, y: 6.0, m: 7.0}
+                   [1.0, 2.0, 3.0],
+                   [5.0, 6.0, 7.0]
                  ]
                }
              }
@@ -1104,7 +1006,7 @@ defmodule GeometryTest do
       assert Geometry.from_wkb(wkb) == {
                :ok,
                %LineString{
-                 points: [%Point{x: 1.0, y: 2.0}, %Point{x: 5.0, y: 6.0}]
+                 points: [[1.0, 2.0], [5.0, 6.0]]
                },
                543
              }
@@ -1126,14 +1028,15 @@ defmodule GeometryTest do
       assert Geometry.from_wkb(wkb) ==
                {:ok,
                 %PolygonZM{
-                  exterior: [
-                    %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0},
-                    %PointZM{x: 40.0, y: 40.0, z: 10.0, m: 20.0},
-                    %PointZM{x: 20.0, y: 40.0, z: 25.0, m: 15.0},
-                    %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 30.0, y: 10.0, z: 20.0, m: 15.0}
-                  ],
-                  interiors: []
+                  rings: [
+                    [
+                      [30.0, 10.0, 20.0, 15.0],
+                      [40.0, 40.0, 10.0, 20.0],
+                      [20.0, 40.0, 25.0, 15.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [30.0, 10.0, 20.0, 15.0]
+                    ]
+                  ]
                 }}
     end
 
@@ -1159,19 +1062,19 @@ defmodule GeometryTest do
       assert Geometry.from_wkb(wkb) ==
                {:ok,
                 %PolygonZM{
-                  exterior: [
-                    %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 45.0, y: 45.0, z: 10.0, m: 20.0},
-                    %PointZM{x: 15.0, y: 40.0, z: 20.0, m: 10.0},
-                    %PointZM{x: 10.0, y: 20.0, z: 15.0, m: 25.0},
-                    %PointZM{x: 35.0, y: 10.0, z: 15.0, m: 25.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0},
-                      %PointZM{x: 35.0, y: 35.0, z: 10.0, m: 50.0},
-                      %PointZM{x: 30.0, y: 20.0, z: 25.0, m: 35.0},
-                      %PointZM{x: 20.0, y: 30.0, z: 15.0, m: 10.0}
+                      [35.0, 10.0, 15.0, 25.0],
+                      [45.0, 45.0, 10.0, 20.0],
+                      [15.0, 40.0, 20.0, 10.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [35.0, 10.0, 15.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0, 10.0],
+                      [35.0, 35.0, 10.0, 50.0],
+                      [30.0, 20.0, 25.0, 35.0],
+                      [20.0, 30.0, 15.0, 10.0]
                     ]
                   ]
                 }, 333}
@@ -1198,9 +1101,9 @@ defmodule GeometryTest do
                 %MultiPointZM{
                   points:
                     MapSet.new([
-                      %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
-                      %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
-                      %PointZM{x: 40.0, y: 40.0, z: 20.0, m: 30.0}
+                      [30.0, 10.0, 15.0, 10.0],
+                      [20.0, 40.0, 15.0, 20.0],
+                      [40.0, 40.0, 20.0, 30.0]
                     ])
                 }}
     end
@@ -1236,31 +1139,28 @@ defmodule GeometryTest do
       multi_polygon = %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0},
-                %PointZM{x: 9.0, y: 1.0, z: 4.0, m: 5.0},
-                %PointZM{x: 9.0, y: 8.0, z: 5.0, m: 6.0},
-                %PointZM{x: 1.0, y: 1.0, z: 3.0, m: 4.0}
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
               ],
-              interiors: [
-                [
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0},
-                  %PointZM{x: 7.0, y: 2.0, z: 6.0, m: 7.0},
-                  %PointZM{x: 7.0, y: 3.0, z: 3.0, m: 4.0},
-                  %PointZM{x: 6.0, y: 2.0, z: 4.0, m: 3.0}
-                ]
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
               ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0},
-                %PointZM{x: 8.0, y: 2.0, z: 4.0, m: 5.0},
-                %PointZM{x: 8.0, y: 4.0, z: 5.0, m: 6.0},
-                %PointZM{x: 6.0, y: 2.0, z: 3.0, m: 4.0}
-              ],
-              interiors: []
-            }
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
           ])
       }
 
@@ -1288,19 +1188,15 @@ defmodule GeometryTest do
       multi_string = %MultiLineStringZM{
         line_strings:
           MapSet.new([
-            %LineStringZM{
-              points: [
-                %PointZM{x: 40.0, y: 40.0, z: 30.0, m: 20.0},
-                %PointZM{x: 30.0, y: 30.0, z: 40.0, m: 50.0}
-              ]
-            },
-            %LineStringZM{
-              points: [
-                %PointZM{x: 10.0, y: 10.0, z: 20.0, m: 30.0},
-                %PointZM{x: 20.0, y: 20.0, z: 40.0, m: 50.0},
-                %PointZM{x: 10.0, y: 40.0, z: 10.0, m: 20.0}
-              ]
-            }
+            [
+              [40.0, 40.0, 30.0, 20.0],
+              [30.0, 30.0, 40.0, 50.0]
+            ],
+            [
+              [10.0, 10.0, 20.0, 30.0],
+              [20.0, 20.0, 40.0, 50.0],
+              [10.0, 40.0, 10.0, 20.0]
+            ]
           ])
       }
 
@@ -1419,7 +1315,7 @@ defmodule GeometryTest do
     test "returns an error tuple for invalid coordinate" do
       wkb = "0000000001invalid.."
 
-      assert Geometry.from_wkb(wkb) == {:error, "invalid coordiante", "invalid..", 10}
+      assert Geometry.from_wkb(wkb) == {:error, "invalid coordinate", "invalid..", 10}
     end
 
     test "returns an error tuple for invalid y-coordinate in Point" do
@@ -1645,12 +1541,12 @@ defmodule GeometryTest do
   describe "from_wkb!/1" do
     test "returns Point" do
       wkb = "0000000001BFF3333333333333400B333333333333"
-      assert Geometry.from_wkb!(wkb) == %Point{x: -1.2, y: 3.4}
+      assert Geometry.from_wkb!(wkb) == %Point{coordinate: [-1.2, 3.4]}
     end
 
     test "returns Point with SRID" do
       wkb = "00200000010000014DBFF3333333333333400B333333333333"
-      assert Geometry.from_wkb!(wkb) == {%Point{x: -1.2, y: 3.4}, 333}
+      assert Geometry.from_wkb!(wkb) == {%Point{coordinate: [-1.2, 3.4]}, 333}
     end
 
     test "returns an exception for invalid m-coordinate in LineStringZM" do

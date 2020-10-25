@@ -20,8 +20,6 @@
 # one module.
 
 defmodule GenFromZM do
-  alias Mix.Shell
-
   @lib_path "lib/geometry"
   @test_path "test/geometry"
   @geometries [
@@ -39,7 +37,7 @@ defmodule GenFromZM do
   @types [:xy, :xym, :xyz]
 
   def main do
-    Shell.IO.info("Generate geometry modules/tests")
+    info("Generate geometry modules/tests")
     Enum.each(@geometries, &generate/1)
   end
 
@@ -112,7 +110,7 @@ defmodule GenFromZM do
     filename = "#{filename(geometry)}#{filename_extension(type)}.ex"
     file = Path.join(@lib_path, filename)
 
-    Shell.IO.info("Write #{file}")
+    info("Write #{file}")
 
     File.write!(file, code)
   end
@@ -121,7 +119,7 @@ defmodule GenFromZM do
     filename = "#{filename(geometry)}#{filename_extension(type)}_test.exs"
     file = Path.join(@test_path, filename)
 
-    Shell.IO.info("Write #{file}")
+    info("Write #{file}")
 
     File.write!(file, code)
   end
@@ -163,9 +161,9 @@ defmodule GenFromZM do
     |> replace(tuples(code, type))
     |> replace(wkt_coordinates(code, type))
     |> replace(wkt_tag(type))
-    |> replace(point(type))
     |> replace(hint(:test))
     |> replace(point_test(type))
+    |> replace(point(type))
     |> replace(line_string_test(type))
     |> replace(polygon_test(type))
     |> replace(multi_point_test(type))
@@ -234,6 +232,18 @@ defmodule GenFromZM do
   defp point(type) do
     replacements(type)
     |> replacements(
+      xyzm: "fn [x, _y, _z, _m] -> x end",
+      xyz: "fn [x, _y, _z] -> x end",
+      xym: "fn [x, _y, _m] -> x end",
+      xy: "fn [x, _y] -> x end"
+    )
+    |> replacements(
+      xyzm: "new(number(), number(), number(), number())",
+      xyz: "new(number(), number(), number())",
+      xym: "new(number(), number(), number())",
+      xy: "new(number(), number())"
+    )
+    |> replacements(
       xyzm: "defstruct [:x, :y, :z, :m]",
       xyz: "defstruct [:x, :y, :z]",
       xym: "defstruct [:x, :y, :m]",
@@ -246,16 +256,10 @@ defmodule GenFromZM do
       xym: "{x: Geometry.x(), y: Geometry.y(), m: Geometry.m()}"
     )
     |> replacements(
-      xyzm: "{x: nil, y: nil, z: nil, m: nil}",
-      xy: "{x: nil, y: nil}",
-      xyz: "{x: nil, y: nil, z: nil}",
-      xym: "{x: nil, y: nil, m: nil}"
-    )
-    |> replacements(
-      xyzm: "{nil, nil, nil, nil}",
-      xy: "{nil, nil}",
-      xyz: "{nil, nil, nil}",
-      xym: "{nil, nil, nil}"
+      xyzm: "[nil, nil, nil, nil]",
+      xyz: "[nil, nil, nil]",
+      xym: "[nil, nil, nil]",
+      xy: "[nil, nil]"
     )
     |> replacements(
       xyzm: "x, y, z, m",
@@ -283,32 +287,32 @@ defmodule GenFromZM do
     )
     |> replacements(
       xyzm: ~S"""
-            to_string(x)::binary(),
+            to_wkt_number(x)::binary(),
             @blank,
-            to_string(y)::binary(),
+            to_wkt_number(y)::binary(),
             @blank,
-            to_string(z)::binary(),
+            to_wkt_number(z)::binary(),
             @blank,
-            to_string(m)::binary()
+            to_wkt_number(m)::binary()
       """,
       xyz: ~S"""
-            to_string(x)::binary(),
+            to_wkt_number(x)::binary(),
             @blank,
-            to_string(y)::binary(),
+            to_wkt_number(y)::binary(),
             @blank,
-            to_string(z)::binary(),
+            to_wkt_number(z)::binary()
       """,
       xym: ~S"""
-            to_string(x)::binary(),
+            to_wkt_number(x)::binary(),
             @blank,
-            to_string(y)::binary(),
+            to_wkt_number(y)::binary(),
             @blank,
-            to_string(m)::binary()
+            to_wkt_number(m)::binary()
       """,
       xy: ~S"""
-            to_string(x)::binary(),
+            to_wkt_number(x)::binary(),
             @blank,
-            to_string(y)::binary(),
+            to_wkt_number(y)::binary()
       """
     )
     |> replacements(
@@ -549,6 +553,12 @@ defmodule GenFromZM do
 
   defp point_test(type) do
     replacements(type)
+    |> replacements(
+      xyzm: "01010000C0000000000000F87F000000000000F87F000000000000F87F000000000000F87F",
+      xyz: "0101000080000000000000F87F000000000000F87F000000000000F87F",
+      xym: "0101000040000000000000F87F000000000000F87F000000000000F87F",
+      xy: "0101000000000000000000F87F000000000000F87F"
+    )
     |> replacements(
       xyzm: "00C00000013FF199999999999A400199999999999A400A666666666666401199999999999A",
       xyz: "00800000013FF199999999999A400199999999999A400A666666666666",
@@ -1486,6 +1496,8 @@ defmodule GenFromZM do
       {[a | as], [b | bs]}
     end)
   end
+
+  defp info(str), do: IO.write("#{str}\n")
 end
 
 GenFromZM.main()

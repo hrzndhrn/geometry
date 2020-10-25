@@ -22,10 +22,12 @@ defmodule Geometry.GeometryCollectionZMTest do
             PointZM.new(2.1, 2.2, 2.3, 2.4)
           ]),
           PolygonZM.new([
-            PointZM.new(1.1, 1.2, 1.3, 1.4),
-            PointZM.new(2.1, 2.2, 2.3, 2.4),
-            PointZM.new(3.3, 2.2, 2.3, 2.4),
-            PointZM.new(1.1, 1.2, 1.3, 1.4)
+            LineStringZM.new([
+              PointZM.new(1.1, 1.2, 1.3, 1.4),
+              PointZM.new(2.1, 2.2, 2.3, 2.4),
+              PointZM.new(3.3, 2.2, 2.3, 2.4),
+              PointZM.new(1.1, 1.2, 1.3, 1.4)
+            ])
           ])
         ])
 
@@ -35,7 +37,7 @@ defmodule Geometry.GeometryCollectionZMTest do
       03000000\
       """
 
-      assert result = GeometryCollectionZM.to_wkb(collection)
+      assert result = GeometryCollectionZM.to_wkb(collection, endian: :ndr)
       assert String.starts_with?(result, wkb)
       assert GeometryCollectionZM.from_wkb!(result) == collection
     end
@@ -60,7 +62,7 @@ defmodule Geometry.GeometryCollectionZMTest do
 
       assert GeometryCollectionZM.from_wkb!(wkb) ==
                %GeometryCollectionZM{
-                 geometries: MapSet.new([%PointZM{x: 1.0, y: 2.0, z: 3.0, m: 4.0}])
+                 geometries: MapSet.new([%PointZM{coordinate: [1.0, 2.0, 3.0, 4.0]}])
                }
     end
 
@@ -77,7 +79,7 @@ defmodule Geometry.GeometryCollectionZMTest do
 
       assert GeometryCollectionZM.from_wkb!(wkb) ==
                {%GeometryCollectionZM{
-                  geometries: MapSet.new([%PointZM{x: 1.0, y: 2.0, z: 3.0, m: 4.0}])
+                  geometries: MapSet.new([%PointZM{coordinate: [1.0, 2.0, 3.0, 4.0]}])
                 }, 55}
     end
 
@@ -120,7 +122,7 @@ defmodule Geometry.GeometryCollectionZMTest do
       assert GeometryCollectionZM.from_wkb(wkb) ==
                {:ok,
                 %GeometryCollectionZM{
-                  geometries: MapSet.new([%PointZM{x: 1.0, y: 2.0, z: 3.0, m: 4.0}])
+                  geometries: MapSet.new([%PointZM{coordinate: [1.0, 2.0, 3.0, 4.0]}])
                 }}
     end
 
@@ -138,7 +140,7 @@ defmodule Geometry.GeometryCollectionZMTest do
       assert GeometryCollectionZM.from_wkb(wkb) ==
                {:ok,
                 %GeometryCollectionZM{
-                  geometries: MapSet.new([%PointZM{x: 1.0, y: 2.0, z: 3.0, m: 4.0}])
+                  geometries: MapSet.new([%PointZM{coordinate: [1.0, 2.0, 3.0, 4.0]}])
                 }, 55}
     end
 
@@ -164,7 +166,7 @@ defmodule Geometry.GeometryCollectionZMTest do
                {
                  :ok,
                  %GeometryCollectionZM{
-                   geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                   geometries: MapSet.new([%PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}])
                  }
                }
     end
@@ -176,7 +178,7 @@ defmodule Geometry.GeometryCollectionZMTest do
                {
                  :ok,
                  %GeometryCollectionZM{
-                   geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                   geometries: MapSet.new([%PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}])
                  },
                  123
                }
@@ -194,7 +196,7 @@ defmodule Geometry.GeometryCollectionZMTest do
     test "returns a GeometryCollectionZM" do
       assert GeometryCollectionZM.from_wkt!("GeometryCollection ZM (Point ZM (1.1 2.2 3.3 4.4))") ==
                %GeometryCollectionZM{
-                 geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                 geometries: MapSet.new([%PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}])
                }
     end
 
@@ -203,7 +205,7 @@ defmodule Geometry.GeometryCollectionZMTest do
                "SRID=123;GeometryCollection ZM (Point ZM (1.1 2.2 3.3 4.4))"
              ) ==
                {%GeometryCollectionZM{
-                  geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                  geometries: MapSet.new([%PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}])
                 }, 123}
     end
 
@@ -230,7 +232,7 @@ defmodule Geometry.GeometryCollectionZMTest do
 
       assert GeometryCollectionZM.from_geo_json!(geo_json) ==
                %GeometryCollectionZM{
-                 geometries: MapSet.new([%PointZM{x: 1.1, y: 2.2, z: 3.3, m: 4.4}])
+                 geometries: MapSet.new([%PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}])
                }
     end
 

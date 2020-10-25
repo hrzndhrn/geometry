@@ -6,7 +6,7 @@ defmodule Geometry.MultiPointZTest do
 
   alias Geometry.{MultiPointZ, PointZ}
 
-  doctest Geometry.MultiPointZ, import: true
+  doctest MultiPointZ, import: true
 
   @moduletag :multi_point
 
@@ -47,8 +47,8 @@ defmodule Geometry.MultiPointZTest do
                %MultiPointZ{
                  points:
                    MapSet.new([
-                     %PointZ{x: 1.1, y: 1.2, z: 1.3},
-                     %PointZ{x: 20.1, y: 20.2, z: 20.3}
+                     [1.1, 1.2, 1.3],
+                     [20.1, 20.2, 20.3]
                    ])
                }
     end
@@ -91,6 +91,7 @@ defmodule Geometry.MultiPointZTest do
   end
 
   describe "from_wkb/1" do
+    @tag :only
     test "returns a MultiPointZ (xdr)" do
       wkb = """
       00\
@@ -110,9 +111,9 @@ defmodule Geometry.MultiPointZTest do
       multi_point = %MultiPointZ{
         points:
           MapSet.new([
-            %PointZ{x: 30.0, y: 10.0, z: 15.0},
-            %PointZ{x: 20.0, y: 40.0, z: 15.0},
-            %PointZ{x: 40.0, y: 40.0, z: 20.0}
+            [30.0, 10.0, 15.0],
+            [20.0, 40.0, 15.0],
+            [40.0, 40.0, 20.0]
           ])
       }
 
@@ -160,9 +161,9 @@ defmodule Geometry.MultiPointZTest do
       multi_point = %MultiPointZ{
         points:
           MapSet.new([
-            %PointZ{x: 30.0, y: 10.0, z: 15.0},
-            %PointZ{x: 20.0, y: 40.0, z: 15.0},
-            %PointZ{x: 40.0, y: 40.0, z: 20.0}
+            [30.0, 10.0, 15.0],
+            [20.0, 40.0, 15.0],
+            [40.0, 40.0, 20.0]
           ])
       }
 
@@ -181,7 +182,7 @@ defmodule Geometry.MultiPointZTest do
       """
 
       multi_point = %MultiPointZ{
-        points: MapSet.new([%PointZ{x: 30.0, y: 10.0, z: 15.0}])
+        points: MapSet.new([[30.0, 10.0, 15.0]])
       }
 
       assert MultiPointZ.from_wkb!(wkb) == {multi_point, 9999}
@@ -203,9 +204,9 @@ defmodule Geometry.MultiPointZTest do
       multi_point = %MultiPointZ{
         points:
           MapSet.new([
-            %PointZ{x: 30.0, y: 10.0, z: 15.0},
-            %PointZ{x: 20.0, y: 40.0, z: 15.0},
-            %PointZ{x: 40.0, y: 40.0, z: 20.0}
+            [30.0, 10.0, 15.0],
+            [20.0, 40.0, 15.0],
+            [40.0, 40.0, 20.0]
           ])
       }
 
@@ -228,10 +229,10 @@ defmodule Geometry.MultiPointZTest do
       """
 
       multi_point = %MultiPointZ{
-        points: MapSet.new([%PointZ{x: 30.0, y: 10.0, z: 15.0}])
+        points: MapSet.new([[30.0, 10.0, 15.0]])
       }
 
-      assert MultiPointZ.to_wkb(multi_point, srid: 9999) == wkb
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999, endian: :ndr) == wkb
     end
 
     test "returns a WKB for an empty MultiPointZ (xdr)" do
@@ -251,7 +252,7 @@ defmodule Geometry.MultiPointZTest do
       00000000\
       """
 
-      assert MultiPointZ.to_wkb(%MultiPointZ{}) == wkb
+      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :ndr) == wkb
     end
   end
 
@@ -261,8 +262,8 @@ defmodule Geometry.MultiPointZTest do
                %MultiPointZ{
                  points:
                    MapSet.new([
-                     %PointZ{x: -5.1, y: 7.8, z: 1.1},
-                     %PointZ{x: 0.1, y: 0.2, z: 2.2}
+                     [-5.1, 7.8, 1.1],
+                     [0.1, 0.2, 2.2]
                    ])
                }
     end
@@ -272,8 +273,8 @@ defmodule Geometry.MultiPointZTest do
                {%MultiPointZ{
                   points:
                     MapSet.new([
-                      %PointZ{x: -5.1, y: 7.8, z: 1.1},
-                      %PointZ{x: 0.1, y: 0.2, z: 2.2}
+                      [-5.1, 7.8, 1.1],
+                      [0.1, 0.2, 2.2]
                     ])
                 }, 7219}
     end
@@ -294,6 +295,6 @@ defmodule Geometry.MultiPointZTest do
         PointZ.new(1.1, 2.2, 3.3)
       ])
 
-    assert [%PointZ{}] = Enum.slice(multi_point, 0, 1)
+    assert [_point] = Enum.slice(multi_point, 0, 1)
   end
 end

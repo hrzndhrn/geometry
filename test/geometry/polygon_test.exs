@@ -4,7 +4,9 @@ defmodule Geometry.PolygonTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{Point, Polygon}
+  import Prove
+
+  alias Geometry.{LineString, Point, Polygon}
 
   doctest Geometry.Polygon, import: true
 
@@ -25,17 +27,19 @@ defmodule Geometry.PolygonTest do
       assert Polygon.from_wkb(wkb) ==
                {:ok,
                 %Polygon{
-                  exterior: [
-                    %Point{x: 30.0, y: 10.0},
-                    %Point{x: 40.0, y: 40.0},
-                    %Point{x: 20.0, y: 40.0},
-                    %Point{x: 10.0, y: 20.0},
-                    %Point{x: 30.0, y: 10.0}
-                  ],
-                  interiors: []
+                  rings: [
+                    [
+                      [30.0, 10.0],
+                      [40.0, 40.0],
+                      [20.0, 40.0],
+                      [10.0, 20.0],
+                      [30.0, 10.0]
+                    ]
+                  ]
                 }}
     end
 
+    @tag :only
     test "returns Polygon with hole and SRID (ndr) " do
       wkb = """
       01\
@@ -58,19 +62,19 @@ defmodule Geometry.PolygonTest do
       assert Polygon.from_wkb(wkb) ==
                {:ok,
                 %Polygon{
-                  exterior: [
-                    %Point{x: 35.0, y: 10.0},
-                    %Point{x: 45.0, y: 45.0},
-                    %Point{x: 15.0, y: 40.0},
-                    %Point{x: 10.0, y: 20.0},
-                    %Point{x: 35.0, y: 10.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %Point{x: 20.0, y: 30.0},
-                      %Point{x: 35.0, y: 35.0},
-                      %Point{x: 30.0, y: 20.0},
-                      %Point{x: 20.0, y: 30.0}
+                      [35.0, 10.0],
+                      [45.0, 45.0],
+                      [15.0, 40.0],
+                      [10.0, 20.0],
+                      [35.0, 10.0]
+                    ],
+                    [
+                      [20.0, 30.0],
+                      [35.0, 35.0],
+                      [30.0, 20.0],
+                      [20.0, 30.0]
                     ]
                   ]
                 }, 333}
@@ -92,17 +96,18 @@ defmodule Geometry.PolygonTest do
       """
 
       polygon = %Polygon{
-        exterior: [
-          %Point{x: 30.0, y: 10.0},
-          %Point{x: 40.0, y: 40.0},
-          %Point{x: 20.0, y: 40.0},
-          %Point{x: 10.0, y: 20.0},
-          %Point{x: 30.0, y: 10.0}
-        ],
-        interiors: []
+        rings: [
+          [
+            [30.0, 10.0],
+            [40.0, 40.0],
+            [20.0, 40.0],
+            [10.0, 20.0],
+            [30.0, 10.0]
+          ]
+        ]
       }
 
-      assert Polygon.to_wkb(polygon, endian: :xdr) == wkb
+      assert Polygon.to_wkb(polygon) == wkb
     end
 
     test "returns Polygon with hole and SRID (ndr) " do
@@ -125,24 +130,24 @@ defmodule Geometry.PolygonTest do
       """
 
       polygon = %Polygon{
-        exterior: [
-          %Point{x: 35.0, y: 10.0},
-          %Point{x: 45.0, y: 45.0},
-          %Point{x: 15.0, y: 40.0},
-          %Point{x: 10.0, y: 20.0},
-          %Point{x: 35.0, y: 10.0}
-        ],
-        interiors: [
+        rings: [
           [
-            %Point{x: 20.0, y: 30.0},
-            %Point{x: 35.0, y: 35.0},
-            %Point{x: 30.0, y: 20.0},
-            %Point{x: 20.0, y: 30.0}
+            [35.0, 10.0],
+            [45.0, 45.0],
+            [15.0, 40.0],
+            [10.0, 20.0],
+            [35.0, 10.0]
+          ],
+          [
+            [20.0, 30.0],
+            [35.0, 35.0],
+            [30.0, 20.0],
+            [20.0, 30.0]
           ]
         ]
       }
 
-      assert Polygon.to_wkb(polygon, srid: 333) == wkb
+      assert Polygon.to_wkb(polygon, srid: 333, endian: :ndr) == wkb
     end
   end
 
@@ -162,14 +167,15 @@ defmodule Geometry.PolygonTest do
 
       assert Polygon.from_wkb!(wkb) ==
                %Polygon{
-                 exterior: [
-                   %Point{x: 30.0, y: 10.0},
-                   %Point{x: 40.0, y: 40.0},
-                   %Point{x: 20.0, y: 40.0},
-                   %Point{x: 10.0, y: 20.0},
-                   %Point{x: 30.0, y: 10.0}
-                 ],
-                 interiors: []
+                 rings: [
+                   [
+                     [30.0, 10.0],
+                     [40.0, 40.0],
+                     [20.0, 40.0],
+                     [10.0, 20.0],
+                     [30.0, 10.0]
+                   ]
+                 ]
                }
     end
 
@@ -194,19 +200,19 @@ defmodule Geometry.PolygonTest do
 
       assert Polygon.from_wkb!(wkb) ==
                {%Polygon{
-                  exterior: [
-                    %Point{x: 35.0, y: 10.0},
-                    %Point{x: 45.0, y: 45.0},
-                    %Point{x: 15.0, y: 40.0},
-                    %Point{x: 10.0, y: 20.0},
-                    %Point{x: 35.0, y: 10.0}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %Point{x: 20.0, y: 30.0},
-                      %Point{x: 35.0, y: 35.0},
-                      %Point{x: 30.0, y: 20.0},
-                      %Point{x: 20.0, y: 30.0}
+                      [35.0, 10.0],
+                      [45.0, 45.0],
+                      [15.0, 40.0],
+                      [10.0, 20.0],
+                      [35.0, 10.0]
+                    ],
+                    [
+                      [20.0, 30.0],
+                      [35.0, 35.0],
+                      [30.0, 20.0],
+                      [20.0, 30.0]
                     ]
                   ]
                 }, 333}
@@ -241,14 +247,15 @@ defmodule Geometry.PolygonTest do
       assert Polygon.from_geo_json!(geo_json)
 
       %Polygon{
-        exterior: [
-          %Point{x: 35, y: 10},
-          %Point{x: 45, y: 45},
-          %Point{x: 15, y: 40},
-          %Point{x: 10, y: 20},
-          %Point{x: 35, y: 10}
-        ],
-        interiors: []
+        rings: [
+          [
+            [35, 10],
+            [45, 45],
+            [15, 40],
+            [10, 20],
+            [35, 10]
+          ]
+        ]
       }
     end
 
@@ -273,19 +280,19 @@ defmodule Geometry.PolygonTest do
 
       assert Polygon.from_wkt!(wkt) ==
                %Polygon{
-                 exterior: [
-                   %Point{x: 35, y: 10},
-                   %Point{x: 45, y: 45},
-                   %Point{x: 15, y: 40},
-                   %Point{x: 10, y: 20},
-                   %Point{x: 35, y: 10}
-                 ],
-                 interiors: [
+                 rings: [
                    [
-                     %Point{x: 20, y: 30},
-                     %Point{x: 35, y: 35},
-                     %Point{x: 30, y: 20},
-                     %Point{x: 20, y: 30}
+                     [35, 10],
+                     [45, 45],
+                     [15, 40],
+                     [10, 20],
+                     [35, 10]
+                   ],
+                   [
+                     [20, 30],
+                     [35, 35],
+                     [30, 20],
+                     [20, 30]
                    ]
                  ]
                }
@@ -302,19 +309,19 @@ defmodule Geometry.PolygonTest do
 
       assert Polygon.from_wkt!(wkt) ==
                {%Polygon{
-                  exterior: [
-                    %Point{x: 35, y: 10},
-                    %Point{x: 45, y: 45},
-                    %Point{x: 15, y: 40},
-                    %Point{x: 10, y: 20},
-                    %Point{x: 35, y: 10}
-                  ],
-                  interiors: [
+                  rings: [
                     [
-                      %Point{x: 20, y: 30},
-                      %Point{x: 35, y: 35},
-                      %Point{x: 30, y: 20},
-                      %Point{x: 20, y: 30}
+                      [35, 10],
+                      [45, 45],
+                      [15, 40],
+                      [10, 20],
+                      [35, 10]
+                    ],
+                    [
+                      [20, 30],
+                      [35, 35],
+                      [30, 20],
+                      [20, 30]
                     ]
                   ]
                 }, 789}
@@ -326,6 +333,42 @@ defmodule Geometry.PolygonTest do
       assert_raise Geometry.Error, message, fn ->
         Polygon.from_wkt!("Daisy")
       end
+    end
+  end
+
+  describe "to_wkt/2:" do
+    @tag :only
+    prove Polygon.to_wkt(Polygon.new()) == "Polygon EMPTY"
+
+    @tag :only
+    prove Polygon.to_wkt(Polygon.new(), srid: 1123) == "SRID=1123;Polygon EMPTY"
+  end
+
+  describe "to_wkt/2" do
+    @tag :only
+    test "returns WKT" do
+      polygon =
+        Polygon.new([
+          LineString.new([
+            Point.new(35, 10),
+            Point.new(45, 45),
+            Point.new(10, 20),
+            Point.new(35, 10)
+          ]),
+          LineString.new([
+            Point.new(20, 30),
+            Point.new(35, 35),
+            Point.new(30, 20),
+            Point.new(20, 30)
+          ])
+        ])
+
+      assert Polygon.to_wkt(polygon) == """
+             Polygon (\
+             (35 10, 45 45, 10 20, 35 10), \
+             (20 30, 35 35, 30 20, 20 30)\
+             )\
+             """
     end
   end
 end

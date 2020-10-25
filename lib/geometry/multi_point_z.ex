@@ -11,7 +11,7 @@ defmodule Geometry.MultiPointZ do
       ...>     PointZ.new(1, 2, 3),
       ...>     PointZ.new(3, 4, 5)
       ...>   ]),
-      ...>   fn point -> point.x end
+      ...>   fn [x, _y, _z] -> x end
       ...> )
       [1, 3]
 
@@ -19,7 +19,7 @@ defmodule Geometry.MultiPointZ do
       %MultiPointZ{
         points:
           MapSet.new([
-            %PointZ{x: 1, y: 2, z: 3}
+            [1, 2, 3]
           ])
       }
   """
@@ -28,7 +28,7 @@ defmodule Geometry.MultiPointZ do
 
   defstruct points: MapSet.new()
 
-  @type t :: %MultiPointZ{points: MapSet.t(PointZ.t())}
+  @type t :: %MultiPointZ{points: MapSet.t(Geometry.coordinate())}
 
   @doc """
   Creates an empty `MultiPointZ`.
@@ -52,8 +52,8 @@ defmodule Geometry.MultiPointZ do
       ...>   PointZ.new(3, 4, 5)
       ...> ])
       %MultiPointZ{points: MapSet.new([
-        %PointZ{x: 1, y: 2, z: 3},
-        %PointZ{x: 3, y: 4, z: 5}
+        [1, 2, 3],
+        [3, 4, 5]
       ])}
 
       iex> MultiPointZ.new([])
@@ -61,7 +61,10 @@ defmodule Geometry.MultiPointZ do
   """
   @spec new([PointZ.t()]) :: t()
   def new([]), do: %MultiPointZ{}
-  def new(points), do: %MultiPointZ{points: MapSet.new(points)}
+
+  def new(points) do
+    %MultiPointZ{points: Enum.into(points, MapSet.new(), fn point -> point.coordinate end)}
+  end
 
   @doc """
   Returns `true` if the given `MultiPointZ` is empty.
@@ -73,7 +76,9 @@ defmodule Geometry.MultiPointZ do
 
       iex> MultiPointZ.empty?(
       ...>   MultiPointZ.new(
-      ...>     [PointZ.new(1, 2, 3), PointZ.new(3, 4, 5)]))
+      ...>     [PointZ.new(1, 2, 3), PointZ.new(3, 4, 5)]
+      ...>   )
+      ...> )
       false
   """
   @spec empty?(t()) :: boolean
@@ -84,30 +89,30 @@ defmodule Geometry.MultiPointZ do
 
   ## Examples
 
-      iex> MultiPointZ.from_coordinates([
-      ...>   [-1, 1, 1], [-2, 2, 2], [-3, 3, 3]])
+      iex> MultiPointZ.from_coordinates(
+      ...>   [[-1, 1, 1], [-2, 2, 2], [-3, 3, 3]]
+      ...> )
       %MultiPointZ{
         points: MapSet.new([
-          %PointZ{x: -1, y: 1, z: 1},
-          %PointZ{x: -2, y: 2, z: 2},
-          %PointZ{x: -3, y: 3, z: 3}
+          [-1, 1, 1],
+          [-2, 2, 2],
+          [-3, 3, 3]
         ])
       }
 
       iex> MultiPointZ.from_coordinates(
-      ...>   [{-1, 1, 1}, {-2, 2, 2}, {-3, 3, 3}])
+      ...>   [[-1, 1, 1], [-2, 2, 2], [-3, 3, 3]]
+      ...> )
       %MultiPointZ{
         points: MapSet.new([
-          %PointZ{x: -1, y: 1, z: 1},
-          %PointZ{x: -2, y: 2, z: 2},
-          %PointZ{x: -3, y: 3, z: 3}
+          [-1, 1, 1],
+          [-2, 2, 2],
+          [-3, 3, 3]
         ])
       }
   """
-  @spec from_coordinates([Geometry.coordinate_z()]) :: t()
-  def from_coordinates(coordinates) do
-    %MultiPointZ{points: coordinates |> Enum.map(&PointZ.new/1) |> MapSet.new()}
-  end
+  @spec from_coordinates([Geometry.coordinate()]) :: t()
+  def from_coordinates(coordinates), do: %MultiPointZ{points: MapSet.new(coordinates)}
 
   @doc """
   Returns an `:ok` tuple with the `MultiPointZ` from the given GeoJSON term.
@@ -127,8 +132,8 @@ defmodule Geometry.MultiPointZ do
       iex> |> Jason.decode!()
       iex> |> MultiPointZ.from_geo_json()
       {:ok, %MultiPointZ{points: MapSet.new([
-        %PointZ{x: 1.1, y: 1.2, z: 1.3},
-        %PointZ{x: 20.1, y: 20.2, z: 20.3}
+        [1.1, 1.2, 1.3],
+        [20.1, 20.2, 20.3]
       ])}}
   """
   @spec from_geo_json(Geometry.geo_json_term()) :: {:ok, t()} | Geometry.geo_json_error()
@@ -174,7 +179,7 @@ defmodule Geometry.MultiPointZ do
   def to_geo_json(%MultiPointZ{points: points}) do
     %{
       "type" => "MultiPoint",
-      "coordinates" => Enum.map(points, &PointZ.to_list/1)
+      "coordinates" => MapSet.to_list(points)
     }
   end
 
@@ -187,20 +192,22 @@ defmodule Geometry.MultiPointZ do
   ## Examples
 
       iex> MultiPointZ.from_wkt(
-      ...>   "MultiPoint Z (-5.1 7.8 1.1, 0.1 0.2 2.2)")
+      ...>   "MultiPoint Z (-5.1 7.8 1.1, 0.1 0.2 2.2)"
+      ...> )
       {:ok, %MultiPointZ{
         points: MapSet.new([
-          %PointZ{x: -5.1, y: 7.8, z: 1.1},
-          %PointZ{x: 0.1, y: 0.2, z: 2.2}
+          [-5.1, 7.8, 1.1],
+          [0.1, 0.2, 2.2]
         ])
       }}
 
       iex> MultiPointZ.from_wkt(
-      ...>   "SRID=7219;MultiPoint Z (-5.1 7.8 1.1, 0.1 0.2 2.2)")
+      ...>   "SRID=7219;MultiPoint Z (-5.1 7.8 1.1, 0.1 0.2 2.2)"
+      ...> )
       {:ok, %MultiPointZ{
         points: MapSet.new([
-          %PointZ{x: -5.1, y: 7.8, z: 1.1},
-          %PointZ{x: 0.1, y: 0.2, z: 2.2}
+          [-5.1, 7.8, 1.1],
+          [0.1, 0.2, 2.2]
         ])
       }, 7219}
 
@@ -255,17 +262,14 @@ defmodule Geometry.MultiPointZ do
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
-  def to_wkt(line_string, opts \\ [])
-
-  def to_wkt(%MultiPointZ{points: points}, opts) do
-    points
-    |> Enum.empty?()
-    |> case do
-      true -> "EMPTY"
-      false -> to_wkt_points(points)
-    end
-    |> to_wkt_multi_point()
-    |> WKT.to_ewkt(opts)
+  def to_wkt(%MultiPointZ{points: points}, opts \\ []) do
+    WKT.to_ewkt(
+      <<
+        "MultiPoint Z ",
+        points |> MapSet.to_list() |> to_wkt_points()::binary()
+      >>,
+      opts
+    )
   end
 
   @doc """
@@ -274,7 +278,7 @@ defmodule Geometry.MultiPointZ do
   With option `:srid` an EWKB representation with the SRID is returned.
 
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:ndr`.
+  endian is returned. The default is `:xdr`.
 
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZ.to_wkb/1` function.
@@ -285,12 +289,7 @@ defmodule Geometry.MultiPointZ do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
 
-    <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_multi_point(multi_point, endian)::binary()
-    >>
+    to_wkb(multi_point, srid, endian)
   end
 
   @doc """
@@ -358,8 +357,8 @@ defmodule Geometry.MultiPointZ do
       false
   """
   @spec member?(t(), PointZ.t()) :: boolean()
-  def member?(%MultiPointZ{points: points}, %PointZ{} = point),
-    do: MapSet.member?(points, point)
+  def member?(%MultiPointZ{points: points}, %PointZ{coordinate: coordinate}),
+    do: MapSet.member?(points, coordinate)
 
   @doc """
   Converts `MultiPointZ` to a list.
@@ -373,34 +372,40 @@ defmodule Geometry.MultiPointZ do
       ...>   ])
       ...> )
       [
-        %PointZ{x: 11, y: 12, z: 13},
-        %PointZ{x: 21, y: 22, z: 23}
+        [11, 12, 13],
+        [21, 22, 23]
       ]
   """
   @spec to_list(t()) :: [PointZ.t()]
   def to_list(%MultiPointZ{points: points}), do: MapSet.to_list(points)
 
   @compile {:inline, to_wkt_points: 1}
-  defp to_wkt_points(points) do
-    wkt =
-      points
-      |> Enum.map(fn point -> PointZ.to_wkt_coordinate(point) end)
-      |> Enum.join(", ")
+  defp to_wkt_points([]), do: "EMPTY"
 
-    <<"(", wkt::binary(), ")">>
+  defp to_wkt_points([coordinate | points]) do
+    <<"(",
+      Enum.reduce(points, PointZ.to_wkt_coordinate(coordinate), fn coordinate, acc ->
+        <<acc::binary(), ", ", PointZ.to_wkt_coordinate(coordinate)::binary()>>
+      end)::binary(), ")">>
   end
 
-  @compile {:inline, to_wkt_multi_point: 1}
-  defp to_wkt_multi_point(wkt), do: <<"MultiPoint Z ", wkt::binary()>>
+  @doc false
+  @compile {:inline, to_wkb: 3}
+  @spec to_wkb(t(), Geometry.srid(), Geometry.endian()) :: binary()
+  def to_wkb(%MultiPointZ{points: points}, srid, endian) do
+    <<
+      WKB.byte_order(endian)::binary(),
+      wkb_code(endian, not is_nil(srid))::binary(),
+      WKB.srid(srid, endian)::binary(),
+      to_wkb_points(MapSet.to_list(points), endian)::binary()
+    >>
+  end
 
-  @compile {:inline, to_wkb_multi_point: 2}
-  defp to_wkb_multi_point(%MultiPointZ{points: points}, endian) do
-    data =
-      Enum.reduce(points, [], fn point, acc ->
-        [PointZ.to_wkb(point, endian: endian) | acc]
-      end)
-
-    <<WKB.length(points, endian)::binary, IO.iodata_to_binary(data)::binary>>
+  @compile {:inline, to_wkb_points: 2}
+  defp to_wkb_points(points, endian) do
+    Enum.reduce(points, WKB.length(points, endian), fn point, acc ->
+      <<acc::binary(), PointZ.to_wkb(point, nil, endian)::binary()>>
+    end)
   end
 
   @compile {:inline, wkb_code: 2}
@@ -444,7 +449,8 @@ defmodule Geometry.MultiPointZ do
           [{x, []} | list]
 
         list, :done ->
-          %MultiPointZ{points: %{points | map: Map.merge(points.map, Map.new(list))}}
+          new = Enum.into(list, %{}, fn {point, []} -> {point.coordinate, []} end)
+          %MultiPointZ{points: %{points | map: Map.merge(points.map, Map.new(new))}}
 
         _list, :halt ->
           :ok

@@ -203,7 +203,7 @@ defmodule Geometry.WKT.ParsersHelper do
         whitespace()
         |> number()
         |> times(separator() |> number(), unquote(n))
-        |> reduce({List, :to_tuple, []})
+        |> wrap()
       )
     end
   end)

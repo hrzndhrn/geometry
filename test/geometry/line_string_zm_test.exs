@@ -14,11 +14,10 @@ defmodule Geometry.LineStringZMTest do
   end
 
   describe "new/1:" do
-    @line_string %LineStringZM{
-      points: [%PointZM{x: 1, y: 1, z: 1, m: 1}, %PointZM{x: 2, y: 2, z: 2, m: 2}]
-    }
+    prove LineStringZM.new([PointZM.new(1, 1, 1, 1), PointZM.new(2, 2, 2, 2)]) == %LineStringZM{
+            points: [[1, 1, 1, 1], [2, 2, 2, 2]]
+          }
 
-    prove LineStringZM.new([PointZM.new(1, 1, 1, 1), PointZM.new(2, 2, 2, 2)]) == @line_string
     prove LineStringZM.new([]) == %LineStringZM{points: []}
     prove LineStringZM.new() == %LineStringZM{points: []}
   end
@@ -32,11 +31,9 @@ defmodule Geometry.LineStringZMTest do
   end
 
   describe "from_coordinates/1:" do
-    @line_string %LineStringZM{
-      points: [%PointZM{x: 1, y: 1, z: 1, m: 1}, %PointZM{x: 2, y: 2, z: 2, m: 2}]
-    }
-
-    prove LineStringZM.from_coordinates([{1, 1, 1, 1}, {2, 2, 2, 2}]) == @line_string
+    prove LineStringZM.from_coordinates([[1, 1, 1, 1], [2, 2, 2, 2]]) == %LineStringZM{
+            points: [[1, 1, 1, 1], [2, 2, 2, 2]]
+          }
   end
 
   describe "to_wkt/2:" do
@@ -62,8 +59,8 @@ defmodule Geometry.LineStringZMTest do
             {:ok,
              %LineStringZM{
                points: [
-                 %PointZM{x: 5, y: 4, z: 6, m: 7},
-                 %PointZM{x: 3.1, y: -44.5, z: 55, m: -1.1}
+                 [5, 4, 6, 7],
+                 [3.1, -44.5, 55, -1.1]
                ]
              }}
 
@@ -71,8 +68,8 @@ defmodule Geometry.LineStringZMTest do
             {:ok,
              %LineStringZM{
                points: [
-                 %PointZM{x: 1.1, y: -2.2, z: 3, m: 5},
-                 %PointZM{x: 5, y: 7, z: 4, m: 1.1}
+                 [1.1, -2.2, 3, 5],
+                 [5, 7, 4, 1.1]
                ]
              }, 77}
 
@@ -90,19 +87,21 @@ defmodule Geometry.LineStringZMTest do
     prove LineStringZM.from_wkt!("LineStringZM (5 4 6 7, 3.1 -44.5 55 -1.1)") ==
             %LineStringZM{
               points: [
-                %PointZM{x: 5, y: 4, z: 6, m: 7},
-                %PointZM{x: 3.1, y: -44.5, z: 55, m: -1.1}
+                [5, 4, 6, 7],
+                [3.1, -44.5, 55, -1.1]
               ]
             }
 
     prove LineStringZM.from_wkt!("srid=77;LineString ZM (1.1 -2.2 3 5, 5 7 4 1.1)") ==
             {%LineStringZM{
                points: [
-                 %PointZM{x: 1.1, y: -2.2, z: 3, m: 5},
-                 %PointZM{x: 5, y: 7, z: 4, m: 1.1}
+                 [1.1, -2.2, 3, 5],
+                 [5, 7, 4, 1.1]
                ]
              }, 77}
+  end
 
+  describe "from_wkt!/1" do
     test "raises an exception" do
       message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'foo'"
 
@@ -115,8 +114,9 @@ defmodule Geometry.LineStringZMTest do
   describe "empty?/:" do
     prove LineStringZM.empty?(LineStringZM.new()) == true
 
-    prove LineStringZM.empty?(LineStringZM.from_coordinates([{1, 2, 1, 4}, {3, 4, 1, 5}])) ==
-            false
+    prove LineStringZM.empty?(
+            LineStringZM.new([PointZM.new(1, 2, 3, 4), PointZM.new(1, 2, 3, 4)])
+          ) == false
   end
 
   describe "from_geo_json/1:" do
@@ -138,20 +138,8 @@ defmodule Geometry.LineStringZMTest do
       assert LineStringZM.from_geo_json(geo_json) ==
                {:ok,
                 %LineStringZM{
-                  points: [%PointZM{x: 1, y: 2, z: 3, m: 4}, %PointZM{x: 3, y: 4, z: 5, m: 6}]
+                  points: [[1, 2, 3, 4], [3, 4, 5, 6]]
                 }}
-    end
-
-    test "with invalid data" do
-      geo_json =
-        Jason.decode!("""
-        {
-          "type": "LineString",
-          "coordinates": [[1, 2], [3, 4, 5]]
-        }
-        """)
-
-      assert LineStringZM.from_geo_json(geo_json) == {:error, :invalid_data}
     end
   end
 
@@ -169,7 +157,7 @@ defmodule Geometry.LineStringZMTest do
 
       assert LineStringZM.from_geo_json!(geo_json) ==
                %LineStringZM{
-                 points: [%PointZM{x: 1, y: 2, z: 3, m: 4}, %PointZM{x: 3, y: 4, z: 5, m: 6}]
+                 points: [[1, 2, 3, 4], [3, 4, 5, 6]]
                }
     end
 
@@ -184,16 +172,15 @@ defmodule Geometry.LineStringZMTest do
   end
 
   describe "to_geo_json/1" do
-    @line_string %LineStringZM{
-      points: [%PointZM{x: 1, y: 2, z: 3, m: 4}, %PointZM{x: 3, y: 4, z: 5, m: 6}]
-    }
+    test "returns GeoJson-term from LineStringZM" do
+      line_string = LineStringZM.new([PointZM.new(1, 2, 3, 4), PointZM.new(3, 4, 5, 6)])
 
-    prove LineStringZM.to_geo_json(@line_string) == %{
-            "coordinates" => [[1, 2, 3, 4], [3, 4, 5, 6]],
-            "type" => "LineString"
-          }
+      assert result =
+               %{"coordinates" => [[1, 2, 3, 4], [3, 4, 5, 6]], "type" => "LineString"} =
+               LineStringZM.to_geo_json(line_string)
 
-    prove @line_string |> LineStringZM.to_geo_json() |> GeoJsonValidator.valid?() == true
+      assert GeoJsonValidator.valid?(result)
+    end
   end
 
   describe "from_wkb/1" do
@@ -210,8 +197,8 @@ defmodule Geometry.LineStringZMTest do
                {:ok,
                 %LineStringZM{
                   points: [
-                    %PointZM{x: -1.1, y: -2.2, z: -3.3, m: -4.4},
-                    %PointZM{x: 5.5, y: 6.6, z: 7.7, m: 8.8}
+                    [-1.1, -2.2, -3.3, -4.4],
+                    [5.5, 6.6, 7.7, 8.8]
                   ]
                 }}
     end
@@ -230,8 +217,8 @@ defmodule Geometry.LineStringZMTest do
                {:ok,
                 %LineStringZM{
                   points: [
-                    %PointZM{x: -1.1, y: -2.2, z: -3.3, m: -4.4},
-                    %PointZM{x: 5.5, y: 6.6, z: 7.7, m: 8.8}
+                    [-1.1, -2.2, -3.3, -4.4],
+                    [5.5, 6.6, 7.7, 8.8]
                   ]
                 }, 77}
     end
@@ -250,8 +237,8 @@ defmodule Geometry.LineStringZMTest do
       assert LineStringZM.from_wkb!(wkb) ==
                %LineStringZM{
                  points: [
-                   %PointZM{x: -1.1, y: -2.2, z: -3.3, m: -4.4},
-                   %PointZM{x: 5.5, y: 6.6, z: 7.7, m: 8.8}
+                   [-1.1, -2.2, -3.3, -4.4],
+                   [5.5, 6.6, 7.7, 8.8]
                  ]
                }
     end
@@ -270,8 +257,8 @@ defmodule Geometry.LineStringZMTest do
                {
                  %LineStringZM{
                    points: [
-                     %PointZM{x: -1.1, y: -2.2, z: -3.3, m: -4.4},
-                     %PointZM{x: 5.5, y: 6.6, z: 7.7, m: 8.8}
+                     [-1.1, -2.2, -3.3, -4.4],
+                     [5.5, 6.6, 7.7, 8.8]
                    ]
                  },
                  77
@@ -297,12 +284,15 @@ defmodule Geometry.LineStringZMTest do
       00000000000016406666666666661A40CDCCCCCCCCCC1E409A99999999992140\
       """
 
-      assert LineStringZM.to_wkb(%LineStringZM{
-               points: [
-                 %PointZM{x: -1.1, y: -2.2, z: -3.3, m: -4.4},
-                 %PointZM{x: 5.5, y: 6.6, z: 7.7, m: 8.8}
-               ]
-             }) == wkb
+      assert LineStringZM.to_wkb(
+               %LineStringZM{
+                 points: [
+                   [-1.1, -2.2, -3.3, -4.4],
+                   [5.5, 6.6, 7.7, 8.8]
+                 ]
+               },
+               endian: :ndr
+             ) == wkb
     end
 
     test "returns WKB from LineStringZM with SRID" do
@@ -318,11 +308,10 @@ defmodule Geometry.LineStringZMTest do
       assert LineStringZM.to_wkb(
                %LineStringZM{
                  points: [
-                   %PointZM{x: -1.1, y: -2.2, z: -3.3, m: -4.4},
-                   %PointZM{x: 5.5, y: 6.6, z: 7.7, m: 8.8}
+                   [-1.1, -2.2, -3.3, -4.4],
+                   [5.5, 6.6, 7.7, 8.8]
                  ]
                },
-               endian: :xdr,
                srid: 77
              ) == wkb
     end

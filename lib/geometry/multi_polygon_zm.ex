@@ -9,60 +9,64 @@ defmodule Geometry.MultiPolygonZM do
       iex> Enum.map(
       ...>   MultiPolygonZM.new([
       ...>     PolygonZM.new([
-      ...>       PointZM.new(11, 12, 13, 14),
-      ...>       PointZM.new(11, 22, 23, 24),
-      ...>       PointZM.new(31, 22, 33, 34),
-      ...>       PointZM.new(11, 12, 13, 14)
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(11, 12, 13, 14),
+      ...>         PointZM.new(11, 22, 23, 24),
+      ...>         PointZM.new(31, 22, 33, 34),
+      ...>         PointZM.new(11, 12, 13, 14)
+      ...>       ]),
       ...>     ]),
       ...>     PolygonZM.new([
-      ...>       PointZM.new(35, 10, 13, 14),
-      ...>       PointZM.new(45, 45, 23, 24),
-      ...>       PointZM.new(10, 20, 33, 34),
-      ...>       PointZM.new(35, 10, 13, 14)
-      ...>     ], [
-      ...>       [
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(35, 10, 13, 14),
+      ...>         PointZM.new(45, 45, 23, 24),
+      ...>         PointZM.new(10, 20, 33, 34),
+      ...>         PointZM.new(35, 10, 13, 14)
+      ...>       ]),
+      ...>       LineStringZM.new([
       ...>         PointZM.new(20, 30, 13, 14),
       ...>         PointZM.new(35, 35, 23, 24),
       ...>         PointZM.new(30, 20, 33, 34),
       ...>         PointZM.new(20, 30, 13, 14)
-      ...>       ]
+      ...>       ])
       ...>     ])
       ...>   ]),
-      ...>   fn polygon -> Enum.empty?(polygon.interiors) end
+      ...>   fn polygon -> length(polygon) == 1 end
       ...> )
       [true, false]
 
       iex> Enum.into(
       ...>   [
       ...>     PolygonZM.new([
-      ...>       PointZM.new(11, 12, 13, 14),
-      ...>       PointZM.new(11, 22, 23, 24),
-      ...>       PointZM.new(31, 22, 33, 34),
-      ...>       PointZM.new(11, 12, 13, 14)
-      ...>     ]),
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(11, 12, 13, 14),
+      ...>         PointZM.new(11, 22, 23, 24),
+      ...>         PointZM.new(31, 22, 33, 34),
+      ...>         PointZM.new(11, 12, 13, 14)
+      ...>       ])
+      ...>     ])
       ...>   ],
       ...>   MultiPolygonZM.new())
       %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 11, y: 12, z: 13, m: 14},
-                %PointZM{x: 11, y: 22, z: 23, m: 24},
-                %PointZM{x: 31, y: 22, z: 33, m: 34},
-                %PointZM{x: 11, y: 12, z: 13, m: 14}
-              ],
-              interiors: []
-            }
+            [
+              [
+                [11, 12, 13, 14],
+                [11, 22, 23, 24],
+                [31, 22, 33, 34],
+                [11, 12, 13, 14]
+              ]
+            ]
           ])
       }
   """
 
-  alias Geometry.{GeoJson, MultiPolygonZM, PointZM, PolygonZM, WKB, WKT}
+  alias Geometry.{GeoJson, MultiPolygonZM, PolygonZM, WKB, WKT}
 
   defstruct polygons: MapSet.new()
 
-  @type t :: %MultiPolygonZM{polygons: MapSet.t(PolygonZM.t())}
+  @type t :: %MultiPolygonZM{polygons: MapSet.t([Geometry.coordinates()])}
 
   @doc """
   Creates an empty `MultiPolygonZM`.
@@ -82,51 +86,36 @@ defmodule Geometry.MultiPolygonZM do
 
       iex> MultiPolygonZM.new([
       ...>   PolygonZM.new([
-      ...>     PointZM.new(6, 2, 3, 4),
-      ...>     PointZM.new(8, 2, 4, 5),
-      ...>     PointZM.new(8, 4, 5, 6),
-      ...>     PointZM.new(6, 2, 3, 4)
+      ...>     LineStringZM.new([
+      ...>       PointZM.new(6, 2, 3, 4),
+      ...>       PointZM.new(8, 2, 4, 5),
+      ...>       PointZM.new(8, 4, 5, 6),
+      ...>       PointZM.new(6, 2, 3, 4)
+      ...>     ]),
       ...>   ]),
       ...>   PolygonZM.new([
-      ...>     PointZM.new(1, 1, 3, 4),
-      ...>     PointZM.new(9, 1, 4, 5),
-      ...>     PointZM.new(9, 8, 5, 6),
-      ...>     PointZM.new(1, 1, 3, 4)
-      ...>   ], [[
-      ...>     PointZM.new(6, 2, 3, 4),
-      ...>     PointZM.new(7, 2, 4, 5),
-      ...>     PointZM.new(7, 3, 5, 6),
-      ...>     PointZM.new(6, 2, 3, 4)
-      ...>   ]])
+      ...>     LineStringZM.new([
+      ...>       PointZM.new(1, 1, 3, 4),
+      ...>       PointZM.new(9, 1, 4, 5),
+      ...>       PointZM.new(9, 8, 5, 6),
+      ...>       PointZM.new(1, 1, 3, 4)
+      ...>     ]),
+      ...>     LineStringZM.new([
+      ...>       PointZM.new(6, 2, 3, 4),
+      ...>       PointZM.new(7, 2, 4, 5),
+      ...>       PointZM.new(7, 3, 5, 6),
+      ...>       PointZM.new(6, 2, 3, 4)
+      ...>     ])
+      ...>   ])
       ...> ])
       %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1, y: 1, z: 3, m: 4},
-                %PointZM{x: 9, y: 1, z: 4, m: 5},
-                %PointZM{x: 9, y: 8, z: 5, m: 6},
-                %PointZM{x: 1, y: 1, z: 3, m: 4}
-              ],
-              interiors: [
-                [
-                  %PointZM{x: 6, y: 2, z: 3, m: 4},
-                  %PointZM{x: 7, y: 2, z: 4, m: 5},
-                  %PointZM{x: 7, y: 3, z: 5, m: 6},
-                  %PointZM{x: 6, y: 2, z: 3, m: 4}
-                ]
-              ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6, y: 2, z: 3, m: 4},
-                %PointZM{x: 8, y: 2, z: 4, m: 5},
-                %PointZM{x: 8, y: 4, z: 5, m: 6},
-                %PointZM{x: 6, y: 2, z: 3, m: 4}
-              ],
-              interiors: []
-            }
+            [
+              [[1, 1, 3, 4], [9, 1, 4, 5], [9, 8, 5, 6], [1, 1, 3, 4]],
+              [[6, 2, 3, 4], [7, 2, 4, 5], [7, 3, 5, 6], [6, 2, 3, 4]]
+            ],
+            [[[6, 2, 3, 4], [8, 2, 4, 5], [8, 4, 5, 6], [6, 2, 3, 4]]]
           ])
       }
 
@@ -135,7 +124,11 @@ defmodule Geometry.MultiPolygonZM do
   """
   @spec new([PolygonZM.t()]) :: t()
   def new([]), do: %MultiPolygonZM{}
-  def new(polygon), do: %MultiPolygonZM{polygons: MapSet.new(polygon)}
+
+  def new(polygons),
+    do: %MultiPolygonZM{
+      polygons: Enum.into(polygons, MapSet.new(), fn polygon -> polygon.rings end)
+    }
 
   @doc """
   Returns `true` if the given `MultiPolygonZM` is empty.
@@ -148,10 +141,12 @@ defmodule Geometry.MultiPolygonZM do
       iex> MultiPolygonZM.empty?(
       ...>   MultiPolygonZM.new([
       ...>     PolygonZM.new([
-      ...>         PointZM.new(1, 1, 3, 4),
-      ...>         PointZM.new(1, 5, 4, 8),
-      ...>         PointZM.new(5, 4, 2, 6),
-      ...>         PointZM.new(1, 1, 3, 4)
+      ...>         LineStringZM.new([
+      ...>           PointZM.new(1, 1, 3, 4),
+      ...>           PointZM.new(1, 5, 4, 8),
+      ...>           PointZM.new(5, 4, 2, 6),
+      ...>           PointZM.new(1, 1, 3, 4)
+      ...>        ])
       ...>     ])
       ...>   ])
       ...> )
@@ -168,47 +163,28 @@ defmodule Geometry.MultiPolygonZM do
 
       iex> MultiPolygonZM.from_coordinates([
       ...>   [
-      ...>     {6, 2, 3, 4}, {8, 2, 4, 5}, {8, 4, 5, 6}, {6, 2, 3, 4}
+      ...>     [[6, 2, 3, 4], [8, 2, 4, 5], [8, 4, 5, 6], [6, 2, 3, 4]]
       ...>   ], [
-      ...>     [{1, 1, 3, 4}, {9, 1, 4, 5}, {9, 8, 5, 6}, {1, 1, 3, 4}],
-      ...>     [{6, 2, 4, 3}, {7, 2, 6, 7}, {7, 3, 3, 4}, {6, 2, 4, 3}]
+      ...>     [[1, 1, 3, 4], [9, 1, 4, 5], [9, 8, 5, 6], [1, 1, 3, 4]],
+      ...>     [[6, 2, 4, 3], [7, 2, 6, 7], [7, 3, 3, 4], [6, 2, 4, 3]]
       ...>   ]
       ...> ])
       %MultiPolygonZM{
         polygons:
           MapSet.new([
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 1, y: 1, z: 3, m: 4},
-                %PointZM{x: 9, y: 1, z: 4, m: 5},
-                %PointZM{x: 9, y: 8, z: 5, m: 6},
-                %PointZM{x: 1, y: 1, z: 3, m: 4}
-              ],
-              interiors: [
-                [
-                  %PointZM{x: 6, y: 2, z: 4, m: 3},
-                  %PointZM{x: 7, y: 2, z: 6, m: 7},
-                  %PointZM{x: 7, y: 3, z: 3, m: 4},
-                  %PointZM{x: 6, y: 2, z: 4, m: 3}
-                ]
-              ]
-            },
-            %PolygonZM{
-              exterior: [
-                %PointZM{x: 6, y: 2, z: 3, m: 4},
-                %PointZM{x: 8, y: 2, z: 4, m: 5},
-                %PointZM{x: 8, y: 4, z: 5, m: 6},
-                %PointZM{x: 6, y: 2, z: 3, m: 4}
-              ],
-              interiors: []
-            }
+            [
+              [[6, 2, 3, 4], [8, 2, 4, 5], [8, 4, 5, 6], [6, 2, 3, 4]],
+            ], [
+              [[1, 1, 3, 4], [9, 1, 4, 5], [9, 8, 5, 6], [1, 1, 3, 4]],
+              [[6, 2, 4, 3], [7, 2, 6, 7], [7, 3, 3, 4], [6, 2, 4, 3]]
+            ]
           ])
       }
   """
-  @spec from_coordinates([[Geometry.coordinate_zm()]]) :: t()
+  @spec from_coordinates([[Geometry.coordinates()]]) :: t()
   def from_coordinates(coordinates) do
     %MultiPolygonZM{
-      polygons: coordinates |> Enum.map(&PolygonZM.from_coordinates/1) |> MapSet.new()
+      polygons: MapSet.new(coordinates)
     }
   end
 
@@ -233,39 +209,18 @@ defmodule Geometry.MultiPolygonZM do
       ...> )
       ...> |> Jason.decode!()
       ...> |> MultiPolygonZM.from_geo_json()
-      {
-        :ok,
-        %MultiPolygonZM{
-          polygons:
-            MapSet.new([
-              %PolygonZM{
-                exterior: [
-                  %PointZM{x: 1, y: 1, z: 3, m: 4},
-                  %PointZM{x: 9, y: 1, z: 4, m: 5},
-                  %PointZM{x: 9, y: 8, z: 5, m: 6},
-                  %PointZM{x: 1, y: 1, z: 3, m: 4}
-                ],
-                interiors: [
-                  [
-                    %PointZM{x: 6, y: 2, z: 4, m: 3},
-                    %PointZM{x: 7, y: 2, z: 6, m: 7},
-                    %PointZM{x: 7, y: 3, z: 3, m: 4},
-                    %PointZM{x: 6, y: 2, z: 4, m: 3}
-                  ]
-                ]
-              },
-              %PolygonZM{
-                exterior: [
-                  %PointZM{x: 6, y: 2, z: 3, m: 4},
-                  %PointZM{x: 8, y: 2, z: 4, m: 5},
-                  %PointZM{x: 8, y: 4, z: 5, m: 6},
-                  %PointZM{x: 6, y: 2, z: 3, m: 4}
-                ],
-                interiors: []
-              }
-            ])
-        }
-      }
+      {:ok,
+       %MultiPolygonZM{
+         polygons:
+           MapSet.new([
+             [
+               [[1, 1, 3, 4], [9, 1, 4, 5], [9, 8, 5, 6], [1, 1, 3, 4]],
+               [[6, 2, 4, 3], [7, 2, 6, 7], [7, 3, 3, 4], [6, 2, 4, 3]]
+             ], [
+               [[6, 2, 3, 4], [8, 2, 4, 5], [8, 4, 5, 6], [6, 2, 3, 4]]
+             ]
+           ])
+       }}
   """
   @spec from_geo_json(Geometry.geo_json_term()) :: {:ok, t()} | Geometry.geo_json_error()
   def from_geo_json(json), do: GeoJson.to_multi_polygon(json, MultiPolygonZM)
@@ -290,22 +245,45 @@ defmodule Geometry.MultiPolygonZM do
   ## Examples
 
   ```elixir
-  [
-    [
-      {6, 2, 3, 4}, {8, 2, 4, 5}, {8, 4, 5, 6}, {6, 2, 3, 4}
-    ], [
-      [{1, 1, 3, 4}, {9, 1, 4, 5}, {9, 8, 5, 6}, {1, 1, 3, 4}],
-      [{6, 2, 4, 3}, {7, 2, 6, 7}, {7, 3, 3, 4}, {6, 2, 4, 3}]
-    ]
-  ]
-  |> MultiPolygonZM.from_coordinates()
-  |> MultiPolygonZM.to_geo_json()
+  MultiPolygonZM.to_list(
+    MultiPolygonZM.new([
+      PolygonZM.new([
+        LineStringZM.new([
+          PointZM.new(111, 112, 113, 114),
+          PointZM.new(111, 122, 123, 124),
+          PointZM.new(131, 122, 133, 134),
+          PointZM.new(111, 112, 113, 114)
+        ])
+      ]),
+      PolygonZM.new([
+        LineStringZM.new([
+          PointZM.new(211, 212, 213, 214),
+          PointZM.new(211, 222, 223, 224),
+          PointZM.new(231, 222, 233, 234),
+          PointZM.new(211, 212, 213, 214)
+        ])
+      ])
+    ])
+  )
   # =>
   # %{
   #   "type" => "MultiPolygon",
   #   "coordinates" => [
-  #     [[-1, 1, 1, 1], [2, 2, 2, 2], [-3, 3, 3, 3]],
-  #     [[-10, 10, 10, 10], [-20, 20, 20, 20]]
+  #     [
+  #       [
+  #         [11, 12, 13, 14],
+  #         [11, 22, 23, 24],
+  #         [31, 22, 33, 34],
+  #         [11, 12, 13, 14]
+  #       ]
+  #     ], [
+  #       [
+  #         [21, 22, 23, 24],
+  #         [21, 22, 23, 24],
+  #         [21, 22, 23, 24],
+  #         [21, 22, 23, 24]
+  #       ]
+  #     ]
   #   ]
   # }
   ```
@@ -314,13 +292,7 @@ defmodule Geometry.MultiPolygonZM do
   def to_geo_json(%MultiPolygonZM{polygons: polygons}) do
     %{
       "type" => "MultiPolygon",
-      "coordinates" =>
-        Enum.map(polygons, fn %PolygonZM{exterior: exterior, interiors: interiors} ->
-          [
-            Enum.map(exterior, &PointZM.to_list/1)
-            | Enum.map(interiors, fn interior -> Enum.map(interior, &PointZM.to_list/1) end)
-          ]
-        end)
+      "coordinates" => MapSet.to_list(polygons)
     }
   end
 
@@ -342,42 +314,36 @@ defmodule Geometry.MultiPolygonZM do
       ...>     )
       ...>   )
       ...> ")
-      {
-        :ok,
-        %MultiPolygonZM{
-          polygons:
-            MapSet.new([
-              %PolygonZM{
-                exterior: [
-                  %PointZM{x: 20, y: 35, z: 20, m: 10},
-                  %PointZM{x: 10, y: 30, z: 10, m: 20},
-                  %PointZM{x: 10, y: 10, z: 30, m: 15},
-                  %PointZM{x: 30, y: 5, z: 10, m: 15},
-                  %PointZM{x: 45, y: 20, z: 10, m: 16},
-                  %PointZM{x: 20, y: 35, z: 20, m: 10}
-                ],
-                interiors: [
-                  [
-                    %PointZM{x: 30, y: 20, z: 10, m: 15},
-                    %PointZM{x: 20, y: 15, z: 20, m: 10},
-                    %PointZM{x: 20, y: 25, z: 15, m: 25},
-                    %PointZM{x: 30, y: 20, z: 10, m: 15}
-                  ]
-                ]
-              },
-              %PolygonZM{
-                exterior: [
-                  %PointZM{x: 40, y: 40, z: 10, m: 20},
-                  %PointZM{x: 20, y: 45, z: 20, m: 10},
-                  %PointZM{x: 45, y: 30, z: 15, m: 30},
-                  %PointZM{x: 40, y: 40, z: 10, m: 20}
-                ],
-                interiors: []
-              }
-            ])
-        },
-        1234
-      }
+      {:ok,
+       %MultiPolygonZM{
+         polygons:
+           MapSet.new([
+             [
+               [
+                 [20, 35, 20, 10],
+                 [10, 30, 10, 20],
+                 [10, 10, 30, 15],
+                 [30, 5, 10, 15],
+                 [45, 20, 10, 16],
+                 [20, 35, 20, 10]
+               ],
+               [
+                 [30, 20, 10, 15],
+                 [20, 15, 20, 10],
+                 [20, 25, 15, 25],
+                 [30, 20, 10, 15]
+               ]
+             ],
+             [
+               [
+                 [40, 40, 10, 20],
+                 [20, 45, 20, 10],
+                 [45, 30, 15, 30],
+                 [40, 40, 10, 20]
+               ]
+             ]
+           ])
+       }, 1234}
 
       iex> MultiPolygonZM.from_wkt("MultiPolygon ZM EMPTY")
       {:ok, %MultiPolygonZM{}}
@@ -409,38 +375,32 @@ defmodule Geometry.MultiPolygonZM do
 
   ```elixir
   MultiPolygonZM.to_wkt(
-    %MultiPolygonZM{
-      polygons:
-        MapSet.new([
-          %PolygonZM{
-            exterior: [
-              %PointZM{x: 20, y: 35, z: 20, m: 10},
-              %PointZM{x: 10, y: 30, z: 10, m: 20},
-              %PointZM{x: 10, y: 10, z: 30, m: 15},
-              %PointZM{x: 30, y: 5, z: 10, m: 15},
-              %PointZM{x: 45, y: 20, z: 10, m: 16},
-              %PointZM{x: 20, y: 35, z: 20, m: 10}
-            ],
-            interiors: [
-              [
-                %PointZM{x: 30, y: 20, z: 10, m: 15},
-                %PointZM{x: 20, y: 15, z: 20, m: 10},
-                %PointZM{x: 20, y: 25, z: 15, m: 25},
-                %PointZM{x: 30, y: 20, z: 10, m: 15}
-              ]
-            ]
-          },
-          %PolygonZM{
-            exterior: [
-              %PointZM{x: 40, y: 40, z: 10, m: 20},
-              %PointZM{x: 20, y: 45, z: 20, m: 10},
-              %PointZM{x: 45, y: 30, z: 15, m: 30},
-              %PointZM{x: 40, y: 40, z: 10, m: 20}
-            ],
-            interiors: []
-          }
+    MultiPolygonZM.new([
+      PolygonZM.new([
+        LineStrinZM.new([
+          PointZM.new(20, 35, 20, 10),
+          PointZM.new(10, 30, 10, 20),
+          PointZM.new(10, 10, 30, 15),
+          PointZM.new(30, 5, 10, 15),
+          PointZM.new(45, 20, 10, 16),
+          PointZM.new(20, 35, 20, 10)
+        ]),
+        LineStringZM.new([
+          PointZM.new(30, 20, 10, 15),
+          PointZM.new(20, 15, 20, 10),
+          PointZM.new(20, 25, 15, 25),
+          PointZM.new(30, 20, 10, 15)
         ])
-    }
+      ]),
+      PolygonZM.new([
+        LineStringZM.new([
+          PointZM.new(40, 40, 10, 20),
+          PointZM.new(20, 45, 20, 10),
+          PointZM.new(45, 30, 15, 30),
+          PointZM.new(40, 40, 10, 20)
+        ])
+      ])
+    ])
   )
   # Returns a string without any \\n or extra spaces (formatted just for readability):
   # SRID=478;MultiPolygon ZM (
@@ -454,17 +414,14 @@ defmodule Geometry.MultiPolygonZM do
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
-  def to_wkt(polygons, opts \\ [])
-
-  def to_wkt(%MultiPolygonZM{polygons: polygons}, opts) do
-    polygons
-    |> Enum.empty?()
-    |> case do
-      true -> "EMPTY"
-      false -> to_wkt_polygons(polygons)
-    end
-    |> to_wkt_multi_polygon()
-    |> WKT.to_ewkt(opts)
+  def to_wkt(%MultiPolygonZM{polygons: polygons}, opts \\ []) do
+    WKT.to_ewkt(
+      <<
+        "MultiPolygon ZM ",
+        polygons |> MapSet.to_list() |> to_wkt_polygons()::binary()
+      >>,
+      opts
+    )
   end
 
   @doc """
@@ -473,7 +430,7 @@ defmodule Geometry.MultiPolygonZM do
   With option `:srid` an EWKB representation with the SRID is returned.
 
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:ndr`.
+  endian is returned. The default is `:xdr`.
 
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZM.to_wkb/1` function.
@@ -484,12 +441,7 @@ defmodule Geometry.MultiPolygonZM do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
 
-    <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_multi_polygon(multi_polygon, endian)::binary()
-    >>
+    to_wkb(multi_polygon, srid, endian)
   end
 
   @doc """
@@ -525,10 +477,12 @@ defmodule Geometry.MultiPolygonZM do
       iex> MultiPolygonZM.size(
       ...>   MultiPolygonZM.new([
       ...>     PolygonZM.new([
-      ...>       PointZM.new(11, 12, 13, 14),
-      ...>       PointZM.new(11, 22, 23, 24),
-      ...>       PointZM.new(31, 22, 33, 34),
-      ...>       PointZM.new(11, 12, 13, 14)
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(11, 12, 13, 14),
+      ...>         PointZM.new(11, 22, 23, 24),
+      ...>         PointZM.new(31, 22, 33, 34),
+      ...>         PointZM.new(11, 12, 13, 14)
+      ...>       ])
       ...>     ])
       ...>   ])
       ...> )
@@ -545,17 +499,21 @@ defmodule Geometry.MultiPolygonZM do
       iex> MultiPolygonZM.member?(
       ...>   MultiPolygonZM.new([
       ...>     PolygonZM.new([
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(11, 12, 13, 14),
+      ...>         PointZM.new(11, 22, 23, 24),
+      ...>         PointZM.new(31, 22, 33, 34),
+      ...>         PointZM.new(11, 12, 13, 14)
+      ...>       ])
+      ...>     ])
+      ...>   ]),
+      ...>   PolygonZM.new([
+      ...>     LineStringZM.new([
       ...>       PointZM.new(11, 12, 13, 14),
       ...>       PointZM.new(11, 22, 23, 24),
       ...>       PointZM.new(31, 22, 33, 34),
       ...>       PointZM.new(11, 12, 13, 14)
       ...>     ])
-      ...>   ]),
-      ...>   PolygonZM.new([
-      ...>     PointZM.new(11, 12, 13, 14),
-      ...>     PointZM.new(11, 22, 23, 24),
-      ...>     PointZM.new(31, 22, 33, 34),
-      ...>     PointZM.new(11, 12, 13, 14)
       ...>   ])
       ...> )
       true
@@ -563,24 +521,28 @@ defmodule Geometry.MultiPolygonZM do
       iex> MultiPolygonZM.member?(
       ...>   MultiPolygonZM.new([
       ...>     PolygonZM.new([
-      ...>       PointZM.new(11, 12, 13, 14),
-      ...>       PointZM.new(11, 22, 23, 24),
-      ...>       PointZM.new(31, 22, 33, 34),
-      ...>       PointZM.new(11, 12, 13, 14)
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(11, 12, 13, 14),
+      ...>         PointZM.new(11, 22, 23, 24),
+      ...>         PointZM.new(31, 22, 33, 34),
+      ...>         PointZM.new(11, 12, 13, 14)
+      ...>       ])
       ...>     ])
       ...>   ]),
       ...>   PolygonZM.new([
-      ...>     PointZM.new(11, 12, 13, 14),
-      ...>     PointZM.new(11, 22, 23, 24),
-      ...>     PointZM.new(33, 22, 33, 34),
-      ...>     PointZM.new(11, 12, 13, 14)
+      ...>     LineStringZM.new([
+      ...>       PointZM.new(11, 12, 13, 14),
+      ...>       PointZM.new(11, 22, 23, 24),
+      ...>       PointZM.new(33, 22, 33, 34),
+      ...>       PointZM.new(11, 12, 13, 14)
+      ...>     ])
       ...>   ])
       ...> )
       false
   """
   @spec member?(t(), PolygonZM.t()) :: boolean()
-  def member?(%MultiPolygonZM{polygons: polygons}, %PolygonZM{} = polygon),
-    do: MapSet.member?(polygons, polygon)
+  def member?(%MultiPolygonZM{polygons: polygons}, %PolygonZM{rings: rings}),
+    do: MapSet.member?(polygons, rings)
 
   @doc """
   Converts `MultiPolygonZM` to a list.
@@ -590,71 +552,59 @@ defmodule Geometry.MultiPolygonZM do
       iex> MultiPolygonZM.to_list(
       ...>   MultiPolygonZM.new([
       ...>     PolygonZM.new([
-      ...>       PointZM.new(11, 12, 13, 14),
-      ...>       PointZM.new(11, 22, 23, 24),
-      ...>       PointZM.new(31, 22, 33, 34),
-      ...>       PointZM.new(11, 12, 13, 14)
+      ...>       LineStringZM.new([
+      ...>         PointZM.new(11, 12, 13, 14),
+      ...>         PointZM.new(11, 22, 23, 24),
+      ...>         PointZM.new(31, 22, 33, 34),
+      ...>         PointZM.new(11, 12, 13, 14)
+      ...>       ])
       ...>     ])
       ...>   ])
       ...> )
       [
-        %PolygonZM{
-          exterior: [
-            %PointZM{x: 11, y: 12, z: 13, m: 14},
-            %PointZM{x: 11, y: 22, z: 23, m: 24},
-            %PointZM{x: 31, y: 22, z: 33, m: 34},
-            %PointZM{x: 11, y: 12, z: 13, m: 14}
-          ],
-          interiors: []
-        }
+        [
+          [
+            [11, 12, 13, 14],
+            [11, 22, 23, 24],
+            [31, 22, 33, 34],
+            [11, 12, 13, 14]
+          ]
+        ]
       ]
   """
-
   @spec to_list(t()) :: [PolygonZM.t()]
   def to_list(%MultiPolygonZM{polygons: polygons}), do: MapSet.to_list(polygons)
 
-  defp to_wkt_polygons(polygons) do
-    wkt =
-      polygons
-      |> Enum.map(&to_wkt_polygon/1)
-      |> Enum.join(", ")
+  @compile {:inline, to_wkt_polygons: 1}
+  defp to_wkt_polygons([]), do: "EMPTY"
 
-    "(#{wkt})"
+  defp to_wkt_polygons([polygon | polygons]) do
+    <<"(",
+      Enum.reduce(polygons, PolygonZM.to_wkt_rings(polygon), fn polygon, acc ->
+        <<acc::binary(), ", ", PolygonZM.to_wkt_rings(polygon)::binary()>>
+      end)::binary(), ")">>
   end
 
-  defp to_wkt_polygon(%PolygonZM{exterior: exterior, interiors: interiors}) do
-    to_wkt_points(exterior, interiors)
+  @doc false
+  @compile {:inline, to_wkb: 3}
+  @spec to_wkb(t(), Geometry.srid() | nil, Geometry.endian()) :: Geometry.wkb()
+  def to_wkb(%MultiPolygonZM{polygons: polygons}, srid, endian) do
+    <<
+      WKB.byte_order(endian)::binary(),
+      wkb_code(endian, not is_nil(srid))::binary(),
+      WKB.srid(srid, endian)::binary(),
+      to_wkb_polygons(MapSet.to_list(polygons), endian)::binary()
+    >>
   end
 
-  defp to_wkt_points(exterior, interiors) do
-    wkt =
-      [exterior | interiors]
-      |> Enum.map(&to_wkt_points/1)
-      |> Enum.join(", ")
-
-    "(#{wkt})"
+  @compile {:inline, to_wkb_polygons: 2}
+  defp to_wkb_polygons(polygons, endian) do
+    Enum.reduce(polygons, WKB.length(polygons, endian), fn polygon, acc ->
+      <<acc::binary(), PolygonZM.to_wkb(polygon, nil, endian)::binary()>>
+    end)
   end
 
-  defp to_wkt_points(points) do
-    wkt =
-      points
-      |> Enum.map(fn point -> PointZM.to_wkt_coordinate(point) end)
-      |> Enum.join(", ")
-
-    "(#{wkt})"
-  end
-
-  defp to_wkt_multi_polygon(wkt), do: "MultiPolygon ZM #{wkt}"
-
-  defp to_wkb_multi_polygon(%MultiPolygonZM{polygons: polygons}, endian) do
-    data =
-      Enum.reduce(polygons, [], fn polygon, acc ->
-        [PolygonZM.to_wkb(polygon, endian: endian) | acc]
-      end)
-
-    <<WKB.length(polygons, endian)::binary, IO.iodata_to_binary(data)::binary>>
-  end
-
+  @compile {:inline, wkb_code: 2}
   defp wkb_code(endian, srid?) do
     case {endian, srid?} do
       {:xdr, false} -> "C0000006"
@@ -695,7 +645,13 @@ defmodule Geometry.MultiPolygonZM do
           [{x, []} | list]
 
         list, :done ->
-          %MultiPolygonZM{polygons: %{polygons | map: Map.merge(polygons.map, Map.new(list))}}
+          map =
+            Map.merge(
+              polygons.map,
+              Enum.into(list, %{}, fn {polygon, []} -> {polygon.rings, []} end)
+            )
+
+          %MultiPolygonZM{polygons: %{polygons | map: map}}
 
         _list, :halt ->
           :ok

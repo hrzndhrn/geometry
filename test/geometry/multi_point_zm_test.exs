@@ -3,7 +3,7 @@ defmodule Geometry.MultiPointZMTest do
 
   alias Geometry.{MultiPointZM, PointZM}
 
-  doctest Geometry.MultiPointZM, import: true
+  doctest MultiPointZM, import: true
 
   @moduletag :multi_point
 
@@ -44,8 +44,8 @@ defmodule Geometry.MultiPointZMTest do
                %MultiPointZM{
                  points:
                    MapSet.new([
-                     %PointZM{x: 1.1, y: 1.2, z: 1.3, m: 1.4},
-                     %PointZM{x: 20.1, y: 20.2, z: 20.3, m: 20.4}
+                     [1.1, 1.2, 1.3, 1.4],
+                     [20.1, 20.2, 20.3, 20.4]
                    ])
                }
     end
@@ -88,6 +88,7 @@ defmodule Geometry.MultiPointZMTest do
   end
 
   describe "from_wkb/1" do
+    @tag :only
     test "returns a MultiPointZM (xdr)" do
       wkb = """
       00\
@@ -107,9 +108,9 @@ defmodule Geometry.MultiPointZMTest do
       multi_point = %MultiPointZM{
         points:
           MapSet.new([
-            %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
-            %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
-            %PointZM{x: 40.0, y: 40.0, z: 20.0, m: 30.0}
+            [30.0, 10.0, 15.0, 10.0],
+            [20.0, 40.0, 15.0, 20.0],
+            [40.0, 40.0, 20.0, 30.0]
           ])
       }
 
@@ -157,9 +158,9 @@ defmodule Geometry.MultiPointZMTest do
       multi_point = %MultiPointZM{
         points:
           MapSet.new([
-            %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
-            %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
-            %PointZM{x: 40.0, y: 40.0, z: 20.0, m: 30.0}
+            [30.0, 10.0, 15.0, 10.0],
+            [20.0, 40.0, 15.0, 20.0],
+            [40.0, 40.0, 20.0, 30.0]
           ])
       }
 
@@ -178,7 +179,7 @@ defmodule Geometry.MultiPointZMTest do
       """
 
       multi_point = %MultiPointZM{
-        points: MapSet.new([%PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0}])
+        points: MapSet.new([[30.0, 10.0, 15.0, 10.0]])
       }
 
       assert MultiPointZM.from_wkb!(wkb) == {multi_point, 9999}
@@ -200,9 +201,9 @@ defmodule Geometry.MultiPointZMTest do
       multi_point = %MultiPointZM{
         points:
           MapSet.new([
-            %PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0},
-            %PointZM{x: 20.0, y: 40.0, z: 15.0, m: 20.0},
-            %PointZM{x: 40.0, y: 40.0, z: 20.0, m: 30.0}
+            [30.0, 10.0, 15.0, 10.0],
+            [20.0, 40.0, 15.0, 20.0],
+            [40.0, 40.0, 20.0, 30.0]
           ])
       }
 
@@ -225,10 +226,10 @@ defmodule Geometry.MultiPointZMTest do
       """
 
       multi_point = %MultiPointZM{
-        points: MapSet.new([%PointZM{x: 30.0, y: 10.0, z: 15.0, m: 10.0}])
+        points: MapSet.new([[30.0, 10.0, 15.0, 10.0]])
       }
 
-      assert MultiPointZM.to_wkb(multi_point, srid: 9999) == wkb
+      assert MultiPointZM.to_wkb(multi_point, srid: 9999, endian: :ndr) == wkb
     end
 
     test "returns a WKB for an empty MultiPointZM (xdr)" do
@@ -248,7 +249,7 @@ defmodule Geometry.MultiPointZMTest do
       00000000\
       """
 
-      assert MultiPointZM.to_wkb(%MultiPointZM{}) == wkb
+      assert MultiPointZM.to_wkb(%MultiPointZM{}, endian: :ndr) == wkb
     end
   end
 
@@ -258,8 +259,8 @@ defmodule Geometry.MultiPointZMTest do
                %MultiPointZM{
                  points:
                    MapSet.new([
-                     %PointZM{x: -5.1, y: 7.8, z: 1.1, m: 1},
-                     %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}
+                     [-5.1, 7.8, 1.1, 1],
+                     [0.1, 0.2, 2.2, 2]
                    ])
                }
     end
@@ -269,8 +270,8 @@ defmodule Geometry.MultiPointZMTest do
                {%MultiPointZM{
                   points:
                     MapSet.new([
-                      %PointZM{x: -5.1, y: 7.8, z: 1.1, m: 1},
-                      %PointZM{x: 0.1, y: 0.2, z: 2.2, m: 2}
+                      [-5.1, 7.8, 1.1, 1],
+                      [0.1, 0.2, 2.2, 2]
                     ])
                 }, 7219}
     end
@@ -291,6 +292,6 @@ defmodule Geometry.MultiPointZMTest do
         PointZM.new(1.1, 2.2, 3.3, 4.4)
       ])
 
-    assert [%PointZM{}] = Enum.slice(multi_point, 0, 1)
+    assert [_point] = Enum.slice(multi_point, 0, 1)
   end
 end

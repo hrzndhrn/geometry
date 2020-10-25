@@ -25,10 +25,12 @@ defmodule Geometry.GeometryCollectionMTest do
             PointM.new(2.1, 2.2, 2.4)
           ]),
           PolygonM.new([
-            PointM.new(1.1, 1.2, 1.4),
-            PointM.new(2.1, 2.2, 2.4),
-            PointM.new(3.3, 2.2, 2.4),
-            PointM.new(1.1, 1.2, 1.4)
+            LineStringM.new([
+              PointM.new(1.1, 1.2, 1.4),
+              PointM.new(2.1, 2.2, 2.4),
+              PointM.new(3.3, 2.2, 2.4),
+              PointM.new(1.1, 1.2, 1.4)
+            ])
           ])
         ])
 
@@ -38,7 +40,7 @@ defmodule Geometry.GeometryCollectionMTest do
       03000000\
       """
 
-      assert result = GeometryCollectionM.to_wkb(collection)
+      assert result = GeometryCollectionM.to_wkb(collection, endian: :ndr)
       assert String.starts_with?(result, wkb)
       assert GeometryCollectionM.from_wkb!(result) == collection
     end
@@ -63,7 +65,7 @@ defmodule Geometry.GeometryCollectionMTest do
 
       assert GeometryCollectionM.from_wkb!(wkb) ==
                %GeometryCollectionM{
-                 geometries: MapSet.new([%PointM{x: 1.0, y: 2.0, m: 4.0}])
+                 geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
                }
     end
 
@@ -80,7 +82,7 @@ defmodule Geometry.GeometryCollectionMTest do
 
       assert GeometryCollectionM.from_wkb!(wkb) ==
                {%GeometryCollectionM{
-                  geometries: MapSet.new([%PointM{x: 1.0, y: 2.0, m: 4.0}])
+                  geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
                 }, 55}
     end
 
@@ -123,7 +125,7 @@ defmodule Geometry.GeometryCollectionMTest do
       assert GeometryCollectionM.from_wkb(wkb) ==
                {:ok,
                 %GeometryCollectionM{
-                  geometries: MapSet.new([%PointM{x: 1.0, y: 2.0, m: 4.0}])
+                  geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
                 }}
     end
 
@@ -141,7 +143,7 @@ defmodule Geometry.GeometryCollectionMTest do
       assert GeometryCollectionM.from_wkb(wkb) ==
                {:ok,
                 %GeometryCollectionM{
-                  geometries: MapSet.new([%PointM{x: 1.0, y: 2.0, m: 4.0}])
+                  geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
                 }, 55}
     end
 
@@ -167,7 +169,7 @@ defmodule Geometry.GeometryCollectionMTest do
                {
                  :ok,
                  %GeometryCollectionM{
-                   geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+                   geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
                  }
                }
     end
@@ -177,7 +179,7 @@ defmodule Geometry.GeometryCollectionMTest do
                {
                  :ok,
                  %GeometryCollectionM{
-                   geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+                   geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
                  },
                  123
                }
@@ -195,7 +197,7 @@ defmodule Geometry.GeometryCollectionMTest do
     test "returns a GeometryCollectionM" do
       assert GeometryCollectionM.from_wkt!("GeometryCollection M (Point M (1.1 2.2 4.4))") ==
                %GeometryCollectionM{
-                 geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+                 geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
                }
     end
 
@@ -204,7 +206,7 @@ defmodule Geometry.GeometryCollectionMTest do
                "SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))"
              ) ==
                {%GeometryCollectionM{
-                  geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+                  geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
                 }, 123}
     end
 
@@ -231,7 +233,7 @@ defmodule Geometry.GeometryCollectionMTest do
 
       assert GeometryCollectionM.from_geo_json!(geo_json) ==
                %GeometryCollectionM{
-                 geometries: MapSet.new([%PointM{x: 1.1, y: 2.2, m: 4.4}])
+                 geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
                }
     end
 
