@@ -1,6 +1,6 @@
 # Geometry
 [![Hex.pm](https://img.shields.io/hexpm/v/geometry.svg)](https://hex.pm/packages/geometry)
-[![Build Status](https://travis-ci.org/hrzndhrn/geometry.svg?branch=master)](https://travis-ci.org/hrzndhrn/geometry)
+![CI](https://github.com/hrzndhrn/geometry/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/hrzndhrn/geometry/badge.svg)](https://coveralls.io/github/hrzndhrn/geometry)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
