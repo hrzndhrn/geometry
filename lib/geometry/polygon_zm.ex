@@ -345,7 +345,7 @@ defmodule Geometry.PolygonZM do
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZM.to_wkb/1` function.
   """
-  @spec to_wkb(t()[[Geometry.coordinates()]], opts) :: Geometry.wkb()
+  @spec to_wkb(t(), opts) :: Geometry.wkb()
         when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
   def to_wkb(%PolygonZM{rings: rings}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
