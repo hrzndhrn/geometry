@@ -28,7 +28,7 @@ defmodule Geometry.MixProject do
   end
 
   def description do
-    "A set of geometry types for WKT/WKB and GeoJson."
+    "A set of geometry types for WKT/EWT, WKB/EWKB and GeoJson."
   end
 
   def elixirc_paths(env) do
