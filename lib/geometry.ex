@@ -180,6 +180,8 @@ defmodule Geometry do
   """
   @type endian :: :ndr | :xdr
 
+  @type mode :: :binary | :hex
+
   @doc """
   Returns true if a geometry is empty.
 
@@ -355,4 +357,8 @@ defmodule Geometry do
   @doc false
   @spec default_endian :: endian()
   def default_endian, do: :xdr
+
+  @doc false
+  @spec default_mode :: mode()
+  def default_mode, do: :hex
 end

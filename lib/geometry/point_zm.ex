@@ -210,8 +210,9 @@ defmodule Geometry.PointZM do
   def to_wkb(%PointZM{coordinate: coordinate}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
 
-    to_wkb(coordinate, srid, endian)
+    to_wkb(coordinate, srid, endian, mode)
   end
 
   @doc """
@@ -284,45 +285,57 @@ defmodule Geometry.PointZM do
   defp to_wkt_number(num) when is_float(num), do: Float.to_string(num)
 
   @doc false
-  @compile {:inline, to_wkb: 3}
-  @spec to_wkb(Geometry.coordinate(), Geometry.srid() | nil, Geometry.endian()) :: binary()
-  def to_wkb(coordinate, srid, endian) do
+  @compile {:inline, to_wkb: 4}
+  @spec to_wkb(Geometry.coordinate(), Geometry.srid() | nil, Geometry.endian(), Geometry.mode()) ::
+          binary()
+  def to_wkb(coordinate, srid, endian, mode) do
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary,
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_coordinate(coordinate, endian)::binary
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_coordinate(coordinate, endian, mode)::binary
     >>
   end
 
   @doc false
   @compile {:inline, to_wkb_coordinate: 2}
   @spec to_wkb_coordinate(Geometry.coordinate() | nil, Geometry.endian()) :: binary()
-  def to_wkb_coordinate(nil, :ndr),
+  def to_wkb_coordinate(nil, :ndr, :hex),
     do: "000000000000F87F000000000000F87F000000000000F87F000000000000F87F"
 
-  def to_wkb_coordinate(nil, :xdr),
+  def to_wkb_coordinate(nil, :xdr, :hex),
     do: "7FF80000000000007FF80000000000007FF80000000000007FF8000000000000"
 
-  def to_wkb_coordinate([x, y, z, m], endian) do
+  def to_wkb_coordinate([x, y, z, m], endian, mode \\ :hex) do
     <<
-      to_wkb_number(x, endian)::binary(),
-      to_wkb_number(y, endian)::binary(),
-      to_wkb_number(z, endian)::binary(),
-      to_wkb_number(m, endian)::binary()
+      to_wkb_number(x, endian, mode)::binary(),
+      to_wkb_number(y, endian, mode)::binary(),
+      to_wkb_number(z, endian, mode)::binary(),
+      to_wkb_number(m, endian, mode)::binary()
     >>
   end
 
-  @compile {:inline, to_wkb_number: 2}
-  defp to_wkb_number(num, endian), do: Hex.to_float_string(num, endian)
+  @compile {:inline, to_wkb_number: 3}
+  defp to_wkb_number(num, endian, :hex), do: Hex.to_float_string(num, endian)
+  defp to_wkb_number(num, :xdr, :binary), do: <<num::big-float-size(64)>>
+  defp to_wkb_number(num, :ndr, :binary), do: <<num::little-float-size(64)>>
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "C0000001"
       {:ndr, false} -> "010000C0"
       {:xdr, true} -> "E0000001"
       {:ndr, true} -> "010000E0"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0xC0000001::big-integer-size(32)>>
+      {:ndr, false} -> <<0xC0000001::little-integer-size(32)>>
+      {:xdr, true} -> <<0xE0000001::big-integer-size(32)>>
+      {:ndr, true} -> <<0xE0000001::little-integer-size(32)>>
     end
   end
 end

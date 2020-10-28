@@ -5,14 +5,19 @@ defmodule Geometry.WKB do
 
   alias Geometry.WKB.Parser
 
-  @compile {:inline, byte_order: 1}
-  @spec byte_order(Geometry.endian()) :: binary()
-  def byte_order(:xdr), do: "00"
-  def byte_order(:ndr), do: "01"
+  @compile {:inline, byte_order: 2}
+  @spec byte_order(Geometry.endian(), Geometry.mode()) :: binary()
+  def byte_order(:xdr, :hex), do: "00"
+  def byte_order(:ndr, :hex), do: "01"
+  def byte_order(:xdr, :binary), do: <<0::8>>
+  def byte_order(:ndr, :binary), do: <<1::8>>
 
-  @spec srid(non_neg_integer() | nil, Geometry.endian()) :: binary()
-  def srid(nil, _endian), do: ""
-  def srid(int, endian), do: Hex.to_integer_string(int, endian)
+  @compile {:inline, srid: 3}
+  @spec srid(non_neg_integer() | nil, Geometry.endian(), Geometry.mode()) :: binary()
+  def srid(nil, _endian, _), do: <<>>
+  def srid(int, endian, :hex), do: Hex.to_integer_string(int, endian)
+  def srid(int, :xdr, :binary), do: <<int::big-integer-size(32)>>
+  def srid(int, :ndr, :binary), do: <<int::little-integer-size(32)>>
 
   @spec to_geometry(wkb, module()) ::
           {:ok, geometry} | {:ok, geometry, srid} | {:error, message, rest, offset}
