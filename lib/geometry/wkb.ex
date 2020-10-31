@@ -14,7 +14,7 @@ defmodule Geometry.WKB do
 
   @compile {:inline, srid: 3}
   @spec srid(non_neg_integer() | nil, Geometry.endian(), Geometry.mode()) :: binary()
-  def srid(nil, _endian, _), do: <<>>
+  def srid(nil, _endian, _mode), do: <<>>
   def srid(int, endian, :hex), do: Hex.to_integer_string(int, endian)
   def srid(int, :xdr, :binary), do: <<int::big-integer-size(32)>>
   def srid(int, :ndr, :binary), do: <<int::little-integer-size(32)>>
@@ -42,11 +42,33 @@ defmodule Geometry.WKB do
 
   defdelegate to_geometry(wkb), to: Parser, as: :parse
 
-  @spec length(list | MapSet.t(), Geometry.endian()) :: binary()
-  def length(list, endian) when is_list(list),
-    do: list |> length() |> Hex.to_integer_string(endian)
+  @compile {:inline, length: 3}
+  @spec length(list | MapSet.t(), Geometry.endian(), Geometry.mode()) :: binary()
+  def length(list, endian, :hex) when is_list(list) do
+    list |> length() |> Hex.to_integer_string(endian)
+  end
 
-  def length(set, endian), do: set |> MapSet.size() |> Hex.to_integer_string(endian)
+  def length(set, endian, :hex) do
+    set |> MapSet.size() |> Hex.to_integer_string(endian)
+  end
+
+  def length(list, endian, :binary) when is_list(list) do
+    length = length(list)
+
+    case endian do
+      :ndr -> <<length::little-integer-size(32)>>
+      :xdr -> <<length::big-integer-size(32)>>
+    end
+  end
+
+  def length(set, endian, :binary) do
+    size = MapSet.size(set)
+
+    case endian do
+      :ndr -> <<size::little-integer-size(32)>>
+      :xdr -> <<size::big-integer-size(32)>>
+    end
+  end
 
   defp check_geometry(%geometry{}, geometry), do: :ok
 

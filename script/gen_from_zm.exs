@@ -349,24 +349,24 @@ defmodule GenFromZM do
     )
     |> replacements(
       xyzm: ~S"""
-            to_wkb_number(x, endian)::binary(),
-            to_wkb_number(y, endian)::binary(),
-            to_wkb_number(z, endian)::binary(),
-            to_wkb_number(m, endian)::binary()
+            to_wkb_number(x, endian, mode)::binary(),
+            to_wkb_number(y, endian, mode)::binary(),
+            to_wkb_number(z, endian, mode)::binary(),
+            to_wkb_number(m, endian, mode)::binary()
       """,
       xy: ~S"""
-            to_wkb_number(x, endian)::binary(),
-            to_wkb_number(y, endian)::binary()
+            to_wkb_number(x, endian, mode)::binary(),
+            to_wkb_number(y, endian, mode)::binary()
       """,
       xym: ~S"""
-            to_wkb_number(x, endian)::binary(),
-            to_wkb_number(y, endian)::binary(),
-            to_wkb_number(m, endian)::binary()
+            to_wkb_number(x, endian, mode)::binary(),
+            to_wkb_number(y, endian, mode)::binary(),
+            to_wkb_number(m, endian, mode)::binary()
       """,
       xyz: ~S"""
-            to_wkb_number(x, endian)::binary(),
-            to_wkb_number(y, endian)::binary(),
-            to_wkb_number(z, endian)::binary()
+            to_wkb_number(x, endian, mode)::binary(),
+            to_wkb_number(y, endian, mode)::binary(),
+            to_wkb_number(z, endian, mode)::binary()
       """
     )
     |> replacements()
@@ -570,6 +570,18 @@ defmodule GenFromZM do
       xyz: "00A0000001000012673FF199999999999A400199999999999A400A666666666666",
       xym: "0060000001000012673FF199999999999A400199999999999A401199999999999A",
       xy: "0020000001000012673FF199999999999A400199999999999A"
+    )
+    |> replacements(
+      xyzm: "00E00000010000014D3FF199999999999A400199999999999A400A666666666666401199999999999A",
+      xyz: "00A00000010000014D3FF199999999999A400199999999999A400A666666666666",
+      xym: "00600000010000014D3FF199999999999A400199999999999A401199999999999A",
+      xy: "00200000010000014D3FF199999999999A400199999999999A"
+    )
+    |> replacements(
+      xyzm: "01010000E04D0100009A9999999999F13F9A999999999901406666666666660A409A99999999991140",
+      xyz: "01010000A04D0100009A9999999999F13F9A999999999901406666666666660A40",
+      xym: "01010000604D0100009A9999999999F13F9A999999999901409A99999999991140",
+      xy: "01010000204D0100009A9999999999F13F9A99999999990140"
     )
     |> replacements()
   end
@@ -1266,6 +1278,20 @@ defmodule GenFromZM do
   defp wkb_code(type) do
     replacements(type)
     |> replacements(
+      # Geometries without SRID
+      xyzm: "0xC",
+      xyz: "0x8",
+      xym: "0x4",
+      xy: "0x0"
+    )
+    |> replacements(
+      # Geometries with SRID
+      xyzm: "0xE",
+      xyz: "0xA",
+      xym: "0x6",
+      xy: "0x2"
+    )
+    |> replacements(
       # Point
       xy: """
             {:xdr, false} -> "00000001"
@@ -1472,12 +1498,12 @@ defmodule GenFromZM do
     patterns
     |> Enum.zip(replacements)
     |> Enum.reduce(code, fn {pattern, replacement}, acc ->
-      String.replace(acc, pattern, replacement)
+      String.replace(acc, pattern, replacement, global: true)
     end)
   end
 
   defp replace(code, {pattern, replacement}),
-    do: String.replace(code, pattern, replacement)
+    do: String.replace(code, pattern, replacement, global: true)
 
   defp unzip(list) do
     Enum.reduce(list, {[], []}, fn [a, b], {as, bs} ->

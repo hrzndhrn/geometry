@@ -6,7 +6,7 @@ defmodule Geometry.PointTest do
 
   import Prove
 
-  alias Geometry.Point
+  alias Geometry.{Hex, LineString, Point}
 
   doctest Point, import: true
 
@@ -86,11 +86,10 @@ defmodule Geometry.PointTest do
       assert Point.from_wkb(wkb) == {:ok, %Point{coordinate: [1.1, 2.2]}}
     end
 
-    # FIXME
-    # test "returns an error tuple for an unexpected geometry" do
-    #   wkb = "000000000200000000"
-    #   assert Point.from_wkb(wkb) == {:error, %{expected: Point, got: LineString}}
-    # end
+    test "returns an error tuple for an unexpected geometry" do
+      wkb = "000000000200000000"
+      assert Point.from_wkb(wkb) == {:error, %{expected: Point, got: LineString}}
+    end
 
     test "returns an error tuple for an invalid WKB" do
       wkb = "foo"
@@ -124,12 +123,59 @@ defmodule Geometry.PointTest do
   describe "to_wkb/2" do
     test "returns xdr-string for Point" do
       wkb = "00000000013FF199999999999A400199999999999A"
+      assert Point.to_wkb(Point.new(1.1, 2.2), mode: :hex) == wkb
+      assert Point.to_wkb(Point.new(1.1, 2.2), mode: :hex, endian: :xdr) == wkb
+    end
+
+    test "returns xdr-binary for Point" do
+      wkb =
+        Hex.to_binary(
+          "00000000013FF199999999999A400199999999999A"
+        )
+
+      assert Point.to_wkb(Point.new(1.1, 2.2)) == wkb
       assert Point.to_wkb(Point.new(1.1, 2.2), endian: :xdr) == wkb
+    end
+
+    test "returns xdr-string for Point with SRID" do
+      wkb = "00200000010000014D3FF199999999999A400199999999999A"
+      assert Point.to_wkb(Point.new(1.1, 2.2), srid: 333, mode: :hex) == wkb
+    end
+
+    test "returns xdr-binary for Point with SRID" do
+      wkb =
+        Hex.to_binary(
+          "00200000010000014D3FF199999999999A400199999999999A"
+        )
+
+      assert Point.to_wkb(Point.new(1.1, 2.2), srid: 333) == wkb
     end
 
     test "returns ndr-string for Point" do
       wkb = "01010000009A9999999999F13F9A99999999990140"
+      assert Point.to_wkb(Point.new(1.1, 2.2), endian: :ndr, mode: :hex) == wkb
+    end
+
+    @tag :only
+    test "returns ndr-binary for Point" do
+      wkb =
+        Hex.to_binary(
+          "01010000009A9999999999F13F9A99999999990140"
+        )
+
       assert Point.to_wkb(Point.new(1.1, 2.2), endian: :ndr) == wkb
+    end
+
+    @tag :only
+    test "returns ndr-string for Point with SRID" do
+      wkb = "01010000204D0100009A9999999999F13F9A99999999990140"
+
+      assert Point.to_wkb(
+               Point.new(1.1, 2.2),
+               endian: :ndr,
+               srid: 333,
+               mode: :hex
+             ) == wkb
     end
   end
 

@@ -432,16 +432,20 @@ defmodule Geometry.MultiPolygon do
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:xdr`.
 
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
+
   An example of a simpler geometry can be found in the description for the
   `Geometry.Point.to_wkb/1` function.
   """
   @spec to_wkb(t(), opts) :: Geometry.wkb()
-        when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
+        when opts: [endian: Geometry.endian(), srid: Geometry.srid(), mode: Geometry.mode()]
   def to_wkb(%MultiPolygon{} = multi_polygon, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
     srid = Keyword.get(opts, :srid)
 
-    to_wkb(multi_polygon, srid, endian)
+    to_wkb(multi_polygon, srid, endian, mode)
   end
 
   @doc """
@@ -586,31 +590,44 @@ defmodule Geometry.MultiPolygon do
   end
 
   @doc false
-  @compile {:inline, to_wkb: 3}
-  @spec to_wkb(t(), Geometry.srid() | nil, Geometry.endian()) :: Geometry.wkb()
-  def to_wkb(%MultiPolygon{polygons: polygons}, srid, endian) do
+  @compile {:inline, to_wkb: 4}
+  @spec to_wkb(t(), srid, endian, mode) :: wkb
+        when srid: Geometry.srid() | nil,
+             endian: Geometry.endian(),
+             mode: Geometry.mode(),
+             wkb: Geometry.wkb()
+  def to_wkb(%MultiPolygon{polygons: polygons}, srid, endian, mode) do
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_polygons(MapSet.to_list(polygons), endian)::binary()
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary(),
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_polygons(MapSet.to_list(polygons), endian, mode)::binary()
     >>
   end
 
-  @compile {:inline, to_wkb_polygons: 2}
-  defp to_wkb_polygons(polygons, endian) do
-    Enum.reduce(polygons, WKB.length(polygons, endian), fn polygon, acc ->
-      <<acc::binary(), Polygon.to_wkb(polygon, nil, endian)::binary()>>
+  @compile {:inline, to_wkb_polygons: 3}
+  defp to_wkb_polygons(polygons, endian, mode) do
+    Enum.reduce(polygons, WKB.length(polygons, endian, mode), fn polygon, acc ->
+      <<acc::binary(), Polygon.to_wkb(polygon, nil, endian, mode)::binary()>>
     end)
   end
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "00000006"
       {:ndr, false} -> "06000000"
       {:xdr, true} -> "20000006"
       {:ndr, true} -> "06000020"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0x00000006::big-integer-size(32)>>
+      {:ndr, false} -> <<0x00000006::little-integer-size(32)>>
+      {:xdr, true} -> <<0x20000006::big-integer-size(32)>>
+      {:ndr, true} -> <<0x20000006::little-integer-size(32)>>
     end
   end
 

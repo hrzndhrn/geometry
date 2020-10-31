@@ -4,7 +4,7 @@ defmodule Geometry.MultiLineStringTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{LineString, MultiLineString, Point}
+  alias Geometry.{Hex, LineString, MultiLineString, Point}
 
   doctest Geometry.MultiLineString, import: true
 
@@ -170,8 +170,8 @@ defmodule Geometry.MultiLineStringTest do
   end
 
   describe "to_wkb/2" do
-    test "returns a MultiLineString (xdr)" do
-      wkb_start = "0000000005000000020000000002"
+    test "returns WKB as xdr-binary from a MultiLineString" do
+      wkb_start =   "0000000005000000020000000002"
 
       multi_line_string = %MultiLineString{
         line_strings:
@@ -191,6 +191,31 @@ defmodule Geometry.MultiLineStringTest do
       # Because the order is not guaranteed we test here this way.
 
       assert result = MultiLineString.to_wkb(multi_line_string, endian: :xdr)
+      assert String.starts_with?(result, Hex.to_binary(wkb_start))
+      assert MultiLineString.from_wkb!(Hex.from_binary(result)) == multi_line_string
+    end
+
+    test "returns WKB as xdr-string from a MultiLineString" do
+      wkb_start =   "0000000005000000020000000002"
+
+      multi_line_string = %MultiLineString{
+        line_strings:
+          MapSet.new([
+            [
+              [40.0, 40.0],
+              [30.0, 30.0]
+            ],
+            [
+              [10.0, 10.0],
+              [20.0, 20.0],
+              [10.0, 40.0]
+            ]
+          ])
+      }
+
+      # Because the order is not guaranteed we test here this way.
+
+      assert result = MultiLineString.to_wkb(multi_line_string, endian: :xdr, mode: :hex)
       assert String.starts_with?(result, wkb_start)
       assert MultiLineString.from_wkb!(result) == multi_line_string
     end

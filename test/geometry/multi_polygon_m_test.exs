@@ -5,6 +5,7 @@ defmodule Geometry.MultiPolygonMTest do
   use ExUnit.Case, async: true
 
   alias Geometry.{
+    Hex,
     LineStringM,
     MultiPolygonM,
     PointM,
@@ -13,7 +14,7 @@ defmodule Geometry.MultiPolygonMTest do
 
   doctest Geometry.MultiPolygonM, import: true
 
-  @moduletag :multi_plygon
+  @moduletag :multi_polygon
 
   describe "to_geo_json/1" do
     @tag :new
@@ -381,8 +382,7 @@ defmodule Geometry.MultiPolygonMTest do
   end
 
   describe "to_wkb/2" do
-    @tag :new
-    test "returns WKB for PolygonM" do
+    test "returns WKB ndr-binary for MultiPolygonM" do
       wkb_start = "0106000040020000000103000040"
 
       multi_polygon = %MultiPolygonM{
@@ -414,6 +414,41 @@ defmodule Geometry.MultiPolygonMTest do
       }
 
       assert result = MultiPolygonM.to_wkb(multi_polygon, endian: :ndr)
+      assert String.starts_with?(result, Hex.to_binary(wkb_start))
+      assert MultiPolygonM.from_wkb!(Hex.from_binary(result)) == multi_polygon
+    end
+    test "returns WKB as ndr-string for MultiPolygonM" do
+      wkb_start = "0106000040020000000103000040"
+
+      multi_polygon = %MultiPolygonM{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0, 4.0],
+                [9.0, 1.0, 5.0],
+                [9.0, 8.0, 6.0],
+                [1.0, 1.0, 4.0]
+              ],
+              [
+                [6.0, 2.0, 3.0],
+                [7.0, 2.0, 7.0],
+                [7.0, 3.0, 4.0],
+                [6.0, 2.0, 3.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0, 4.0],
+                [8.0, 2.0, 5.0],
+                [8.0, 4.0, 6.0],
+                [6.0, 2.0, 4.0]
+              ]
+            ]
+          ])
+      }
+
+      assert result = MultiPolygonM.to_wkb(multi_polygon, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygonM.from_wkb!(result) == multi_polygon
     end

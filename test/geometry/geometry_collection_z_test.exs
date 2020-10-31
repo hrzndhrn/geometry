@@ -6,6 +6,7 @@ defmodule Geometry.GeometryCollectionZTest do
 
   alias Geometry.{
     GeometryCollectionZ,
+    Hex,
     LineStringZ,
     PointZ,
     PolygonZ
@@ -16,7 +17,7 @@ defmodule Geometry.GeometryCollectionZTest do
   @moduletag :geometry_collection
 
   describe "to_wkb/2" do
-    test "returns WKB for a GeometryCollectionZ" do
+    test "returns WKB as ndr-binary for a GeometryCollectionZ" do
       collection =
         GeometryCollectionZ.new([
           PointZ.new(1.1, 2.2, 3.3),
@@ -41,6 +42,35 @@ defmodule Geometry.GeometryCollectionZTest do
       """
 
       assert result = GeometryCollectionZ.to_wkb(collection, endian: :ndr)
+      assert String.starts_with?(result, Hex.to_binary(wkb))
+      assert GeometryCollectionZ.from_wkb!(Hex.from_binary(result)) == collection
+    end
+
+    test "returns WKB as ndr-string for a GeometryCollectionZ" do
+      collection =
+        GeometryCollectionZ.new([
+          PointZ.new(1.1, 2.2, 3.3),
+          LineStringZ.new([
+            PointZ.new(1.1, 1.2, 1.3),
+            PointZ.new(2.1, 2.2, 2.3)
+          ]),
+          PolygonZ.new([
+            LineStringZ.new([
+              PointZ.new(1.1, 1.2, 1.3),
+              PointZ.new(2.1, 2.2, 2.3),
+              PointZ.new(3.3, 2.2, 2.3),
+              PointZ.new(1.1, 1.2, 1.3)
+            ])
+          ])
+        ])
+
+      wkb = """
+      01\
+      07000080\
+      03000000\
+      """
+
+      assert result = GeometryCollectionZ.to_wkb(collection, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb)
       assert GeometryCollectionZ.from_wkb!(result) == collection
     end
@@ -175,7 +205,9 @@ defmodule Geometry.GeometryCollectionZTest do
     end
 
     test "returns a GeometryCollectionZ with an SRID" do
-      assert GeometryCollectionZ.from_wkt("SRID=123;GeometryCollection Z (Point Z (1.1 2.2 3.3))") ==
+      assert GeometryCollectionZ.from_wkt(
+               "SRID=123;GeometryCollection Z (Point Z (1.1 2.2 3.3))"
+             ) ==
                {
                  :ok,
                  %GeometryCollectionZ{

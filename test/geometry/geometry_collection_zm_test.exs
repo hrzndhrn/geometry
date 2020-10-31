@@ -3,6 +3,7 @@ defmodule Geometry.GeometryCollectionZMTest do
 
   alias Geometry.{
     GeometryCollectionZM,
+    Hex,
     LineStringZM,
     PointZM,
     PolygonZM
@@ -13,7 +14,7 @@ defmodule Geometry.GeometryCollectionZMTest do
   @moduletag :geometry_collection
 
   describe "to_wkb/2" do
-    test "returns WKB for a GeometryCollectionZM" do
+    test "returns WKB as ndr-binary for a GeometryCollectionZM" do
       collection =
         GeometryCollectionZM.new([
           PointZM.new(1.1, 2.2, 3.3, 4.4),
@@ -38,6 +39,35 @@ defmodule Geometry.GeometryCollectionZMTest do
       """
 
       assert result = GeometryCollectionZM.to_wkb(collection, endian: :ndr)
+      assert String.starts_with?(result, Hex.to_binary(wkb))
+      assert GeometryCollectionZM.from_wkb!(Hex.from_binary(result)) == collection
+    end
+
+    test "returns WKB as ndr-string for a GeometryCollectionZM" do
+      collection =
+        GeometryCollectionZM.new([
+          PointZM.new(1.1, 2.2, 3.3, 4.4),
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(2.1, 2.2, 2.3, 2.4)
+          ]),
+          PolygonZM.new([
+            LineStringZM.new([
+              PointZM.new(1.1, 1.2, 1.3, 1.4),
+              PointZM.new(2.1, 2.2, 2.3, 2.4),
+              PointZM.new(3.3, 2.2, 2.3, 2.4),
+              PointZM.new(1.1, 1.2, 1.3, 1.4)
+            ])
+          ])
+        ])
+
+      wkb = """
+      01\
+      070000C0\
+      03000000\
+      """
+
+      assert result = GeometryCollectionZM.to_wkb(collection, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb)
       assert GeometryCollectionZM.from_wkb!(result) == collection
     end

@@ -10,6 +10,7 @@ defmodule GeometryTest do
     GeometryCollectionM,
     GeometryCollectionZ,
     GeometryCollectionZM,
+    Hex,
     LineString,
     LineStringM,
     LineStringZ,

@@ -3,13 +3,22 @@ defmodule Geometry.PointM do
   A point struct, representing a 2D point with a measurement.
   """
 
-  alias Geometry.{GeoJson, Hex, PointM, WKB, WKT}
-
   import Geometry.Guards
+
+  alias Geometry.{GeoJson, Hex, PointM, WKB, WKT}
 
   defstruct [:coordinate]
 
   @blank " "
+
+  @empty %{
+    {:ndr, :hex} => "000000000000F87F000000000000F87F000000000000F87F",
+    {:xdr, :hex} => "7FF80000000000007FF80000000000007FF8000000000000",
+    {:ndr, :binary} =>
+      Hex.to_binary("000000000000F87F000000000000F87F000000000000F87F"),
+    {:xdr, :binary} =>
+      Hex.to_binary("7FF80000000000007FF80000000000007FF8000000000000")
+  }
 
   @type t :: %PointM{coordinate: Geometry.coordinate() | nil}
 
@@ -185,33 +194,37 @@ defmodule Geometry.PointM do
 
   With option `:srid` an EWKB representation with the SRID is returned.
 
-  The option `endian` indicates whether `:xdr` big endian or `:ndr` little
+  The option `:endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:xdr`.
+
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
 
   ## Examples
 
-      iex> PointM.to_wkb(PointM.new())
+      iex> PointM.to_wkb(PointM.new(), mode: :hex)
       "00400000017FF80000000000007FF80000000000007FF8000000000000"
 
-      iex> PointM.to_wkb(PointM.new(), endian: :ndr)
+      iex> PointM.to_wkb(PointM.new(), endian: :ndr, mode: :hex)
       "0101000040000000000000F87F000000000000F87F000000000000F87F"
 
-      iex> PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), endian: :xdr)
+      iex> PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), endian: :xdr, mode: :hex)
       "00400000013FF199999999999A400199999999999A401199999999999A"
 
-      iex> PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), endian: :ndr)
+      iex> PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), endian: :ndr, mode: :hex)
       "01010000409A9999999999F13F9A999999999901409A99999999991140"
 
-      iex> PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), srid: 4711, endian: :xdr)
+      iex> PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), srid: 4711, endian: :xdr, mode: :hex)
       "0060000001000012673FF199999999999A400199999999999A401199999999999A"
   """
   @spec to_wkb(t(), opts) :: Geometry.wkb()
-        when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
+        when opts: [endian: Geometry.endian(), srid: Geometry.srid(), mode: Geometry.mode()]
   def to_wkb(%PointM{coordinate: coordinate}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
     srid = Keyword.get(opts, :srid)
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
 
-    to_wkb(coordinate, srid, endian)
+    to_wkb(coordinate, srid, endian, mode)
   end
 
   @doc """
@@ -282,44 +295,60 @@ defmodule Geometry.PointM do
   defp to_wkt_number(num) when is_float(num), do: Float.to_string(num)
 
   @doc false
-  @compile {:inline, to_wkb: 3}
-  @spec to_wkb(Geometry.coordinate(), Geometry.srid() | nil, Geometry.endian()) :: binary()
-  def to_wkb(coordinate, srid, endian) do
+  @compile {:inline, to_wkb: 4}
+  @spec to_wkb(Geometry.coordinate(), Geometry.srid() | nil, Geometry.endian(), Geometry.mode()) ::
+          binary()
+  def to_wkb(coordinate, srid, endian, mode) do
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary,
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_coordinate(coordinate, endian)::binary
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_coordinate(coordinate, endian, mode)::binary
     >>
   end
 
   @doc false
-  @compile {:inline, to_wkb_coordinate: 2}
-  @spec to_wkb_coordinate(Geometry.coordinate() | nil, Geometry.endian()) :: binary()
-  def to_wkb_coordinate(nil, :ndr),
-    do: "000000000000F87F000000000000F87F000000000000F87F"
+  @compile {:inline, to_wkb_coordinate: 3}
+  @spec to_wkb_coordinate(coordinate, endian, mode) :: wkb
+        when coordinate: Geometry.coordinate() | nil,
+             endian: Geometry.endian(),
+             mode: Geometry.mode(),
+             wkb: Geometry.wkb()
+  def to_wkb_coordinate(nil, endian, mode), do: Map.fetch!(@empty, {endian, mode})
+  # do: "000000000000F87F000000000000F87F000000000000F87F"
 
-  def to_wkb_coordinate(nil, :xdr),
-    do: "7FF80000000000007FF80000000000007FF8000000000000"
+  # def to_wkb_coordinate(nil, :xdr, :hex),
+  # do: "7FF80000000000007FF80000000000007FF8000000000000"
 
-  def to_wkb_coordinate([x, y, m], endian) do
+  def to_wkb_coordinate([x, y, m], endian, mode) do
     <<
-      to_wkb_number(x, endian)::binary(),
-      to_wkb_number(y, endian)::binary(),
-      to_wkb_number(m, endian)::binary()
+      to_wkb_number(x, endian, mode)::binary(),
+      to_wkb_number(y, endian, mode)::binary(),
+      to_wkb_number(m, endian, mode)::binary()
     >>
   end
 
-  @compile {:inline, to_wkb_number: 2}
-  defp to_wkb_number(num, endian), do: Hex.to_float_string(num, endian)
+  @compile {:inline, to_wkb_number: 3}
+  defp to_wkb_number(num, endian, :hex), do: Hex.to_float_string(num, endian)
+  defp to_wkb_number(num, :xdr, :binary), do: <<num::big-float-size(64)>>
+  defp to_wkb_number(num, :ndr, :binary), do: <<num::little-float-size(64)>>
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "40000001"
       {:ndr, false} -> "01000040"
       {:xdr, true} -> "60000001"
       {:ndr, true} -> "01000060"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0x40000001::big-integer-size(32)>>
+      {:ndr, false} -> <<0x40000001::little-integer-size(32)>>
+      {:xdr, true} -> <<0x60000001::big-integer-size(32)>>
+      {:ndr, true} -> <<0x60000001::little-integer-size(32)>>
     end
   end
 end

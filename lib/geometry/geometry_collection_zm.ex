@@ -233,6 +233,9 @@ defmodule Geometry.GeometryCollectionZM do
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:ndr`.
 
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
+
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZM.to_wkb/1` function.
   """
@@ -240,13 +243,14 @@ defmodule Geometry.GeometryCollectionZM do
         when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
   def to_wkb(%GeometryCollectionZM{geometries: geometries}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
     srid = Keyword.get(opts, :srid)
 
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_geometries(geometries, endian)::binary()
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary(),
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_geometries(geometries, endian, mode)::binary()
     >>
   end
 
@@ -352,20 +356,29 @@ defmodule Geometry.GeometryCollectionZM do
       end)::binary(), ")">>
   end
 
-  @compile {:inline, to_wkb_geometries: 2}
-  defp to_wkb_geometries(geometries, endian) do
-    Enum.reduce(geometries, WKB.length(geometries, endian), fn %module{} = geometry, acc ->
-      <<acc::binary(), module.to_wkb(geometry, endian: endian)::binary()>>
+  @compile {:inline, to_wkb_geometries: 3}
+  defp to_wkb_geometries(geometries, endian, mode) do
+    Enum.reduce(geometries, WKB.length(geometries, endian, mode), fn %module{} = geometry, acc ->
+      <<acc::binary(), module.to_wkb(geometry, endian: endian, mode: mode)::binary()>>
     end)
   end
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "C0000007"
       {:ndr, false} -> "070000C0"
       {:xdr, true} -> "E0000007"
       {:ndr, true} -> "070000E0"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0xC0000007::big-integer-size(32)>>
+      {:ndr, false} -> <<0xC0000007::little-integer-size(32)>>
+      {:xdr, true} -> <<0xE0000007::big-integer-size(32)>>
+      {:ndr, true} -> <<0xE0000007::little-integer-size(32)>>
     end
   end
 

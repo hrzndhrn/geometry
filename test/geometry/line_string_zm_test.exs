@@ -3,7 +3,7 @@ defmodule Geometry.LineStringZMTest do
 
   import Prove
 
-  alias Geometry.{LineStringZM, PointZM}
+  alias Geometry.{Hex, LineStringZM, PointZM}
 
   doctest Geometry.LineStringZM, import: true
 
@@ -275,7 +275,28 @@ defmodule Geometry.LineStringZMTest do
   end
 
   describe "to_wkb/2" do
-    test "returns WKB from LineStringZM" do
+    test "returns WKB as ndr-string from LineStringZM" do
+      wkb = """
+      01\
+      020000C0\
+      02000000\
+      9A9999999999F1BF9A999999999901C06666666666660AC09A999999999911C0\
+      00000000000016406666666666661A40CDCCCCCCCCCC1E409A99999999992140\
+      """
+
+      assert LineStringZM.to_wkb(
+               %LineStringZM{
+                 points: [
+                   [-1.1, -2.2, -3.3, -4.4],
+                   [5.5, 6.6, 7.7, 8.8]
+                 ]
+               },
+               endian: :ndr,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary from LineStringZM" do
       wkb = """
       01\
       020000C0\
@@ -292,10 +313,32 @@ defmodule Geometry.LineStringZMTest do
                  ]
                },
                endian: :ndr
+             ) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string from LineStringZM with SRID" do
+      wkb = """
+      00\
+      E0000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC00A666666666666C01199999999999A\
+      4016000000000000401A666666666666401ECCCCCCCCCCCD402199999999999A\
+      """
+
+      assert LineStringZM.to_wkb(
+               %LineStringZM{
+                 points: [
+                   [-1.1, -2.2, -3.3, -4.4],
+                   [5.5, 6.6, 7.7, 8.8]
+                 ]
+               },
+               srid: 77,
+               mode: :hex
              ) == wkb
     end
 
-    test "returns WKB from LineStringZM with SRID" do
+    test "returns WKB as xdr-binary from LineStringZM with SRID" do
       wkb = """
       00\
       E0000002\
@@ -313,7 +356,7 @@ defmodule Geometry.LineStringZMTest do
                  ]
                },
                srid: 77
-             ) == wkb
+             ) == Hex.to_binary(wkb)
     end
   end
 end

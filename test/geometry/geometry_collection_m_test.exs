@@ -6,6 +6,7 @@ defmodule Geometry.GeometryCollectionMTest do
 
   alias Geometry.{
     GeometryCollectionM,
+    Hex,
     LineStringM,
     PointM,
     PolygonM
@@ -16,7 +17,7 @@ defmodule Geometry.GeometryCollectionMTest do
   @moduletag :geometry_collection
 
   describe "to_wkb/2" do
-    test "returns WKB for a GeometryCollectionM" do
+    test "returns WKB as ndr-binary for a GeometryCollectionM" do
       collection =
         GeometryCollectionM.new([
           PointM.new(1.1, 2.2, 4.4),
@@ -41,6 +42,35 @@ defmodule Geometry.GeometryCollectionMTest do
       """
 
       assert result = GeometryCollectionM.to_wkb(collection, endian: :ndr)
+      assert String.starts_with?(result, Hex.to_binary(wkb))
+      assert GeometryCollectionM.from_wkb!(Hex.from_binary(result)) == collection
+    end
+
+    test "returns WKB as ndr-string for a GeometryCollectionM" do
+      collection =
+        GeometryCollectionM.new([
+          PointM.new(1.1, 2.2, 4.4),
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(2.1, 2.2, 2.4)
+          ]),
+          PolygonM.new([
+            LineStringM.new([
+              PointM.new(1.1, 1.2, 1.4),
+              PointM.new(2.1, 2.2, 2.4),
+              PointM.new(3.3, 2.2, 2.4),
+              PointM.new(1.1, 1.2, 1.4)
+            ])
+          ])
+        ])
+
+      wkb = """
+      01\
+      07000040\
+      03000000\
+      """
+
+      assert result = GeometryCollectionM.to_wkb(collection, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb)
       assert GeometryCollectionM.from_wkb!(result) == collection
     end
@@ -175,7 +205,9 @@ defmodule Geometry.GeometryCollectionMTest do
     end
 
     test "returns a GeometryCollectionM with an SRID" do
-      assert GeometryCollectionM.from_wkt("SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))") ==
+      assert GeometryCollectionM.from_wkt(
+               "SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))"
+             ) ==
                {
                  :ok,
                  %GeometryCollectionM{

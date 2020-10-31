@@ -169,7 +169,9 @@ defmodule Geometry.LineStringZM do
       {:ok, %LineStringZM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t()}
+          | {:ok, t(), Geometry.srid()}
+          | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, LineStringZM)
 
   @doc """
@@ -224,16 +226,22 @@ defmodule Geometry.LineStringZM do
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:xdr`.
 
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
+
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZM.to_wkb/1` function.
   """
-  @spec to_wkb(t() | Geometry.coordinates(), opts) :: Geometry.wkb()
-        when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
+  @spec to_wkb(line_string, opts) :: wkb
+        when line_string: t() | Geometry.coordinates(),
+             opts: [endian: Geometry.endian(), srid: Geometry.srid(), mode: Geometry.mode()],
+             wkb: Geometry.wkb()
   def to_wkb(%LineStringZM{points: points}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
     srid = Keyword.get(opts, :srid)
 
-    to_wkb(points, srid, endian)
+    to_wkb(points, srid, endian, mode)
   end
 
   @doc """
@@ -246,7 +254,9 @@ defmodule Geometry.LineStringZM do
   `Geometry.PointZM.from_wkb/1` function.
   """
   @spec from_wkb(Geometry.wkb()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t()}
+          | {:ok, t(), Geometry.srid()}
+          | Geometry.wkb_error()
   def from_wkb(wkb), do: WKB.to_geometry(wkb, LineStringZM)
 
   @doc """
@@ -275,32 +285,50 @@ defmodule Geometry.LineStringZM do
 
   @doc false
   @compile {:inline, to_wkb: 2}
-  @spec to_wkb(Geometry.coordinates(), Geometry.srid() | nil, Geometry.endian()) :: Geometry.wkb()
-  def to_wkb(points, srid, endian) do
+  @spec to_wkb(coordinates, srid, endian, mode) :: wkb
+        when coordinates: Geometry.coordinates(),
+             srid: Geometry.srid() | nil,
+             endian: Geometry.endian(),
+             mode: Geometry.mode(),
+             wkb: Geometry.wkb()
+  def to_wkb(points, srid, endian, mode) do
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_points(points, endian)::binary()
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary(),
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_points(points, endian, mode)::binary()
     >>
   end
 
   @doc false
-  @compile {:inline, to_wkb_points: 2}
-  @spec to_wkb_points(Geometry.coordinates(), Geometry.endian()) :: Geometry.wkt()
-  def to_wkb_points(points, endian) do
-    Enum.reduce(points, WKB.length(points, endian), fn coordinate, acc ->
-      <<acc::binary(), PointZM.to_wkb_coordinate(coordinate, endian)::binary()>>
+  @compile {:inline, to_wkb_points: 3}
+  @spec to_wkb_points(coordinates, endian, mode) :: wkb
+        when coordinates: Geometry.coordinates(),
+             endian: Geometry.endian(),
+             mode: Geometry.mode(),
+             wkb: Geometry.wkb()
+  def to_wkb_points(points, endian, mode) do
+    Enum.reduce(points, WKB.length(points, endian, mode), fn coordinate, acc ->
+      <<acc::binary(), PointZM.to_wkb_coordinate(coordinate, endian, mode)::binary()>>
     end)
   end
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "C0000002"
       {:ndr, false} -> "020000C0"
       {:xdr, true} -> "E0000002"
       {:ndr, true} -> "020000E0"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0xC0000002::big-integer-size(32)>>
+      {:ndr, false} -> <<0xC0000002::little-integer-size(32)>>
+      {:xdr, true} -> <<0xE0000002::big-integer-size(32)>>
+      {:ndr, true} -> <<0xE0000002::little-integer-size(32)>>
     end
   end
 end

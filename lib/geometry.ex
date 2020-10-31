@@ -201,22 +201,26 @@ defmodule Geometry do
   end
 
   @doc """
-  Returns the WKB representation of a geometry. An optional `:srid` can be set
-  in the options.
+  Returns the WKB representation of a geometry.
 
-  The option `endian` indicates whether `:xdr` big endian or `:ndr` little
+  With option `:srid` an EWKB representation with the SRID is returned.
+
+  The option `:endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:xdr`.
+
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
 
   ## Examples
 
-      iex> Geometry.to_wkb(PointZ.new(1, 2, 3), endian: :ndr)
+      iex> Geometry.to_wkb(PointZ.new(1, 2, 3), endian: :ndr, mode: :hex)
       "0101000080000000000000F03F00000000000000400000000000000840"
 
-      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711)
+      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711) |> Hex.from_binary()
       "0020000001000012673FF00000000000004000000000000000"
   """
   @spec to_wkb(t(), opts) :: String.t()
-        when opts: [endian: endian(), srid: srid()]
+        when opts: [endian: endian(), srid: srid(), mode: mode()]
   def to_wkb(%module{} = geometry, opts \\ []) when module in @geometries do
     module.to_wkb(geometry, opts)
   end
@@ -360,5 +364,5 @@ defmodule Geometry do
 
   @doc false
   @spec default_mode :: mode()
-  def default_mode, do: :hex
+  def default_mode, do: :binary
 end

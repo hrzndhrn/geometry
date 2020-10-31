@@ -329,16 +329,20 @@ defmodule Geometry.MultiLineStringM do
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:xdr`.
 
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
+
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointM.to_wkb/1` function.
   """
   @spec to_wkb(t(), opts) :: Geometry.wkb()
-        when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
+        when opts: [endian: Geometry.endian(), srid: Geometry.srid(), mode: Geometry.mode()]
   def to_wkb(%MultiLineStringM{} = multi_line_string, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
     srid = Keyword.get(opts, :srid)
 
-    to_wkb(multi_line_string, srid, endian)
+    to_wkb(multi_line_string, srid, endian, mode)
   end
 
   @doc """
@@ -451,31 +455,44 @@ defmodule Geometry.MultiLineStringM do
   end
 
   @doc false
-  @compile {:inline, to_wkb: 3}
-  @spec to_wkb(t(), Geometry.srid() | nil, Geometry.endian()) :: binary()
-  def to_wkb(%MultiLineStringM{line_strings: line_strings}, srid, endian) do
+  @compile {:inline, to_wkb: 4}
+  @spec to_wkb(t(), srid, endian, mode) :: wkb
+        when srid: Geometry.srid() | nil,
+             endian: Geometry.endian(),
+             mode: Geometry.mode(),
+             wkb: Geometry.wkb()
+  def to_wkb(%MultiLineStringM{line_strings: line_strings}, srid, endian, mode) do
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_line_strings(line_strings, endian)::binary()
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary(),
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_line_strings(line_strings, endian, mode)::binary()
     >>
   end
 
-  @compile {:inline, to_wkb_line_strings: 2}
-  defp to_wkb_line_strings(line_strings, endian) do
-    Enum.reduce(line_strings, WKB.length(line_strings, endian), fn line_string, acc ->
-      <<acc::binary(), LineStringM.to_wkb(line_string, nil, endian)::binary()>>
+  @compile {:inline, to_wkb_line_strings: 3}
+  defp to_wkb_line_strings(line_strings, endian, mode) do
+    Enum.reduce(line_strings, WKB.length(line_strings, endian, mode), fn line_string, acc ->
+      <<acc::binary(), LineStringM.to_wkb(line_string, nil, endian, mode)::binary()>>
     end)
   end
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "40000005"
       {:ndr, false} -> "05000040"
       {:xdr, true} -> "60000005"
       {:ndr, true} -> "05000060"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0x40000005::big-integer-size(32)>>
+      {:ndr, false} -> <<0x40000005::little-integer-size(32)>>
+      {:xdr, true} -> <<0x60000005::big-integer-size(32)>>
+      {:ndr, true} -> <<0x60000005::little-integer-size(32)>>
     end
   end
 

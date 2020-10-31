@@ -6,7 +6,7 @@ defmodule Geometry.LineStringZTest do
 
   import Prove
 
-  alias Geometry.{LineStringZ, PointZ}
+  alias Geometry.{Hex, LineStringZ, PointZ}
 
   doctest Geometry.LineStringZ, import: true
 
@@ -117,7 +117,9 @@ defmodule Geometry.LineStringZTest do
   describe "empty?/:" do
     prove LineStringZ.empty?(LineStringZ.new()) == true
 
-    prove LineStringZ.empty?(LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(1, 2, 3)])) == false
+    prove LineStringZ.empty?(
+            LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(1, 2, 3)])
+          ) == false
   end
 
   describe "from_geo_json/1:" do
@@ -276,7 +278,28 @@ defmodule Geometry.LineStringZTest do
   end
 
   describe "to_wkb/2" do
-    test "returns WKB from LineStringZ" do
+    test "returns WKB as ndr-string from LineStringZ" do
+      wkb = """
+      01\
+      02000080\
+      02000000\
+      9A9999999999F1BF9A999999999901C06666666666660AC0\
+      00000000000016406666666666661A40CDCCCCCCCCCC1E40\
+      """
+
+      assert LineStringZ.to_wkb(
+               %LineStringZ{
+                 points: [
+                   [-1.1, -2.2, -3.3],
+                   [5.5, 6.6, 7.7]
+                 ]
+               },
+               endian: :ndr,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary from LineStringZ" do
       wkb = """
       01\
       02000080\
@@ -293,10 +316,32 @@ defmodule Geometry.LineStringZTest do
                  ]
                },
                endian: :ndr
+             ) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string from LineStringZ with SRID" do
+      wkb = """
+      00\
+      A0000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC00A666666666666\
+      4016000000000000401A666666666666401ECCCCCCCCCCCD\
+      """
+
+      assert LineStringZ.to_wkb(
+               %LineStringZ{
+                 points: [
+                   [-1.1, -2.2, -3.3],
+                   [5.5, 6.6, 7.7]
+                 ]
+               },
+               srid: 77,
+               mode: :hex
              ) == wkb
     end
 
-    test "returns WKB from LineStringZ with SRID" do
+    test "returns WKB as xdr-binary from LineStringZ with SRID" do
       wkb = """
       00\
       A0000002\
@@ -314,7 +359,7 @@ defmodule Geometry.LineStringZTest do
                  ]
                },
                srid: 77
-             ) == wkb
+             ) == Hex.to_binary(wkb)
     end
   end
 end

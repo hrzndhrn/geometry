@@ -2,6 +2,7 @@ defmodule Geometry.MultiPolygonZMTest do
   use ExUnit.Case, async: true
 
   alias Geometry.{
+    Hex,
     LineStringZM,
     MultiPolygonZM,
     PointZM,
@@ -10,7 +11,7 @@ defmodule Geometry.MultiPolygonZMTest do
 
   doctest Geometry.MultiPolygonZM, import: true
 
-  @moduletag :multi_plygon
+  @moduletag :multi_polygon
 
   describe "to_geo_json/1" do
     @tag :new
@@ -378,8 +379,7 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "to_wkb/2" do
-    @tag :new
-    test "returns WKB for PolygonZM" do
+    test "returns WKB ndr-binary for MultiPolygonZM" do
       wkb_start = "01060000C00200000001030000C0"
 
       multi_polygon = %MultiPolygonZM{
@@ -411,6 +411,41 @@ defmodule Geometry.MultiPolygonZMTest do
       }
 
       assert result = MultiPolygonZM.to_wkb(multi_polygon, endian: :ndr)
+      assert String.starts_with?(result, Hex.to_binary(wkb_start))
+      assert MultiPolygonZM.from_wkb!(Hex.from_binary(result)) == multi_polygon
+    end
+    test "returns WKB as ndr-string for MultiPolygonZM" do
+      wkb_start = "01060000C00200000001030000C0"
+
+      multi_polygon = %MultiPolygonZM{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
+              ],
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
+          ])
+      }
+
+      assert result = MultiPolygonZM.to_wkb(multi_polygon, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygonZM.from_wkb!(result) == multi_polygon
     end

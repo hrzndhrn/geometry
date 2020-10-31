@@ -4,7 +4,7 @@ defmodule Geometry.MultiPointMTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{MultiPointM, PointM}
+  alias Geometry.{Hex, MultiPointM, PointM}
 
   doctest MultiPointM, import: true
 
@@ -198,7 +198,8 @@ defmodule Geometry.MultiPointMTest do
   end
 
   describe "to_wkb/1" do
-    test "returns WKB for MultiPointM (xdr)" do
+    @tag :only
+    test "returns WKB as xdr-binary for MultiPointM" do
       wkb_start = "0040000004000000030040000001"
 
       multi_point = %MultiPointM{
@@ -213,11 +214,30 @@ defmodule Geometry.MultiPointMTest do
       # Because the order is not guaranteed we test here this way.
 
       assert result = MultiPointM.to_wkb(multi_point, endian: :xdr)
+      assert String.starts_with?(result, Hex.to_binary(wkb_start))
+      assert MultiPointM.from_wkb!(Hex.from_binary(result)) == multi_point
+    end
+
+    test "returns WKB as xdr-string for MultiPointM" do
+      wkb_start = "0040000004000000030040000001"
+
+      multi_point = %MultiPointM{
+        points:
+          MapSet.new([
+            [30.0, 10.0, 10.0],
+            [20.0, 40.0, 20.0],
+            [40.0, 40.0, 30.0]
+          ])
+      }
+
+      # Because the order is not guaranteed we test here this way.
+
+      assert result = MultiPointM.to_wkb(multi_point, endian: :xdr, mode: :hex)
       assert String.starts_with?(result, wkb_start)
       assert MultiPointM.from_wkb!(result) == multi_point
     end
 
-    test "returns WKB for MultiPointM with srid (ndr)" do
+    test "returns WKB as ndr-binary for MultiPointM with srid" do
       wkb = """
       01\
       04000060\
@@ -232,27 +252,65 @@ defmodule Geometry.MultiPointMTest do
         points: MapSet.new([[30.0, 10.0, 10.0]])
       }
 
-      assert MultiPointM.to_wkb(multi_point, srid: 9999, endian: :ndr) == wkb
+      assert MultiPointM.to_wkb(multi_point, srid: 9999, endian: :ndr) == Hex.to_binary(wkb)
     end
 
-    test "returns a WKB for an empty MultiPointM (xdr)" do
+    test "returns WKB as ndr-string for MultiPointM with srid" do
+      wkb = """
+      01\
+      04000060\
+      0F270000\
+      01000000\
+      01\
+      01000040\
+      0000000000003E4000000000000024400000000000002440\
+      """
+
+      multi_point = %MultiPointM{
+        points: MapSet.new([[30.0, 10.0, 10.0]])
+      }
+
+      assert MultiPointM.to_wkb(multi_point, srid: 9999, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns a WKB as xdr-binary for an empty MultiPointM" do
       wkb = """
       00\
       40000004\
       00000000\
       """
 
-      assert MultiPointM.to_wkb(%MultiPointM{}, endian: :xdr) == wkb
+      assert MultiPointM.to_wkb(%MultiPointM{}, endian: :xdr) == Hex.to_binary(wkb)
     end
 
-    test "returns a WKB fro an empty MultiPointM (ndr)" do
+    test "returns a WKB as xdr-string for an empty MultiPointM" do
+      wkb = """
+      00\
+      40000004\
+      00000000\
+      """
+
+      assert MultiPointM.to_wkb(%MultiPointM{}, endian: :xdr, mode: :hex) == wkb
+    end
+
+    test "returns a WKB as ndr-binary from an empty MultiPointM" do
       wkb = """
       01\
       04000040\
       00000000\
       """
 
-      assert MultiPointM.to_wkb(%MultiPointM{}, endian: :ndr) == wkb
+      assert MultiPointM.to_wkb(%MultiPointM{}, endian: :ndr) == Hex.to_binary(wkb)
+    end
+
+    test "returns a WKB as ndr-string from an empty MultiPointM" do
+      wkb = """
+      01\
+      04000040\
+      00000000\
+      """
+
+      assert MultiPointM.to_wkb(%MultiPointM{}, endian: :ndr, mode: :hex) == wkb
     end
   end
 

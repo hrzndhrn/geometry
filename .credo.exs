@@ -89,7 +89,7 @@
         # set this value to 0 (zero).
         #
         {Credo.Check.Design.TagTODO, [exit_status: 2]},
-        {Credo.Check.Design.TagFIXME, []},
+        {Credo.Check.Design.TagFIXME, [exit_status: 4]},
 
         #
         ## Readability Checks
@@ -157,7 +157,7 @@
         #
         # Controversial and experimental checks (opt-in, just replace `false` with `[]`)
         #
-        {Credo.Check.Readability.StrictModuleLayout, false},
+        {Credo.Check.Readability.StrictModuleLayout, []},
         {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
         {Credo.Check.Consistency.UnusedVariableNames, []},
         {Credo.Check.Design.DuplicatedCode, false},
