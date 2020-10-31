@@ -414,6 +414,7 @@ defmodule Geometry.MultiPolygonZMTest do
       assert String.starts_with?(result, Hex.to_binary(wkb_start))
       assert MultiPolygonZM.from_wkb!(Hex.from_binary(result)) == multi_polygon
     end
+
     test "returns WKB as ndr-string for MultiPolygonZM" do
       wkb_start = "01060000C00200000001030000C0"
 

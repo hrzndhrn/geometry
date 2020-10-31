@@ -7,7 +7,7 @@ defmodule Geometry.Hex do
 
   @nan nil
 
-  @spec from_binary(binary) :: String.t
+  @spec from_binary(binary) :: String.t()
   def from_binary(binary), do: from_binary(binary, "")
 
   defp from_binary(<<>>, acc), do: acc
@@ -21,7 +21,7 @@ defmodule Geometry.Hex do
     end
   end
 
-  @spec to_binary(String.t) :: binary
+  @spec to_binary(String.t()) :: binary
   def to_binary(str), do: to_binary(str, <<>>)
 
   defp to_binary(<<>>, acc), do: acc
@@ -31,7 +31,7 @@ defmodule Geometry.Hex do
     to_binary(rest, <<acc::binary, int::integer-size(8)>>)
   end
 
-  @spec to_integer_string(integer, Geometry.endian) :: t
+  @spec to_integer_string(integer, Geometry.endian()) :: t
   def to_integer_string(number, :xdr) do
     to_integer_string(number)
   end

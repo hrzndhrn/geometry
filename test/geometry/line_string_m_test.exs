@@ -117,9 +117,7 @@ defmodule Geometry.LineStringMTest do
   describe "empty?/:" do
     prove LineStringM.empty?(LineStringM.new()) == true
 
-    prove LineStringM.empty?(
-            LineStringM.new([PointM.new(1, 2, 4), PointM.new(1, 2, 4)])
-          ) == false
+    prove LineStringM.empty?(LineStringM.new([PointM.new(1, 2, 4), PointM.new(1, 2, 4)])) == false
   end
 
   describe "from_geo_json/1:" do

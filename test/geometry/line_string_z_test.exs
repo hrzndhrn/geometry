@@ -117,9 +117,7 @@ defmodule Geometry.LineStringZTest do
   describe "empty?/:" do
     prove LineStringZ.empty?(LineStringZ.new()) == true
 
-    prove LineStringZ.empty?(
-            LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(1, 2, 3)])
-          ) == false
+    prove LineStringZ.empty?(LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(1, 2, 3)])) == false
   end
 
   describe "from_geo_json/1:" do

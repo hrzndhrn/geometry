@@ -205,9 +205,7 @@ defmodule Geometry.GeometryCollectionTest do
     end
 
     test "returns a GeometryCollection with an SRID" do
-      assert GeometryCollection.from_wkt(
-               "SRID=123;GeometryCollection (Point (1.1 2.2))"
-             ) ==
+      assert GeometryCollection.from_wkt("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
                {
                  :ok,
                  %GeometryCollection{
@@ -234,9 +232,7 @@ defmodule Geometry.GeometryCollectionTest do
     end
 
     test "returns a GeometryCollection with an SRID" do
-      assert GeometryCollection.from_wkt!(
-               "SRID=123;GeometryCollection (Point (1.1 2.2))"
-             ) ==
+      assert GeometryCollection.from_wkt!("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
                {%GeometryCollection{
                   geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                 }, 123}
