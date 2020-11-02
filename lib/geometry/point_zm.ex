@@ -233,38 +233,47 @@ defmodule Geometry.PointZM do
 
   If the geometry contains a SRID the id is added to the tuple.
 
+  The optional second argument determines if a `:hex`-string or a `:binary`
+  input is expected. The default is `:binary`.
+
   ## Examples
 
       iex> PointZM.from_wkb(
-      ...>   "00C00000017FF80000000000007FF80000000000007FF80000000000007FF8000000000000"
+      ...>   "00C00000017FF80000000000007FF80000000000007FF80000000000007FF8000000000000",
+      ...>   :hex
       ...> )
       {:ok, %PointZM{coordinate: nil}}
 
       iex> PointZM.from_wkb(
-      ...>   "00C00000013FF199999999999A400199999999999A400A666666666666401199999999999A"
+      ...>   "00C00000013FF199999999999A400199999999999A400A666666666666401199999999999A",
+      ...>   :hex
       ...> )
       {:ok, %PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}}
 
       iex> PointZM.from_wkb(
-      ...>   "01010000C09A9999999999F13F9A999999999901406666666666660A409A99999999991140"
+      ...>   "01010000C09A9999999999F13F9A999999999901406666666666660A409A99999999991140",
+      ...>   :hex
       ...> )
       {:ok, %PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}}
 
       iex> PointZM.from_wkb(
-      ...>   "00E0000001000012673FF199999999999A400199999999999A400A666666666666401199999999999A"
+      ...>   "00E0000001000012673FF199999999999A400199999999999A400A666666666666401199999999999A",
+      ...>   :hex
       ...> )
       {:ok, %PointZM{coordinate: [1.1, 2.2, 3.3, 4.4]}, 4711}
   """
-  @spec from_wkb(Geometry.wkb()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
-  def from_wkb(wkb), do: WKB.to_geometry(wkb, PointZM)
+  @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
+          {:ok, t()}
+          | {:ok, t(), Geometry.srid()}
+          | Geometry.wkb_error()
+  def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, PointZM)
 
   @doc """
-  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
   """
-  @spec from_wkb!(Geometry.wkb()) :: t() | {t(), Geometry.srid()}
-  def from_wkb!(wkb) do
-    case WKB.to_geometry(wkb, PointZM) do
+  @spec from_wkb!(Geometry.wkb(), Geometry.mode()) :: t() | {t(), Geometry.srid()}
+  def from_wkb!(wkb, mode \\ :binary) do
+    case WKB.to_geometry(wkb, mode, PointZM) do
       {:ok, geometry} -> geometry
       {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error

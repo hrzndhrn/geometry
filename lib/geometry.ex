@@ -231,23 +231,26 @@ defmodule Geometry do
 
   If WKB contains an SRID the tuple is extended by the id.
 
+  The optional second argument determines if a `:hex`-string or a `:binary`
+  input is expected. The default is `:binary`.
+
   ## Examples
 
-      iex> Geometry.from_wkb("0101000080000000000000F03F00000000000000400000000000000840")
+      iex> Geometry.from_wkb("0101000080000000000000F03F00000000000000400000000000000840", :hex)
       {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
 
-      iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000")
+      iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000", :hex)
       {:ok, %Point{coordinate: [1.0, 2.0]}, 4711}
   """
-  @spec from_wkb(wkb()) :: {:ok, t()} | {:ok, t(), srid()} | wkb_error
-  def from_wkb(wkb), do: WKB.Parser.parse(wkb)
+  @spec from_wkb(wkb(), mode()) :: {:ok, t()} | {:ok, t(), srid()} | wkb_error
+  def from_wkb(wkb, mode \\ :binary), do: WKB.Parser.parse(wkb, mode)
 
   @doc """
-  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
   """
-  @spec from_wkb!(wkb()) :: t() | {t(), srid()}
-  def from_wkb!(wkb) do
-    case WKB.Parser.parse(wkb) do
+  @spec from_wkb!(wkb(), mode()) :: t() | {t(), srid()}
+  def from_wkb!(wkb, mode \\ :binary) do
+    case WKB.Parser.parse(wkb, mode) do
       {:ok, geometry} -> geometry
       {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error

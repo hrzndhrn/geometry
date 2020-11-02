@@ -1,9 +1,6 @@
 defmodule EncodeWkbXdrBench do
   use BencheeDsl.Benchmark
 
-  alias Geometry.{Point, Hex}
-  alias Geo.Utils
-
   @endian :xdr
 
   formatter(Benchee.Formatters.Markdown,
@@ -28,7 +25,7 @@ defmodule EncodeWkbXdrBench do
   }
 
   job geometry({_geo, geometry}) do
-    Geometry.to_wkb(geometry, endian: @endian)
+    Geometry.to_wkb(geometry, endian: @endian, mode: :hex)
   end
 
   job geo({geo, _geometry}) do

@@ -106,7 +106,7 @@ defmodule Geometry.LineStringZTest do
 
   describe "from_wkt!/1" do
     test "raises an exception" do
-      message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'foo'"
+      message = ~s(expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: "foo")
 
       assert_raise Geometry.Error, message, fn ->
         LineStringZ.from_wkt!("foo")
@@ -184,8 +184,8 @@ defmodule Geometry.LineStringZTest do
     end
   end
 
-  describe "from_wkb/1" do
-    test "returns an ok tuple with LineStringZ" do
+  describe "from_wkb/2" do
+    test "returns ok tuple with LineStringZ from ndr-binary" do
       wkb = """
       01\
       02000080\
@@ -194,7 +194,9 @@ defmodule Geometry.LineStringZTest do
       00000000000016406666666666661A40CDCCCCCCCCCC1E40\
       """
 
-      assert LineStringZ.from_wkb(wkb) ==
+      assert wkb
+             |> Hex.to_binary()
+             |> LineStringZ.from_wkb() ==
                {:ok,
                 %LineStringZ{
                   points: [
@@ -204,7 +206,26 @@ defmodule Geometry.LineStringZTest do
                 }}
     end
 
-    test "returns an ok tuple with LineStringZ and SRID" do
+    test "returns ok tuple with LineStringZ from ndr-string" do
+      wkb = """
+      01\
+      02000080\
+      02000000\
+      9A9999999999F1BF9A999999999901C06666666666660AC0\
+      00000000000016406666666666661A40CDCCCCCCCCCC1E40\
+      """
+
+      assert LineStringZ.from_wkb(wkb, :hex) ==
+               {:ok,
+                %LineStringZ{
+                  points: [
+                    [-1.1, -2.2, -3.3],
+                    [5.5, 6.6, 7.7]
+                  ]
+                }}
+    end
+
+    test "returns an ok tuple with LineStringZ and SRID from xdr-string" do
       wkb = """
       00\
       A0000002\
@@ -214,7 +235,27 @@ defmodule Geometry.LineStringZTest do
       4016000000000000401A666666666666401ECCCCCCCCCCCD\
       """
 
-      assert LineStringZ.from_wkb(wkb) ==
+      assert LineStringZ.from_wkb(wkb, :hex) ==
+               {:ok,
+                %LineStringZ{
+                  points: [
+                    [-1.1, -2.2, -3.3],
+                    [5.5, 6.6, 7.7]
+                  ]
+                }, 77}
+    end
+
+    test "returns an ok tuple with LineStringZ and SRID from xdr-binary" do
+      wkb = """
+      00\
+      A0000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC00A666666666666\
+      4016000000000000401A666666666666401ECCCCCCCCCCCD\
+      """
+
+      assert wkb |> Hex.to_binary() |> LineStringZ.from_wkb() ==
                {:ok,
                 %LineStringZ{
                   points: [
@@ -225,8 +266,8 @@ defmodule Geometry.LineStringZTest do
     end
   end
 
-  describe "from_wkb!/1" do
-    test "returns a LineStringZ" do
+  describe "from_wkb!/2" do
+    test "returns a LineStringZ from ndr-string" do
       wkb = """
       01\
       02000080\
@@ -235,7 +276,7 @@ defmodule Geometry.LineStringZTest do
       00000000000016406666666666661A40CDCCCCCCCCCC1E40\
       """
 
-      assert LineStringZ.from_wkb!(wkb) ==
+      assert LineStringZ.from_wkb!(wkb, :hex) ==
                %LineStringZ{
                  points: [
                    [-1.1, -2.2, -3.3],
@@ -244,7 +285,25 @@ defmodule Geometry.LineStringZTest do
                }
     end
 
-    test "returns a LineStringZ and SRID" do
+    test "returns a LineStringZ from ndr-binary" do
+      wkb = """
+      01\
+      02000080\
+      02000000\
+      9A9999999999F1BF9A999999999901C06666666666660AC0\
+      00000000000016406666666666661A40CDCCCCCCCCCC1E40\
+      """
+
+      assert wkb |> Hex.to_binary() |> LineStringZ.from_wkb!() ==
+               %LineStringZ{
+                 points: [
+                   [-1.1, -2.2, -3.3],
+                   [5.5, 6.6, 7.7]
+                 ]
+               }
+    end
+
+    test "returns a LineStringZ and SRID from xdr-string" do
       wkb = """
       00\
       A0000002\
@@ -254,7 +313,7 @@ defmodule Geometry.LineStringZTest do
       4016000000000000401A666666666666401ECCCCCCCCCCCD\
       """
 
-      assert LineStringZ.from_wkb!(wkb) ==
+      assert LineStringZ.from_wkb!(wkb, :hex) ==
                {
                  %LineStringZ{
                    points: [
@@ -266,8 +325,38 @@ defmodule Geometry.LineStringZTest do
                }
     end
 
-    test "raises an exception" do
-      message = "expected endian flag '00' or '01', got 'AB', at position 0"
+    test "returns a LineStringZ and SRID from xdr-binary" do
+      wkb = """
+      00\
+      A0000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC00A666666666666\
+      4016000000000000401A666666666666401ECCCCCCCCCCCD\
+      """
+
+      assert wkb |> Hex.to_binary() |> LineStringZ.from_wkb!() ==
+               {
+                 %LineStringZ{
+                   points: [
+                     [-1.1, -2.2, -3.3],
+                     [5.5, 6.6, 7.7]
+                   ]
+                 },
+                 77
+               }
+    end
+
+    test "raises an exception for invalid string" do
+      message = ~s(expected endian flag "00" or "01", got "AB", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        LineStringZ.from_wkb!("ABCDEFGH", :hex)
+      end
+    end
+
+    test "raises an exception for invalid binary" do
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         LineStringZ.from_wkb!("ABCDEFGH")

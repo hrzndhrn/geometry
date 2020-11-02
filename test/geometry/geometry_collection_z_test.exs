@@ -43,7 +43,7 @@ defmodule Geometry.GeometryCollectionZTest do
 
       assert result = GeometryCollectionZ.to_wkb(collection, endian: :ndr)
       assert String.starts_with?(result, Hex.to_binary(wkb))
-      assert GeometryCollectionZ.from_wkb!(Hex.from_binary(result)) == collection
+      assert GeometryCollectionZ.from_wkb!(result) == collection
     end
 
     test "returns WKB as ndr-string for a GeometryCollectionZ" do
@@ -72,18 +72,24 @@ defmodule Geometry.GeometryCollectionZTest do
 
       assert result = GeometryCollectionZ.to_wkb(collection, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb)
-      assert GeometryCollectionZ.from_wkb!(result) == collection
+      assert GeometryCollectionZ.from_wkb!(result, :hex) == collection
     end
   end
 
-  describe "from_wkb!/1" do
-    test "returns an empty GeometryCollectionZ" do
+  describe "from_wkb!/2" do
+    test "returns an empty GeometryCollectionZ from ndr-string" do
       wkb = "010700008000000000"
 
-      assert GeometryCollectionZ.from_wkb!(wkb) == %GeometryCollectionZ{}
+      assert GeometryCollectionZ.from_wkb!(wkb, :hex) == %GeometryCollectionZ{}
     end
 
-    test "returns a GeometryCollectionZ" do
+    test "returns an empty GeometryCollectionZ from ndr-binary" do
+      wkb = "010700008000000000"
+
+      assert wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb!() == %GeometryCollectionZ{}
+    end
+
+    test "returns a GeometryCollectionZ from ndr-string" do
       wkb = """
       01\
       07000080\
@@ -93,13 +99,29 @@ defmodule Geometry.GeometryCollectionZTest do
       000000000000F03F00000000000000400000000000000840\
       """
 
-      assert GeometryCollectionZ.from_wkb!(wkb) ==
+      assert GeometryCollectionZ.from_wkb!(wkb, :hex) ==
                %GeometryCollectionZ{
                  geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
                }
     end
 
-    test "returns a GeometryCollectionZ with an SRID" do
+    test "returns a GeometryCollectionZ from ndr-binary" do
+      wkb = """
+      01\
+      07000080\
+      01000000\
+      01\
+      01000080\
+      000000000000F03F00000000000000400000000000000840\
+      """
+
+      assert wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb!() ==
+               %GeometryCollectionZ{
+                 geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
+               }
+    end
+
+    test "returns a GeometryCollectionZ with an SRID from ndr-string" do
       wkb = """
       01\
       070000A0\
@@ -110,13 +132,30 @@ defmodule Geometry.GeometryCollectionZTest do
       000000000000F03F00000000000000400000000000000840\
       """
 
-      assert GeometryCollectionZ.from_wkb!(wkb) ==
+      assert GeometryCollectionZ.from_wkb!(wkb, :hex) ==
                {%GeometryCollectionZ{
                   geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
                 }, 55}
     end
 
-    test "raises an error for an unexpected SRID" do
+    test "returns a GeometryCollectionZ with an SRID from ndr-binary" do
+      wkb = """
+      01\
+      070000A0\
+      37000000\
+      01000000\
+      01\
+      01000080\
+      000000000000F03F00000000000000400000000000000840\
+      """
+
+      assert wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb!() ==
+               {%GeometryCollectionZ{
+                  geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
+                }, 55}
+    end
+
+    test "raises an error for an unexpected SRID in ndr-string" do
       wkb = """
       01\
       070000C0\
@@ -130,19 +169,44 @@ defmodule Geometry.GeometryCollectionZTest do
       message = "unexpected SRID in sub-geometry, at position 100"
 
       assert_raise Geometry.Error, message, fn ->
-        GeometryCollectionZ.from_wkb!(wkb)
+        GeometryCollectionZ.from_wkb!(wkb, :hex)
+      end
+    end
+
+    test "raises an error for an unexpected SRID in ndr-binary" do
+      wkb = """
+      01\
+      070000C0\
+      01000000\
+      01\
+      010000E0\
+      37000000\
+      000000000000F03F000000000000004000000000000008400000000000001040\
+      """
+
+      message = "unexpected SRID in sub-geometry, at position 50"
+
+      assert_raise Geometry.Error, message, fn ->
+        wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb!()
       end
     end
   end
 
-  describe "from_wkb/1" do
-    test "returns an empty GeometryCollectionZ" do
+  describe "from_wkb/2" do
+    test "returns an empty GeometryCollectionZ from ndr-string" do
       wkb = "010700008000000000"
 
-      assert GeometryCollectionZ.from_wkb(wkb) == {:ok, %GeometryCollectionZ{}}
+      assert GeometryCollectionZ.from_wkb(wkb, :hex) == {:ok, %GeometryCollectionZ{}}
     end
 
-    test "returns a GeometryCollectionZ" do
+    test "returns an empty GeometryCollectionZ from ndr-binary" do
+      wkb = "010700008000000000"
+
+      assert wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb() ==
+               {:ok, %GeometryCollectionZ{}}
+    end
+
+    test "returns a GeometryCollectionZ from ndr-string" do
       wkb = """
       01\
       07000080\
@@ -152,14 +216,31 @@ defmodule Geometry.GeometryCollectionZTest do
       000000000000F03F00000000000000400000000000000840\
       """
 
-      assert GeometryCollectionZ.from_wkb(wkb) ==
+      assert GeometryCollectionZ.from_wkb(wkb, :hex) ==
                {:ok,
                 %GeometryCollectionZ{
                   geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
                 }}
     end
 
-    test "returns a GeometryCollectionZ with an SRID" do
+    test "returns a GeometryCollectionZ from ndr-binary" do
+      wkb = """
+      01\
+      07000080\
+      01000000\
+      01\
+      01000080\
+      000000000000F03F00000000000000400000000000000840\
+      """
+
+      assert wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb() ==
+               {:ok,
+                %GeometryCollectionZ{
+                  geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
+                }}
+    end
+
+    test "returns a GeometryCollectionZ with an SRID from ndr-string" do
       wkb = """
       01\
       070000A0\
@@ -170,14 +251,32 @@ defmodule Geometry.GeometryCollectionZTest do
       000000000000F03F00000000000000400000000000000840\
       """
 
-      assert GeometryCollectionZ.from_wkb(wkb) ==
+      assert GeometryCollectionZ.from_wkb(wkb, :hex) ==
                {:ok,
                 %GeometryCollectionZ{
                   geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
                 }, 55}
     end
 
-    test "returns an error for an unexpected SRID" do
+    test "returns a GeometryCollectionZ with an SRID from ndr-binary" do
+      wkb = """
+      01\
+      070000A0\
+      37000000\
+      01000000\
+      01\
+      01000080\
+      000000000000F03F00000000000000400000000000000840\
+      """
+
+      assert wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb() ==
+               {:ok,
+                %GeometryCollectionZ{
+                  geometries: MapSet.new([%PointZ{coordinate: [1.0, 2.0, 3.0]}])
+                }, 55}
+    end
+
+    test "returns an error for an unexpected SRID in ndr-string" do
       wkb = """
       01\
       070000C0\
@@ -189,7 +288,22 @@ defmodule Geometry.GeometryCollectionZTest do
       """
 
       assert {:error, "unexpected SRID in sub-geometry", _rest, 100} =
-               GeometryCollectionZ.from_wkb(wkb)
+               GeometryCollectionZ.from_wkb(wkb, :hex)
+    end
+
+    test "returns an error for an unexpected SRID in ndr-binary" do
+      wkb = """
+      01\
+      070000C0\
+      01000000\
+      01\
+      010000E0\
+      37000000\
+      000000000000F03F000000000000004000000000000008400000000000001040\
+      """
+
+      assert {:error, "unexpected SRID in sub-geometry", _rest, 50} =
+               wkb |> Hex.to_binary() |> GeometryCollectionZ.from_wkb()
     end
   end
 
@@ -241,7 +355,7 @@ defmodule Geometry.GeometryCollectionZTest do
     end
 
     test "raises an error for an invalid WKT" do
-      message = "no data found at 1:0, got: ''"
+      message = ~s(no data found at 1:0, got: "")
 
       assert_raise Geometry.Error, message, fn ->
         GeometryCollectionZ.from_wkt!("")

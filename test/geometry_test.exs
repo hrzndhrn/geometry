@@ -57,7 +57,7 @@ defmodule GeometryTest do
 
   describe "from_wkt!/2" do
     test "returns an exception for an invalid coordinate in Point" do
-      message = "expected Point data at 2:2, got: '(7 X)\n'"
+      message = ~s[expected Point data at 2:2, got: "(7 X)\\n"]
 
       assert_raise Geometry.Error, message, fn ->
         Geometry.from_wkt!("""
@@ -68,7 +68,7 @@ defmodule GeometryTest do
     end
 
     test "returns an exception for an invalid coordinate in LineString" do
-      message = "expected LineString data at 1:10, got: '(x 1, 2 2...'"
+      message = ~s(expected LineString data at 1:10, got: "(x 1, 2 2...")
 
       assert_raise Geometry.Error, message, fn ->
         Geometry.from_wkt!("LineString(x 1, 2 2, 3 3, 4 4, 5 5, 6 6, 7 7)")
@@ -892,26 +892,26 @@ defmodule GeometryTest do
     end
   end
 
-  describe "from_wkb/1" do
+  describe "from_wkb/2" do
     test "returns Point" do
       wkb = "0000000001BFF3333333333333400B333333333333"
-      assert Geometry.from_wkb(wkb) == {:ok, %Point{coordinate: [-1.2, 3.4]}}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, %Point{coordinate: [-1.2, 3.4]}}
     end
 
     test "returns Point from WKB with trailing whitespace" do
       wkb = "0000000001BFF3333333333333400B333333333333 \n"
-      assert Geometry.from_wkb(wkb) == {:ok, %Point{coordinate: [-1.2, 3.4]}}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, %Point{coordinate: [-1.2, 3.4]}}
     end
 
     test "returns Point with SRID" do
       wkb = "00200000010000014DBFF3333333333333400B333333333333"
-      assert Geometry.from_wkb(wkb) == {:ok, %Point{coordinate: [-1.2, 3.4]}, 333}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, %Point{coordinate: [-1.2, 3.4]}, 333}
     end
 
     test "returns empty LineStringZM" do
       wkb = "00C000000200000000"
 
-      assert Geometry.from_wkb(wkb) == {:ok, %LineStringZM{}}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, %LineStringZM{}}
     end
 
     test "returns LineStringZM (xdr)" do
@@ -923,7 +923,7 @@ defmodule GeometryTest do
       40140000000000004018000000000000401C0000000000004020000000000000\
       """
 
-      assert Geometry.from_wkb(wkb) == {
+      assert Geometry.from_wkb(wkb, :hex) == {
                :ok,
                %LineStringZM{
                  points: [
@@ -943,7 +943,7 @@ defmodule GeometryTest do
       000000000000144000000000000018400000000000001C400000000000002040\
       """
 
-      assert Geometry.from_wkb(wkb) == {
+      assert Geometry.from_wkb(wkb, :hex) == {
                :ok,
                %LineStringZM{
                  points: [
@@ -963,7 +963,7 @@ defmodule GeometryTest do
       40140000000000004018000000000000401C000000000000\
       """
 
-      assert Geometry.from_wkb(wkb) == {
+      assert Geometry.from_wkb(wkb, :hex) == {
                :ok,
                %LineStringZ{
                  points: [
@@ -983,7 +983,7 @@ defmodule GeometryTest do
       40140000000000004018000000000000401C000000000000\
       """
 
-      assert Geometry.from_wkb(wkb) == {
+      assert Geometry.from_wkb(wkb, :hex) == {
                :ok,
                %LineStringM{
                  points: [
@@ -1004,7 +1004,7 @@ defmodule GeometryTest do
       00000000000014400000000000001840\
       """
 
-      assert Geometry.from_wkb(wkb) == {
+      assert Geometry.from_wkb(wkb, :hex) == {
                :ok,
                %LineString{
                  points: [[1.0, 2.0], [5.0, 6.0]]
@@ -1026,7 +1026,7 @@ defmodule GeometryTest do
       403E00000000000040240000000000004034000000000000402E000000000000\
       """
 
-      assert Geometry.from_wkb(wkb) ==
+      assert Geometry.from_wkb(wkb, :hex) ==
                {:ok,
                 %PolygonZM{
                   rings: [
@@ -1060,7 +1060,7 @@ defmodule GeometryTest do
       00000000000034400000000000003E400000000000002E400000000000002440\
       """
 
-      assert Geometry.from_wkb(wkb) ==
+      assert Geometry.from_wkb(wkb, :hex) ==
                {:ok,
                 %PolygonZM{
                   rings: [
@@ -1097,7 +1097,7 @@ defmodule GeometryTest do
       40340000000000004044000000000000402E0000000000004034000000000000\
       """
 
-      assert Geometry.from_wkb(wkb) ==
+      assert Geometry.from_wkb(wkb, :hex) ==
                {:ok,
                 %MultiPointZM{
                   points:
@@ -1165,7 +1165,7 @@ defmodule GeometryTest do
           ])
       }
 
-      assert Geometry.from_wkb(wkb) == {:ok, multi_polygon}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, multi_polygon}
     end
 
     test "returns a MultiLineStringZM (xdr)" do
@@ -1201,7 +1201,7 @@ defmodule GeometryTest do
           ])
       }
 
-      assert Geometry.from_wkb(wkb) == {:ok, multi_string}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, multi_string}
     end
 
     test "returns an error tuple for an incomplete MultiPointZM (xdr)" do
@@ -1213,7 +1213,7 @@ defmodule GeometryTest do
       C000\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected geometry code", "C000", 20}
+      assert Geometry.from_wkb(wkb, :hex) == {:error, "expected geometry code", "C000", 20}
     end
 
     test "returns an error tuple for an invalid geometry in MultiPointZM (xdr)" do
@@ -1225,8 +1225,8 @@ defmodule GeometryTest do
       C0000002\
       """
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "unexpected code 'C0000002' for sub-geometry", "", 20}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(unexpected code "C0000002" for sub-geometry), "", 20}
     end
 
     test "returns an error tuple for a changing endian (xdr)" do
@@ -1238,8 +1238,8 @@ defmodule GeometryTest do
       C0000001\
       """
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "expected endian flag '00', got '01'", "C0000001", 18}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected endian flag "00", got "01"), "C0000001", 18}
     end
 
     test "returns an error tuple for a changing endian (ndr)" do
@@ -1251,8 +1251,8 @@ defmodule GeometryTest do
       C0000001\
       """
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "expected endian flag '01', got '00'", "C0000001", 18}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected endian flag "01", got "00"), "C0000001", 18}
     end
 
     test "returns an error tuple for an invalid endian in sub-category (ndr)" do
@@ -1264,8 +1264,8 @@ defmodule GeometryTest do
       C0000001\
       """
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "expected endian flag '01', got '66'", "C0000001", 18}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected endian flag "01", got "66"), "C0000001", 18}
     end
 
     test "returns an error tuple for an invalid sub-category code (ndr)" do
@@ -1277,7 +1277,8 @@ defmodule GeometryTest do
       C00XXX01\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "invalid sub-geomtry code: C00XXX01", "", 20}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(invalid sub-geomtry code: "C00XXX01"), "", 20}
     end
 
     test "returns an error tuple for an unknown sub-category code (ndr)" do
@@ -1289,46 +1290,49 @@ defmodule GeometryTest do
       C00AAA01\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "unknown sub-geomtry code: C00AAA01", "", 20}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(unknown sub-geomtry code: "C00AAA01"), "", 20}
     end
 
     test "returns an error tuple for an unknown endian flag" do
       wkb = "11rest"
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "expected endian flag '00' or '01', got '11'", "rest", 0}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected endian flag "00" or "01", got "11"), "rest", 0}
     end
 
     test "returns an error tuple for an unknown geometry code" do
       wkb = "0012345678rest"
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "unknown geomtry code: 12345678", "rest", 2}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(unknown geomtry code: "12345678"), "rest", 2}
     end
 
     test "returns an error tuple for an invalid geometry code" do
       wkb = "00X2345678rest"
 
-      assert Geometry.from_wkb(wkb) ==
-               {:error, "invalid geomtry code: X2345678", "rest", 2}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(invalid geomtry code: "X2345678"), "rest", 2}
     end
 
     test "returns an error tuple for invalid coordinate" do
       wkb = "0000000001invalid.."
 
-      assert Geometry.from_wkb(wkb) == {:error, "invalid coordinate", "invalid..", 10}
+      assert Geometry.from_wkb(wkb, :hex) == {:error, "invalid coordinate", "invalid..", 10}
     end
 
     test "returns an error tuple for invalid y-coordinate in Point" do
       wkb = "0000000001BFF3333333333333400B333333333XYZ"
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '400B333333333XYZ'", "", 26}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "400B333333333XYZ"), "", 26}
     end
 
     test "returns an error tuple for invalid x-coordinate in Point" do
       wkb = "0000000001BFF333 333333333400B333333333ABC"
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got 'BFF333 333333333'", "", 10}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "BFF333 333333333"), "", 10}
     end
 
     test "returns an error tuple for invalid x-coordinate in PointZ" do
@@ -1340,7 +1344,8 @@ defmodule GeometryTest do
       0000000000001440\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '3333333333*3F3BF'", "", 10}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "3333333333*3F3BF"), "", 10}
     end
 
     test "returns an error tuple for invalid y-coordinate in PointZ" do
@@ -1352,7 +1357,8 @@ defmodule GeometryTest do
       0000000000001440\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '333*333333330B40'", "", 26}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "333*333333330B40"), "", 26}
     end
 
     test "returns an error tuple for invalid z-coordinate in PointZ" do
@@ -1364,7 +1370,8 @@ defmodule GeometryTest do
       000000.000001440\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '000000.000001440'", "", 42}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "000000.000001440"), "", 42}
     end
 
     test "returns an error tuple for invalid x-coordinate in PointM" do
@@ -1376,7 +1383,8 @@ defmodule GeometryTest do
       0000000000001440\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '3333333333*3F3BF'", "", 10}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "3333333333*3F3BF"), "", 10}
     end
 
     test "returns an error tuple for invalid y-coordinate in PointM" do
@@ -1388,7 +1396,8 @@ defmodule GeometryTest do
       0000000000001440\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '333*333333330B40'", "", 26}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "333*333333330B40"), "", 26}
     end
 
     test "returns an error tuple for invalid m-coordinate in PointM" do
@@ -1400,25 +1409,26 @@ defmodule GeometryTest do
       000000.000001440\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected float, got '000000.000001440'", "", 42}
+      assert Geometry.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected float, got "000000.000001440"), "", 42}
     end
 
     test "returns an error tuple for a missing SRID" do
       wkb = "01010000A05C"
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected SRID, got '5C'", "5C", 10}
+      assert Geometry.from_wkb(wkb, :hex) == {:error, ~s(expected SRID, got "5C"), "5C", 10}
     end
 
     test "returns an error tuple for an invalid SRID" do
       wkb = "01010000A05C.50000333"
 
-      assert Geometry.from_wkb(wkb) == {:error, "invalid SRID '5C.50000'", "333", 10}
+      assert Geometry.from_wkb(wkb, :hex) == {:error, ~s(invalid SRID "5C.50000"), "333", 10}
     end
 
     test "returns an error tuple for too much data" do
       wkb = "0000000001BFF3332333333333400B333333333ABC0000"
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected EOS", "0000", 42}
+      assert Geometry.from_wkb(wkb, :hex) == {:error, "expected EOS", "0000", 42}
     end
 
     test "returns an error tuple for incomplete length in LineStringZM" do
@@ -1428,7 +1438,7 @@ defmodule GeometryTest do
       0200\
       """
 
-      assert {:error, "expected length, got '0200'", "0200", 10} = Geometry.from_wkb(wkb)
+      assert {:error, ~s(expected length, got "0200"), "0200", 10} = Geometry.from_wkb(wkb, :hex)
     end
 
     test "returns an error tuple for invalid length in LineStringZM" do
@@ -1446,7 +1456,7 @@ defmodule GeometryTest do
       9A99999999992140\
       """
 
-      assert {:error, "invalid length '0200.000'", _rest, 10} = Geometry.from_wkb(wkb)
+      assert {:error, ~s(invalid length "0200.000"), _rest, 10} = Geometry.from_wkb(wkb, :hex)
     end
 
     test "returns an error tuple for invalid x-coordinate in LineStringZM" do
@@ -1464,8 +1474,8 @@ defmodule GeometryTest do
       9A99999999992140\
       """
 
-      assert {:error, "expected float, got '9A99999999.9F1BF'", _rest, 18} =
-               Geometry.from_wkb(wkb)
+      assert {:error, ~s(expected float, got "9A99999999.9F1BF"), _rest, 18} =
+               Geometry.from_wkb(wkb, :hex)
     end
 
     test "returns an error tuple for invalid y-coordinate in LineStringZM" do
@@ -1483,8 +1493,8 @@ defmodule GeometryTest do
       9A99999999992140\
       """
 
-      assert {:error, "expected float, got '9A99999999990.C0'", _rest, 34} =
-               Geometry.from_wkb(wkb)
+      assert {:error, ~s(expected float, got "9A99999999990.C0"), _rest, 34} =
+               Geometry.from_wkb(wkb, :hex)
     end
 
     test "returns an error tuple for invalid z-coordinate in LineStringZM" do
@@ -1502,8 +1512,8 @@ defmodule GeometryTest do
       9A99999999992140\
       """
 
-      assert {:error, "expected float, got 'CDCCCCCCCCCC.E40'", _rest, 114} =
-               Geometry.from_wkb(wkb)
+      assert {:error, ~s(expected float, got "CDCCCCCCCCCC.E40"), _rest, 114} =
+               Geometry.from_wkb(wkb, :hex)
     end
 
     test "returns an error tuple for invalid m-coordinate in LineStringZM" do
@@ -1521,8 +1531,8 @@ defmodule GeometryTest do
       9A9999999999.140\
       """
 
-      assert {:error, "expected float, got '9A9999999999.140'", _rest, 130} =
-               Geometry.from_wkb(wkb)
+      assert {:error, ~s(expected float, got "9A9999999999.140"), _rest, 130} =
+               Geometry.from_wkb(wkb, :hex)
     end
 
     test "returns an error tuple for an incomplete geometry code" do
@@ -1531,23 +1541,27 @@ defmodule GeometryTest do
       0200\
       """
 
-      assert Geometry.from_wkb(wkb) == {:error, "expected geometry code", "0200", 2}
+      assert Geometry.from_wkb(wkb, :hex) == {:error, "expected geometry code", "0200", 2}
     end
 
     test "returns an error tuple for an empty string" do
-      assert Geometry.from_wkb("") == {:error, "expected endian flag '00' or '01'", "", 0}
+      assert Geometry.from_wkb("", :hex) == {:error, ~s(expected endian flag "00" or "01"), "", 0}
+    end
+
+    test "returns an error tuple for an empty bit-string" do
+      assert Geometry.from_wkb(<<>>) == {:error, "expected endian flag", "", 0}
     end
   end
 
-  describe "from_wkb!/1" do
+  describe "from_wkb!/2" do
     test "returns Point" do
       wkb = "0000000001BFF3333333333333400B333333333333"
-      assert Geometry.from_wkb!(wkb) == %Point{coordinate: [-1.2, 3.4]}
+      assert Geometry.from_wkb!(wkb, :hex) == %Point{coordinate: [-1.2, 3.4]}
     end
 
     test "returns Point with SRID" do
       wkb = "00200000010000014DBFF3333333333333400B333333333333"
-      assert Geometry.from_wkb!(wkb) == {%Point{coordinate: [-1.2, 3.4]}, 333}
+      assert Geometry.from_wkb!(wkb, :hex) == {%Point{coordinate: [-1.2, 3.4]}, 333}
     end
 
     test "returns an exception for invalid m-coordinate in LineStringZM" do
@@ -1565,10 +1579,10 @@ defmodule GeometryTest do
       9A9999999999.140\
       """
 
-      message = "expected float, got '9A9999999999.140', at position 130"
+      message = ~s(expected float, got "9A9999999999.140", at position 130)
 
       assert_raise Geometry.Error, message, fn ->
-        Geometry.from_wkb!(wkb)
+        Geometry.from_wkb!(wkb, :hex)
       end
     end
   end

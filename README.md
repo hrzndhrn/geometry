@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/hrzndhrn/geometry/badge.svg)](https://coveralls.io/github/hrzndhrn/geometry)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A set of geometry types for WKT/WKB and GeoJson.
+A set of geometry types for WKT/WKB, EWKT/EWKB and GeoJson.
 
 ## Installation
 

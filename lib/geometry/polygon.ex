@@ -364,19 +364,22 @@ defmodule Geometry.Polygon do
 
   If the geometry contains a SRID the id is added to the tuple.
 
+  The optional second argument determines if a `:hex`-string or a `:binary`
+  input is expected. The default is `:binary`.
+
   An example of a simpler geometry can be found in the description for the
-  `Geometry.Point.from_wkb/1` function.
+  `Geometry.Point.from_wkb/2` function.
   """
-  @spec from_wkb(Geometry.wkb()) ::
+  @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
-  def from_wkb(wkb), do: WKB.to_geometry(wkb, Polygon)
+  def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, Polygon)
 
   @doc """
-  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
   """
-  @spec from_wkb!(Geometry.wkb()) :: t() | {t(), Geometry.srid()}
-  def from_wkb!(wkb) do
-    case WKB.to_geometry(wkb, Polygon) do
+  @spec from_wkb!(Geometry.wkb(), Geometry.mode()) :: t() | {t(), Geometry.srid()}
+  def from_wkb!(wkb, mode \\ :binary) do
+    case WKB.to_geometry(wkb, mode, Polygon) do
       {:ok, geometry} -> geometry
       {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error

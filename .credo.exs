@@ -88,8 +88,8 @@
         # If you don't want TODO comments to cause `mix credo` to fail, just
         # set this value to 0 (zero).
         #
-        {Credo.Check.Design.TagTODO, [exit_status: 2]},
-        {Credo.Check.Design.TagFIXME, [exit_status: 4]},
+        {Credo.Check.Design.TagTODO, [exit_status: 2, include_doc: true]},
+        {Credo.Check.Design.TagFIXME, [exit_status: 4, include_doc: true]},
 
         #
         ## Readability Checks
@@ -121,7 +121,7 @@
         {Credo.Check.Refactor.CyclomaticComplexity, false},
         {Credo.Check.Refactor.FunctionArity, []},
         {Credo.Check.Refactor.LongQuoteBlocks, []},
-        {Credo.Check.Refactor.MapInto, false},
+        {Credo.Check.Refactor.MapInto, []},
         {Credo.Check.Refactor.MatchInCondition, []},
         {Credo.Check.Refactor.NegatedConditionsInUnless, []},
         {Credo.Check.Refactor.NegatedConditionsWithElse, []},
@@ -132,12 +132,13 @@
         #
         ## Warnings
         #
+        {Credo.Check.Warning.ApplicationConfigInModuleAttribute, []},
         {Credo.Check.Warning.BoolOperationOnSameValues, []},
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck, []},
         {Credo.Check.Warning.IExPry, []},
         {Credo.Check.Warning.IoInspect, []},
-        {Credo.Check.Warning.LazyLogging, false},
-        {Credo.Check.Warning.MixEnv, false},
+        # {Credo.Check.Warning.LazyLogging, []},
+        {Credo.Check.Warning.MixEnv, []},
         {Credo.Check.Warning.OperationOnSameValues, []},
         {Credo.Check.Warning.OperationWithConstantResult, []},
         {Credo.Check.Warning.RaiseInsideRescue, []},
@@ -157,14 +158,17 @@
         #
         # Controversial and experimental checks (opt-in, just replace `false` with `[]`)
         #
-        {Credo.Check.Readability.StrictModuleLayout, []},
         {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
         {Credo.Check.Consistency.UnusedVariableNames, []},
         {Credo.Check.Design.DuplicatedCode, false},
         {Credo.Check.Readability.AliasAs, []},
+        {Credo.Check.Readability.BlockPipe, false},
+        {Credo.Check.Readability.ImplTrue, []},
         {Credo.Check.Readability.MultiAlias, false},
-        {Credo.Check.Readability.Specs, []},
+        {Credo.Check.Readability.SeparateAliasRequire, []},
         {Credo.Check.Readability.SinglePipe, []},
+        {Credo.Check.Readability.Specs, []},
+        {Credo.Check.Readability.StrictModuleLayout, []},
         {Credo.Check.Readability.WithCustomTaggedTuple, false},
         {Credo.Check.Refactor.ABCSize, false},
         {Credo.Check.Refactor.AppendSingleItem, false},

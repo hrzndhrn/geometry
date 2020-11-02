@@ -9,8 +9,8 @@ defmodule Geometry.PolygonZMTest do
 
   @moduletag :polygon
 
-  describe "from_wkb/1" do
-    test "returns PolygonZM (xdr)" do
+  describe "from_wkb/2" do
+    test "returns PolygonZM from xdr-string" do
       wkb = """
       00\
       C0000003\
@@ -23,7 +23,7 @@ defmodule Geometry.PolygonZMTest do
       403E00000000000040240000000000004034000000000000402E000000000000\
       """
 
-      assert PolygonZM.from_wkb(wkb) ==
+      assert PolygonZM.from_wkb(wkb, :hex) ==
                {:ok,
                 %PolygonZM{
                   rings: [
@@ -38,8 +38,35 @@ defmodule Geometry.PolygonZMTest do
                 }}
     end
 
-    @tag :only
-    test "returns PolygonZM with hole and SRID (ndr) " do
+    test "returns PolygonZM from xdr-binary" do
+      wkb = """
+      00\
+      C0000003\
+      00000001\
+      00000005\
+      403E00000000000040240000000000004034000000000000402E000000000000\
+      4044000000000000404400000000000040240000000000004034000000000000\
+      403400000000000040440000000000004039000000000000402E000000000000\
+      40240000000000004034000000000000402E0000000000004039000000000000\
+      403E00000000000040240000000000004034000000000000402E000000000000\
+      """
+
+      assert wkb |> Hex.to_binary() |> PolygonZM.from_wkb() ==
+               {:ok,
+                %PolygonZM{
+                  rings: [
+                    [
+                      [30.0, 10.0, 20.0, 15.0],
+                      [40.0, 40.0, 10.0, 20.0],
+                      [20.0, 40.0, 25.0, 15.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [30.0, 10.0, 20.0, 15.0]
+                    ]
+                  ]
+                }}
+    end
+
+    test "returns PolygonZM with hole and SRID from ndr-string" do
       wkb = """
       01\
       030000E0\
@@ -58,7 +85,47 @@ defmodule Geometry.PolygonZMTest do
       00000000000034400000000000003E400000000000002E400000000000002440\
       """
 
-      assert PolygonZM.from_wkb(wkb) ==
+      assert PolygonZM.from_wkb(wkb, :hex) ==
+               {:ok,
+                %PolygonZM{
+                  rings: [
+                    [
+                      [35.0, 10.0, 15.0, 25.0],
+                      [45.0, 45.0, 10.0, 20.0],
+                      [15.0, 40.0, 20.0, 10.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [35.0, 10.0, 15.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0, 10.0],
+                      [35.0, 35.0, 10.0, 50.0],
+                      [30.0, 20.0, 25.0, 35.0],
+                      [20.0, 30.0, 15.0, 10.0]
+                    ]
+                  ]
+                }, 333}
+    end
+
+    test "returns PolygonZM with hole and SRID from ndr-binary" do
+      wkb = """
+      01\
+      030000E0\
+      4D010000\
+      02000000\
+      05000000\
+      000000000080414000000000000024400000000000002E400000000000003940\
+      0000000000804640000000000080464000000000000024400000000000003440\
+      0000000000002E40000000000000444000000000000034400000000000002440\
+      000000000000244000000000000034400000000000002E400000000000003940\
+      000000000080414000000000000024400000000000002E400000000000003940\
+      04000000\
+      00000000000034400000000000003E400000000000002E400000000000002440\
+      0000000000804140000000000080414000000000000024400000000000004940\
+      0000000000003E40000000000000344000000000000039400000000000804140\
+      00000000000034400000000000003E400000000000002E400000000000002440\
+      """
+
+      assert wkb |> Hex.to_binary() |> PolygonZM.from_wkb() ==
                {:ok,
                 %PolygonZM{
                   rings: [
@@ -218,8 +285,8 @@ defmodule Geometry.PolygonZMTest do
     end
   end
 
-  describe "from_wkb!/1" do
-    test "returns PolygonZM (xdr)" do
+  describe "from_wkb!/2" do
+    test "returns PolygonZM from xdr-string" do
       wkb = """
       00\
       C0000003\
@@ -232,7 +299,7 @@ defmodule Geometry.PolygonZMTest do
       403E00000000000040240000000000004034000000000000402E000000000000\
       """
 
-      assert PolygonZM.from_wkb!(wkb) ==
+      assert PolygonZM.from_wkb!(wkb, :hex) ==
                %PolygonZM{
                  rings: [
                    [
@@ -246,7 +313,34 @@ defmodule Geometry.PolygonZMTest do
                }
     end
 
-    test "returns PolygonZM with hole and SRID (ndr) " do
+    test "returns PolygonZM from xdr-binary" do
+      wkb = """
+      00\
+      C0000003\
+      00000001\
+      00000005\
+      403E00000000000040240000000000004034000000000000402E000000000000\
+      4044000000000000404400000000000040240000000000004034000000000000\
+      403400000000000040440000000000004039000000000000402E000000000000\
+      40240000000000004034000000000000402E0000000000004039000000000000\
+      403E00000000000040240000000000004034000000000000402E000000000000\
+      """
+
+      assert wkb |> Hex.to_binary() |> PolygonZM.from_wkb!() ==
+               %PolygonZM{
+                 rings: [
+                   [
+                     [30.0, 10.0, 20.0, 15.0],
+                     [40.0, 40.0, 10.0, 20.0],
+                     [20.0, 40.0, 25.0, 15.0],
+                     [10.0, 20.0, 15.0, 25.0],
+                     [30.0, 10.0, 20.0, 15.0]
+                   ]
+                 ]
+               }
+    end
+
+    test "returns PolygonZM with hole and SRID from ndr-string" do
       wkb = """
       01\
       030000E0\
@@ -265,7 +359,7 @@ defmodule Geometry.PolygonZMTest do
       00000000000034400000000000003E400000000000002E400000000000002440\
       """
 
-      assert PolygonZM.from_wkb!(wkb) ==
+      assert PolygonZM.from_wkb!(wkb, :hex) ==
                {%PolygonZM{
                   rings: [
                     [
@@ -285,9 +379,57 @@ defmodule Geometry.PolygonZMTest do
                 }, 333}
     end
 
-    test "raises an error for an invalid WKB" do
+    test "returns PolygonZM with hole and SRID from ndr-binary" do
+      wkb = """
+      01\
+      030000E0\
+      4D010000\
+      02000000\
+      05000000\
+      000000000080414000000000000024400000000000002E400000000000003940\
+      0000000000804640000000000080464000000000000024400000000000003440\
+      0000000000002E40000000000000444000000000000034400000000000002440\
+      000000000000244000000000000034400000000000002E400000000000003940\
+      000000000080414000000000000024400000000000002E400000000000003940\
+      04000000\
+      00000000000034400000000000003E400000000000002E400000000000002440\
+      0000000000804140000000000080414000000000000024400000000000004940\
+      0000000000003E40000000000000344000000000000039400000000000804140\
+      00000000000034400000000000003E400000000000002E400000000000002440\
+      """
+
+      assert wkb |> Hex.to_binary() |> PolygonZM.from_wkb!() ==
+               {%PolygonZM{
+                  rings: [
+                    [
+                      [35.0, 10.0, 15.0, 25.0],
+                      [45.0, 45.0, 10.0, 20.0],
+                      [15.0, 40.0, 20.0, 10.0],
+                      [10.0, 20.0, 15.0, 25.0],
+                      [35.0, 10.0, 15.0, 25.0]
+                    ],
+                    [
+                      [20.0, 30.0, 15.0, 10.0],
+                      [35.0, 35.0, 10.0, 50.0],
+                      [30.0, 20.0, 25.0, 35.0],
+                      [20.0, 30.0, 15.0, 10.0]
+                    ]
+                  ]
+                }, 333}
+    end
+
+    test "raises an error for an invalid WKB string" do
       wkb = "ABCD"
-      message = "expected endian flag '00' or '01', got 'AB', at position 0"
+      message = ~s(expected endian flag "00" or "01", got "AB", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        PolygonZM.from_wkb!(wkb, :hex)
+      end
+    end
+
+    test "raises an error for an invalid WKB binary" do
+      wkb = "ABCD"
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         PolygonZM.from_wkb!(wkb)
@@ -395,7 +537,7 @@ defmodule Geometry.PolygonZMTest do
     end
 
     test "raises an error for an invalid WKT" do
-      message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Daisy'"
+      message = ~s(expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: "Daisy")
 
       assert_raise Geometry.Error, message, fn ->
         PolygonZM.from_wkt!("Daisy")
@@ -404,15 +546,12 @@ defmodule Geometry.PolygonZMTest do
   end
 
   describe "to_wkt/2:" do
-    @tag :only
     prove PolygonZM.to_wkt(PolygonZM.new()) == "Polygon ZM EMPTY"
 
-    @tag :only
     prove PolygonZM.to_wkt(PolygonZM.new(), srid: 1123) == "SRID=1123;Polygon ZM EMPTY"
   end
 
   describe "to_wkt/2" do
-    @tag :only
     test "returns WKT" do
       polygon =
         PolygonZM.new([

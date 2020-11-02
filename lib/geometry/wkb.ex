@@ -19,16 +19,17 @@ defmodule Geometry.WKB do
   def srid(int, :xdr, :binary), do: <<int::big-integer-size(32)>>
   def srid(int, :ndr, :binary), do: <<int::little-integer-size(32)>>
 
-  @spec to_geometry(wkb, module()) ::
+  @spec to_geometry(wkb, mode, module()) ::
           {:ok, geometry} | {:ok, geometry, srid} | {:error, message, rest, offset}
         when wkb: Geometry.wkb(),
+             mode: Geometry.mode(),
              geometry: Geometry.t(),
              srid: Geometry.srid(),
              message: String.t(),
              rest: binary(),
              offset: non_neg_integer()
-  def to_geometry(wkb, module) do
-    case to_geometry(wkb) do
+  def to_geometry(wkb, mode, module) do
+    case to_geometry(wkb, mode) do
       {:ok, geometry} = result ->
         with :ok <- check_geometry(geometry, module), do: result
 
@@ -40,7 +41,7 @@ defmodule Geometry.WKB do
     end
   end
 
-  defdelegate to_geometry(wkb), to: Parser, as: :parse
+  defdelegate to_geometry(wkb, mode), to: Parser, as: :parse
 
   @compile {:inline, length: 3}
   @spec length(list | MapSet.t(), Geometry.endian(), Geometry.mode()) :: binary()

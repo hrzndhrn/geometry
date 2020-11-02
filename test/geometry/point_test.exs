@@ -67,7 +67,7 @@ defmodule Geometry.PointTest do
             {%Point{coordinate: [1.1, -2.2]}, 11}
 
     test "raises an exception" do
-      message = "expected Point data at 1:6, got: 'XY (5 6 7)'"
+      message = ~s[expected Point data at 1:6, got: "XY (5 6 7)"]
 
       assert_raise Geometry.Error, message, fn ->
         Point.from_wkt!("Point XY (5 6 7)")
@@ -75,44 +75,100 @@ defmodule Geometry.PointTest do
     end
   end
 
-  describe "from_wkb/1" do
-    test "returns ok tuple with Point from an xdr-string" do
+  describe "from_wkb/2" do
+    test "returns ok tuple with Point from xdr-binary" do
       wkb = "00000000013FF199999999999A400199999999999A"
-      assert Point.from_wkb(wkb) == {:ok, %Point{coordinate: [1.1, 2.2]}}
+
+      assert wkb
+             |> Hex.to_binary()
+             |> Point.from_wkb() == {:ok, %Point{coordinate: [1.1, 2.2]}}
     end
 
-    test "returns ok tuple with Point from an ndr-string" do
+    test "returns ok tuple with Point from xdr-string" do
+      wkb = "00000000013FF199999999999A400199999999999A"
+
+      assert Point.from_wkb(wkb, :hex) == {:ok, %Point{coordinate: [1.1, 2.2]}}
+    end
+
+    test "returns ok tuple with Point from ndr-string" do
       wkb = "01010000009A9999999999F13F9A99999999990140"
-      assert Point.from_wkb(wkb) == {:ok, %Point{coordinate: [1.1, 2.2]}}
+      assert Point.from_wkb(wkb, :hex) == {:ok, %Point{coordinate: [1.1, 2.2]}}
     end
 
-    test "returns an error tuple for an unexpected geometry" do
+    test "returns ok tuple with Point from ndr-binary" do
+      wkb = "01010000009A9999999999F13F9A99999999990140"
+
+      assert wkb
+             |> Hex.to_binary()
+             |> Point.from_wkb() == {:ok, %Point{coordinate: [1.1, 2.2]}}
+    end
+
+    test "returns an error tuple for an unexpected geometry from xdr-string" do
       wkb = "000000000200000000"
-      assert Point.from_wkb(wkb) == {:error, %{expected: Point, got: LineString}}
+      assert Point.from_wkb(wkb, :hex) == {:error, %{expected: Point, got: LineString}}
     end
 
-    test "returns an error tuple for an invalid WKB" do
+    test "returns an error tuple for an unexpected geometry from xdr-binary" do
+      wkb = "000000000200000000"
+
+      assert wkb |> Hex.to_binary() |> Point.from_wkb() ==
+               {:error, %{expected: Point, got: LineString}}
+    end
+
+    test "returns an error tuple for an invalid WKB string" do
+      wkb = "foo"
+
+      assert Point.from_wkb(wkb, :hex) ==
+               {:error, ~s(expected endian flag "00" or "01", got "fo"), "o", 0}
+    end
+
+    test "returns an error tuple for an invalid WKB binary" do
       wkb = "foo"
 
       assert Point.from_wkb(wkb) ==
-               {:error, "expected endian flag '00' or '01', got 'fo'", "o", 0}
+               {:error, "expected endian flag", "foo", 0}
     end
   end
 
-  describe "from_wkb!/1" do
-    test "returns ok tuple with Point from an xdr-string" do
+  describe "from_wkb!/2" do
+    test "returns ok tuple with Point from xdr-string" do
       wkb = "00000000013FF199999999999A400199999999999A"
-      assert Point.from_wkb!(wkb) == %Point{coordinate: [1.1, 2.2]}
+      assert Point.from_wkb!(wkb, :hex) == %Point{coordinate: [1.1, 2.2]}
     end
 
-    test "returns ok tuple with Point from an ndr-string" do
+    test "returns ok tuple with Point from ndr-string" do
       wkb = "01010000009A9999999999F13F9A99999999990140"
-      assert Point.from_wkb!(wkb) == %Point{coordinate: [1.1, 2.2]}
+      assert Point.from_wkb!(wkb, :hex) == %Point{coordinate: [1.1, 2.2]}
     end
 
-    test "raises an exception for an invalid WKB" do
+    test "returns ok tuple with Point from xdr-binary" do
+      wkb = "00000000013FF199999999999A400199999999999A"
+
+      assert wkb
+             |> Hex.to_binary()
+             |> Point.from_wkb!() == %Point{coordinate: [1.1, 2.2]}
+    end
+
+    test "returns ok tuple with Point from ndr-binary" do
+      wkb = "01010000009A9999999999F13F9A99999999990140"
+
+      assert wkb
+             |> Hex.to_binary()
+             |> Point.from_wkb!() == %Point{coordinate: [1.1, 2.2]}
+    end
+
+    test "raises an exception for an invalid WKB string" do
       wkb = "foo"
-      message = "expected endian flag '00' or '01', got 'fo', at position 0"
+      message = ~s(expected endian flag "00" or "01", got "fo", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        Point.from_wkb!(wkb, :hex)
+      end
+    end
+
+    test "raises an exception for an invalid WKB binary" do
+      wkb = "foo"
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         Point.from_wkb!(wkb)
@@ -150,14 +206,12 @@ defmodule Geometry.PointTest do
       assert Point.to_wkb(Point.new(1.1, 2.2), endian: :ndr, mode: :hex) == wkb
     end
 
-    @tag :only
     test "returns ndr-binary for Point" do
       wkb = Hex.to_binary("01010000009A9999999999F13F9A99999999990140")
 
       assert Point.to_wkb(Point.new(1.1, 2.2), endian: :ndr) == wkb
     end
 
-    @tag :only
     test "returns ndr-string for Point with SRID" do
       wkb = "01010000204D0100009A9999999999F13F9A99999999990140"
 

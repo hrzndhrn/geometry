@@ -14,7 +14,6 @@ defmodule Geometry.MultiPolygonZMTest do
   @moduletag :multi_polygon
 
   describe "to_geo_json/1" do
-    @tag :new
     test "returns geo-json-term" do
       geo_json =
         [
@@ -54,7 +53,6 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_geo_json!/1" do
-    @tag :new
     test "returns MultiPolygonZM" do
       geo_json =
         Jason.decode!("""
@@ -100,7 +98,6 @@ defmodule Geometry.MultiPolygonZMTest do
       assert MultiPolygonZM.from_geo_json!(geo_json) == multi_polygon
     end
 
-    @tag :new
     test "raises an error for an invalid geo-json-term" do
       message = "type not found"
 
@@ -111,7 +108,6 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_wkt/1" do
-    @tag :new
     test "returns MultiPolygonZM" do
       wkt = """
       MULTIPOLYGON ZM (
@@ -159,7 +155,6 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "from_wkt!/1" do
-    @tag :new
     test "returns MultiPolygonZM" do
       wkt = """
        MULTIPOLYGON ZM (
@@ -205,7 +200,6 @@ defmodule Geometry.MultiPolygonZMTest do
       assert MultiPolygonZM.from_wkt!(wkt) == multi_polygon
     end
 
-    @tag :new
     test "returns MultiPolygonZM with SRID" do
       wkt = """
        SRID=1234;MULTIPOLYGON ZM (
@@ -251,9 +245,8 @@ defmodule Geometry.MultiPolygonZMTest do
       assert MultiPolygonZM.from_wkt!(wkt) == {multi_polygon, 1234}
     end
 
-    @tag :new
     test "raises an exception for invalid WKT" do
-      message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Pluto'"
+      message = ~s(expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: "Pluto")
 
       assert_raise Geometry.Error, message, fn ->
         MultiPolygonZM.from_wkt!("Pluto")
@@ -262,7 +255,6 @@ defmodule Geometry.MultiPolygonZMTest do
   end
 
   describe "to_wkt/2" do
-    @tag :new
     test "returns wkt-string" do
       multi_polygon = %MultiPolygonZM{
         polygons:
@@ -316,9 +308,8 @@ defmodule Geometry.MultiPolygonZMTest do
     end
   end
 
-  describe "from_wkb/1" do
-    @tag :new
-    test "returns a MultiPolygonZM (ndr)" do
+  describe "from_wkb/2" do
+    test "returns a MultiPolygonZM from ndr-string" do
       wkb = """
       01\
       060000C0\
@@ -374,7 +365,66 @@ defmodule Geometry.MultiPolygonZMTest do
           ])
       }
 
-      assert MultiPolygonZM.from_wkb(wkb) == {:ok, multi_polygon}
+      assert MultiPolygonZM.from_wkb(wkb, :hex) == {:ok, multi_polygon}
+    end
+
+    test "returns a MultiPolygonZM from ndr-binary" do
+      wkb = """
+      01\
+      060000C0\
+      02000000\
+      01\
+      030000C0\
+      02000000\
+      04000000\
+      000000000000F03F000000000000F03F00000000000008400000000000001040\
+      0000000000002240000000000000F03F00000000000010400000000000001440\
+      0000000000002240000000000000204000000000000014400000000000001840\
+      000000000000F03F000000000000F03F00000000000008400000000000001040\
+      04000000\
+      0000000000001840000000000000004000000000000010400000000000000840\
+      0000000000001C40000000000000004000000000000018400000000000001C40\
+      0000000000001C40000000000000084000000000000008400000000000001040\
+      0000000000001840000000000000004000000000000010400000000000000840\
+      01\
+      030000C0\
+      01000000\
+      04000000\
+      0000000000001840000000000000004000000000000008400000000000001040\
+      0000000000002040000000000000004000000000000010400000000000001440\
+      0000000000002040000000000000104000000000000014400000000000001840\
+      0000000000001840000000000000004000000000000008400000000000001040\
+      """
+
+      multi_polygon = %MultiPolygonZM{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
+              ],
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
+          ])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPolygonZM.from_wkb() == {:ok, multi_polygon}
     end
   end
 
@@ -412,7 +462,7 @@ defmodule Geometry.MultiPolygonZMTest do
 
       assert result = MultiPolygonZM.to_wkb(multi_polygon, endian: :ndr)
       assert String.starts_with?(result, Hex.to_binary(wkb_start))
-      assert MultiPolygonZM.from_wkb!(Hex.from_binary(result)) == multi_polygon
+      assert MultiPolygonZM.from_wkb!(result) == multi_polygon
     end
 
     test "returns WKB as ndr-string for MultiPolygonZM" do
@@ -448,13 +498,12 @@ defmodule Geometry.MultiPolygonZMTest do
 
       assert result = MultiPolygonZM.to_wkb(multi_polygon, endian: :ndr, mode: :hex)
       assert String.starts_with?(result, wkb_start)
-      assert MultiPolygonZM.from_wkb!(result) == multi_polygon
+      assert MultiPolygonZM.from_wkb!(result, :hex) == multi_polygon
     end
   end
 
-  describe "from_wkb!/1" do
-    @tag :new
-    test "returns a MultiPolygonZM (ndr)" do
+  describe "from_wkb!/2" do
+    test "returns a MultiPolygonZM from ndr-string" do
       wkb = """
       01\
       060000C0\
@@ -510,11 +559,78 @@ defmodule Geometry.MultiPolygonZMTest do
           ])
       }
 
-      assert MultiPolygonZM.from_wkb!(wkb) == multi_polygon
+      assert MultiPolygonZM.from_wkb!(wkb, :hex) == multi_polygon
     end
 
-    test "raises an error for an invalid WKB" do
-      message = "expected endian flag '00' or '01', at position 0"
+    test "returns a MultiPolygonZM from ndr-binary" do
+      wkb = """
+      01\
+      060000C0\
+      02000000\
+      01\
+      030000C0\
+      02000000\
+      04000000\
+      000000000000F03F000000000000F03F00000000000008400000000000001040\
+      0000000000002240000000000000F03F00000000000010400000000000001440\
+      0000000000002240000000000000204000000000000014400000000000001840\
+      000000000000F03F000000000000F03F00000000000008400000000000001040\
+      04000000\
+      0000000000001840000000000000004000000000000010400000000000000840\
+      0000000000001C40000000000000004000000000000018400000000000001C40\
+      0000000000001C40000000000000084000000000000008400000000000001040\
+      0000000000001840000000000000004000000000000010400000000000000840\
+      01\
+      030000C0\
+      01000000\
+      04000000\
+      0000000000001840000000000000004000000000000008400000000000001040\
+      0000000000002040000000000000004000000000000010400000000000001440\
+      0000000000002040000000000000104000000000000014400000000000001840\
+      0000000000001840000000000000004000000000000008400000000000001040\
+      """
+
+      multi_polygon = %MultiPolygonZM{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0, 3.0, 4.0],
+                [9.0, 1.0, 4.0, 5.0],
+                [9.0, 8.0, 5.0, 6.0],
+                [1.0, 1.0, 3.0, 4.0]
+              ],
+              [
+                [6.0, 2.0, 4.0, 3.0],
+                [7.0, 2.0, 6.0, 7.0],
+                [7.0, 3.0, 3.0, 4.0],
+                [6.0, 2.0, 4.0, 3.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0, 3.0, 4.0],
+                [8.0, 2.0, 4.0, 5.0],
+                [8.0, 4.0, 5.0, 6.0],
+                [6.0, 2.0, 3.0, 4.0]
+              ]
+            ]
+          ])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPolygonZM.from_wkb!() == multi_polygon
+    end
+
+    test "raises an error for an invalid WKB string" do
+      message = ~s(expected endian flag "00" or "01", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        MultiPolygonZM.from_wkb!("", :hex)
+      end
+    end
+
+    test "raises an error for an invalid WKB binary" do
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         MultiPolygonZM.from_wkb!("")

@@ -231,38 +231,47 @@ defmodule Geometry.Point do
 
   If the geometry contains a SRID the id is added to the tuple.
 
+  The optional second argument determines if a `:hex`-string or a `:binary`
+  input is expected. The default is `:binary`.
+
   ## Examples
 
       iex> Point.from_wkb(
-      ...>   "00000000017FF80000000000007FF8000000000000"
+      ...>   "00000000017FF80000000000007FF8000000000000",
+      ...>   :hex
       ...> )
       {:ok, %Point{coordinate: nil}}
 
       iex> Point.from_wkb(
-      ...>   "00000000013FF199999999999A400199999999999A"
+      ...>   "00000000013FF199999999999A400199999999999A",
+      ...>   :hex
       ...> )
       {:ok, %Point{coordinate: [1.1, 2.2]}}
 
       iex> Point.from_wkb(
-      ...>   "01010000009A9999999999F13F9A99999999990140"
+      ...>   "01010000009A9999999999F13F9A99999999990140",
+      ...>   :hex
       ...> )
       {:ok, %Point{coordinate: [1.1, 2.2]}}
 
       iex> Point.from_wkb(
-      ...>   "0020000001000012673FF199999999999A400199999999999A"
+      ...>   "0020000001000012673FF199999999999A400199999999999A",
+      ...>   :hex
       ...> )
       {:ok, %Point{coordinate: [1.1, 2.2]}, 4711}
   """
-  @spec from_wkb(Geometry.wkb()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
-  def from_wkb(wkb), do: WKB.to_geometry(wkb, Point)
+  @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
+          {:ok, t()}
+          | {:ok, t(), Geometry.srid()}
+          | Geometry.wkb_error()
+  def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, Point)
 
   @doc """
-  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
   """
-  @spec from_wkb!(Geometry.wkb()) :: t() | {t(), Geometry.srid()}
-  def from_wkb!(wkb) do
-    case WKB.to_geometry(wkb, Point) do
+  @spec from_wkb!(Geometry.wkb(), Geometry.mode()) :: t() | {t(), Geometry.srid()}
+  def from_wkb!(wkb, mode \\ :binary) do
+    case WKB.to_geometry(wkb, mode, Point) do
       {:ok, geometry} -> geometry
       {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
