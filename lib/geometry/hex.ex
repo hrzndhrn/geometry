@@ -7,7 +7,31 @@ defmodule Geometry.Hex do
 
   @nan nil
 
-  @spec to_integer_string(integer(), Geometry.endian()) :: t()
+  @spec from_binary(binary) :: String.t()
+  def from_binary(binary), do: from_binary(binary, "")
+
+  defp from_binary(<<>>, acc), do: acc
+
+  defp from_binary(<<x::8, rest::binary()>>, acc) do
+    hex = Integer.to_string(x, 16)
+
+    case x < 16 do
+      true -> from_binary(rest, <<acc::binary, "0", hex::binary>>)
+      false -> from_binary(rest, <<acc::binary, hex::binary>>)
+    end
+  end
+
+  @spec to_binary(String.t()) :: binary
+  def to_binary(str), do: to_binary(str, <<>>)
+
+  defp to_binary(<<>>, acc), do: acc
+
+  defp to_binary(<<x::binary-size(2), rest::binary()>>, acc) do
+    int = String.to_integer(x, 16)
+    to_binary(rest, <<acc::binary, int::integer-size(8)>>)
+  end
+
+  @spec to_integer_string(integer, Geometry.endian()) :: t
   def to_integer_string(number, :xdr) do
     to_integer_string(number)
   end

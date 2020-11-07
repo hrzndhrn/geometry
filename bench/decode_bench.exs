@@ -35,7 +35,7 @@ defmodule DecodeBench do
   job geometry({type, geometry}) do
     case type do
       :wkt -> Geometry.from_wkt!(geometry)
-      :wkb -> Geometry.from_wkb!(geometry)
+      :wkb -> Geometry.from_wkb!(geometry, :hex)
       :geo_json -> Geometry.from_geo_json!(geometry)
     end
   end
@@ -51,7 +51,7 @@ defmodule DecodeBench do
   defp wkt(wkt), do: {:wkt, wkt}
 
   defp wkb(wkt) do
-    {:wkb, wkt |> Geometry.from_wkt!() |> Geometry.to_wkb()}
+    {:wkb, wkt |> Geometry.from_wkt!() |> Geometry.to_wkb(mode: :hex)}
   end
 
   defp geo_json(wkt) do

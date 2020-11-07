@@ -6,7 +6,7 @@ defmodule Geometry.LineStringMTest do
 
   import Prove
 
-  alias Geometry.{LineStringM, PointM}
+  alias Geometry.{Hex, LineStringM, PointM}
 
   doctest Geometry.LineStringM, import: true
 
@@ -106,7 +106,7 @@ defmodule Geometry.LineStringMTest do
 
   describe "from_wkt!/1" do
     test "raises an exception" do
-      message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'foo'"
+      message = ~s(expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: "foo")
 
       assert_raise Geometry.Error, message, fn ->
         LineStringM.from_wkt!("foo")
@@ -184,8 +184,8 @@ defmodule Geometry.LineStringMTest do
     end
   end
 
-  describe "from_wkb/1" do
-    test "returns an ok tuple with LineStringM" do
+  describe "from_wkb/2" do
+    test "returns ok tuple with LineStringM from ndr-binary" do
       wkb = """
       01\
       02000040\
@@ -194,7 +194,9 @@ defmodule Geometry.LineStringMTest do
       00000000000016406666666666661A409A99999999992140\
       """
 
-      assert LineStringM.from_wkb(wkb) ==
+      assert wkb
+             |> Hex.to_binary()
+             |> LineStringM.from_wkb() ==
                {:ok,
                 %LineStringM{
                   points: [
@@ -204,7 +206,26 @@ defmodule Geometry.LineStringMTest do
                 }}
     end
 
-    test "returns an ok tuple with LineStringM and SRID" do
+    test "returns ok tuple with LineStringM from ndr-string" do
+      wkb = """
+      01\
+      02000040\
+      02000000\
+      9A9999999999F1BF9A999999999901C09A999999999911C0\
+      00000000000016406666666666661A409A99999999992140\
+      """
+
+      assert LineStringM.from_wkb(wkb, :hex) ==
+               {:ok,
+                %LineStringM{
+                  points: [
+                    [-1.1, -2.2, -4.4],
+                    [5.5, 6.6, 8.8]
+                  ]
+                }}
+    end
+
+    test "returns an ok tuple with LineStringM and SRID from xdr-string" do
       wkb = """
       00\
       60000002\
@@ -214,7 +235,27 @@ defmodule Geometry.LineStringMTest do
       4016000000000000401A666666666666402199999999999A\
       """
 
-      assert LineStringM.from_wkb(wkb) ==
+      assert LineStringM.from_wkb(wkb, :hex) ==
+               {:ok,
+                %LineStringM{
+                  points: [
+                    [-1.1, -2.2, -4.4],
+                    [5.5, 6.6, 8.8]
+                  ]
+                }, 77}
+    end
+
+    test "returns an ok tuple with LineStringM and SRID from xdr-binary" do
+      wkb = """
+      00\
+      60000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC01199999999999A\
+      4016000000000000401A666666666666402199999999999A\
+      """
+
+      assert wkb |> Hex.to_binary() |> LineStringM.from_wkb() ==
                {:ok,
                 %LineStringM{
                   points: [
@@ -225,8 +266,8 @@ defmodule Geometry.LineStringMTest do
     end
   end
 
-  describe "from_wkb!/1" do
-    test "returns a LineStringM" do
+  describe "from_wkb!/2" do
+    test "returns a LineStringM from ndr-string" do
       wkb = """
       01\
       02000040\
@@ -235,7 +276,7 @@ defmodule Geometry.LineStringMTest do
       00000000000016406666666666661A409A99999999992140\
       """
 
-      assert LineStringM.from_wkb!(wkb) ==
+      assert LineStringM.from_wkb!(wkb, :hex) ==
                %LineStringM{
                  points: [
                    [-1.1, -2.2, -4.4],
@@ -244,7 +285,25 @@ defmodule Geometry.LineStringMTest do
                }
     end
 
-    test "returns a LineStringM and SRID" do
+    test "returns a LineStringM from ndr-binary" do
+      wkb = """
+      01\
+      02000040\
+      02000000\
+      9A9999999999F1BF9A999999999901C09A999999999911C0\
+      00000000000016406666666666661A409A99999999992140\
+      """
+
+      assert wkb |> Hex.to_binary() |> LineStringM.from_wkb!() ==
+               %LineStringM{
+                 points: [
+                   [-1.1, -2.2, -4.4],
+                   [5.5, 6.6, 8.8]
+                 ]
+               }
+    end
+
+    test "returns a LineStringM and SRID from xdr-string" do
       wkb = """
       00\
       60000002\
@@ -254,7 +313,7 @@ defmodule Geometry.LineStringMTest do
       4016000000000000401A666666666666402199999999999A\
       """
 
-      assert LineStringM.from_wkb!(wkb) ==
+      assert LineStringM.from_wkb!(wkb, :hex) ==
                {
                  %LineStringM{
                    points: [
@@ -266,8 +325,38 @@ defmodule Geometry.LineStringMTest do
                }
     end
 
-    test "raises an exception" do
-      message = "expected endian flag '00' or '01', got 'AB', at position 0"
+    test "returns a LineStringM and SRID from xdr-binary" do
+      wkb = """
+      00\
+      60000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC01199999999999A\
+      4016000000000000401A666666666666402199999999999A\
+      """
+
+      assert wkb |> Hex.to_binary() |> LineStringM.from_wkb!() ==
+               {
+                 %LineStringM{
+                   points: [
+                     [-1.1, -2.2, -4.4],
+                     [5.5, 6.6, 8.8]
+                   ]
+                 },
+                 77
+               }
+    end
+
+    test "raises an exception for invalid string" do
+      message = ~s(expected endian flag "00" or "01", got "AB", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        LineStringM.from_wkb!("ABCDEFGH", :hex)
+      end
+    end
+
+    test "raises an exception for invalid binary" do
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         LineStringM.from_wkb!("ABCDEFGH")
@@ -276,7 +365,28 @@ defmodule Geometry.LineStringMTest do
   end
 
   describe "to_wkb/2" do
-    test "returns WKB from LineStringM" do
+    test "returns WKB as ndr-string from LineStringM" do
+      wkb = """
+      01\
+      02000040\
+      02000000\
+      9A9999999999F1BF9A999999999901C09A999999999911C0\
+      00000000000016406666666666661A409A99999999992140\
+      """
+
+      assert LineStringM.to_wkb(
+               %LineStringM{
+                 points: [
+                   [-1.1, -2.2, -4.4],
+                   [5.5, 6.6, 8.8]
+                 ]
+               },
+               endian: :ndr,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary from LineStringM" do
       wkb = """
       01\
       02000040\
@@ -293,10 +403,32 @@ defmodule Geometry.LineStringMTest do
                  ]
                },
                endian: :ndr
+             ) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string from LineStringM with SRID" do
+      wkb = """
+      00\
+      60000002\
+      0000004D\
+      00000002\
+      BFF199999999999AC00199999999999AC01199999999999A\
+      4016000000000000401A666666666666402199999999999A\
+      """
+
+      assert LineStringM.to_wkb(
+               %LineStringM{
+                 points: [
+                   [-1.1, -2.2, -4.4],
+                   [5.5, 6.6, 8.8]
+                 ]
+               },
+               srid: 77,
+               mode: :hex
              ) == wkb
     end
 
-    test "returns WKB from LineStringM with SRID" do
+    test "returns WKB as xdr-binary from LineStringM with SRID" do
       wkb = """
       00\
       60000002\
@@ -314,7 +446,49 @@ defmodule Geometry.LineStringMTest do
                  ]
                },
                srid: 77
-             ) == wkb
+             ) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from LineStringM with SRID" do
+      wkb = """
+      01\
+      02000060\
+      67120000\
+      02000000\
+      CB49287D21C451C0F0BF95ECD82445409A9999999999F13F\
+      E5D022DBF93E24C0CDCCCCCCCC0C24409A99999999990140\
+      """
+
+      line_string =
+        LineStringM.new([
+          PointM.new(-71.064544, 42.28787, 1.1),
+          PointM.new(-10.123, 10.025, 2.2)
+        ])
+
+      srid = 4711
+
+      assert LineStringM.to_wkb(line_string, srid: srid, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB as ndr-binary from LineStringM with SRID" do
+      wkb = """
+      01\
+      02000060\
+      67120000\
+      02000000\
+      CB49287D21C451C0F0BF95ECD82445409A9999999999F13F\
+      E5D022DBF93E24C0CDCCCCCCCC0C24409A99999999990140\
+      """
+
+      line_string =
+        LineStringM.new([
+          PointM.new(-71.064544, 42.28787, 1.1),
+          PointM.new(-10.123, 10.025, 2.2)
+        ])
+
+      srid = 4711
+
+      assert LineStringM.to_wkb(line_string, srid: srid, endian: :ndr) == Hex.to_binary(wkb)
     end
   end
 end

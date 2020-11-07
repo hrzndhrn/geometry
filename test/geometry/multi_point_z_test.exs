@@ -4,7 +4,7 @@ defmodule Geometry.MultiPointZTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{MultiPointZ, PointZ}
+  alias Geometry.{Hex, MultiPointZ, PointZ}
 
   doctest MultiPointZ, import: true
 
@@ -90,9 +90,8 @@ defmodule Geometry.MultiPointZTest do
     end
   end
 
-  describe "from_wkb/1" do
-    @tag :only
-    test "returns a MultiPointZ (xdr)" do
+  describe "from_wkb/2" do
+    test "returns a MultiPointZ from xdr-string" do
       wkb = """
       00\
       80000004\
@@ -117,32 +116,80 @@ defmodule Geometry.MultiPointZTest do
           ])
       }
 
-      assert MultiPointZ.from_wkb(wkb) == {:ok, multi_point}
+      assert MultiPointZ.from_wkb(wkb, :hex) == {:ok, multi_point}
     end
 
-    test "returns an empty MultiPointZ (xdr)" do
+    test "returns a MultiPointZ from xdr-binary" do
+      wkb = """
+      00\
+      80000004\
+      00000003\
+      00\
+      80000001\
+      403E0000000000004024000000000000402E000000000000\
+      00\
+      80000001\
+      404400000000000040440000000000004034000000000000\
+      00\
+      80000001\
+      40340000000000004044000000000000402E000000000000\
+      """
+
+      multi_point = %MultiPointZ{
+        points:
+          MapSet.new([
+            [30.0, 10.0, 15.0],
+            [20.0, 40.0, 15.0],
+            [40.0, 40.0, 20.0]
+          ])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPointZ.from_wkb() == {:ok, multi_point}
+    end
+
+    test "returns an empty MultiPointZ from xdr-string" do
       wkb = """
       00\
       80000004\
       00000000\
       """
 
-      assert MultiPointZ.from_wkb(wkb) == {:ok, %MultiPointZ{}}
+      assert MultiPointZ.from_wkb(wkb, :hex) == {:ok, %MultiPointZ{}}
     end
 
-    test "returns an empty MultiPointZ (ndr)" do
+    test "returns an empty MultiPointZ from ndr-string" do
       wkb = """
       01\
       04000080\
       00000000\
       """
 
-      assert MultiPointZ.from_wkb(wkb) == {:ok, %MultiPointZ{}}
+      assert MultiPointZ.from_wkb(wkb, :hex) == {:ok, %MultiPointZ{}}
+    end
+
+    test "returns an empty MultiPointZ from xdr-binary" do
+      wkb = """
+      00\
+      80000004\
+      00000000\
+      """
+
+      assert wkb |> Hex.to_binary() |> MultiPointZ.from_wkb() == {:ok, %MultiPointZ{}}
+    end
+
+    test "returns an empty MultiPointZ ndr-binary" do
+      wkb = """
+      01\
+      04000080\
+      00000000\
+      """
+
+      assert wkb |> Hex.to_binary() |> MultiPointZ.from_wkb() == {:ok, %MultiPointZ{}}
     end
   end
 
-  describe "from_wkb!/1" do
-    test "returns a MultiPointZ (xdr)" do
+  describe "from_wkb!/2" do
+    test "returns a MultiPointZ from xdr-string" do
       wkb = """
       00\
       80000004\
@@ -167,10 +214,38 @@ defmodule Geometry.MultiPointZTest do
           ])
       }
 
-      assert MultiPointZ.from_wkb!(wkb) == multi_point
+      assert MultiPointZ.from_wkb!(wkb, :hex) == multi_point
     end
 
-    test "returns a MultiPointZ with srid (ndr)" do
+    test "returns a MultiPointZ from xdr-binary" do
+      wkb = """
+      00\
+      80000004\
+      00000003\
+      00\
+      80000001\
+      403E0000000000004024000000000000402E000000000000\
+      00\
+      80000001\
+      404400000000000040440000000000004034000000000000\
+      00\
+      80000001\
+      40340000000000004044000000000000402E000000000000\
+      """
+
+      multi_point = %MultiPointZ{
+        points:
+          MapSet.new([
+            [30.0, 10.0, 15.0],
+            [20.0, 40.0, 15.0],
+            [40.0, 40.0, 20.0]
+          ])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPointZ.from_wkb!() == multi_point
+    end
+
+    test "returns a MultiPointZ with srid from ndr-string" do
       wkb = """
       01\
       040000A0\
@@ -185,11 +260,37 @@ defmodule Geometry.MultiPointZTest do
         points: MapSet.new([[30.0, 10.0, 15.0]])
       }
 
-      assert MultiPointZ.from_wkb!(wkb) == {multi_point, 9999}
+      assert MultiPointZ.from_wkb!(wkb, :hex) == {multi_point, 9999}
     end
 
-    test "raises an error for an invalid WKB" do
-      message = "expected endian flag '00' or '01', got 'F0', at position 0"
+    test "returns a MultiPointZ with srid from ndr-binary" do
+      wkb = """
+      01\
+      040000A0\
+      0F270000\
+      01000000\
+      01\
+      01000080\
+      0000000000003E4000000000000024400000000000002E40\
+      """
+
+      multi_point = %MultiPointZ{
+        points: MapSet.new([[30.0, 10.0, 15.0]])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPointZ.from_wkb!() == {multi_point, 9999}
+    end
+
+    test "raises an error for an invalid WKB string" do
+      message = ~s(expected endian flag "00" or "01", got "F0", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        MultiPointZ.from_wkb!("F00", :hex)
+      end
+    end
+
+    test "raises an error for an invalid WKB binary" do
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         MultiPointZ.from_wkb!("F00")
@@ -198,7 +299,7 @@ defmodule Geometry.MultiPointZTest do
   end
 
   describe "to_wkb/1" do
-    test "returns WKB for MultiPointZ (xdr)" do
+    test "returns WKB as xdr-binary for MultiPointZ" do
       wkb_start = "0080000004000000030080000001"
 
       multi_point = %MultiPointZ{
@@ -213,11 +314,30 @@ defmodule Geometry.MultiPointZTest do
       # Because the order is not guaranteed we test here this way.
 
       assert result = MultiPointZ.to_wkb(multi_point, endian: :xdr)
-      assert String.starts_with?(result, wkb_start)
+      assert String.starts_with?(result, Hex.to_binary(wkb_start))
       assert MultiPointZ.from_wkb!(result) == multi_point
     end
 
-    test "returns WKB for MultiPointZ with srid (ndr)" do
+    test "returns WKB as xdr-string for MultiPointZ" do
+      wkb_start = "0080000004000000030080000001"
+
+      multi_point = %MultiPointZ{
+        points:
+          MapSet.new([
+            [30.0, 10.0, 15.0],
+            [20.0, 40.0, 15.0],
+            [40.0, 40.0, 20.0]
+          ])
+      }
+
+      # Because the order is not guaranteed we test here this way.
+
+      assert result = MultiPointZ.to_wkb(multi_point, endian: :xdr, mode: :hex)
+      assert String.starts_with?(result, wkb_start)
+      assert MultiPointZ.from_wkb!(result, :hex) == multi_point
+    end
+
+    test "returns WKB as ndr-binary for MultiPointZ with srid" do
       wkb = """
       01\
       040000A0\
@@ -232,27 +352,103 @@ defmodule Geometry.MultiPointZTest do
         points: MapSet.new([[30.0, 10.0, 15.0]])
       }
 
-      assert MultiPointZ.to_wkb(multi_point, srid: 9999, endian: :ndr) == wkb
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999, endian: :ndr) == Hex.to_binary(wkb)
     end
 
-    test "returns a WKB for an empty MultiPointZ (xdr)" do
+    test "returns WKB as ndr-string for MultiPointZ with srid" do
+      wkb = """
+      01\
+      040000A0\
+      0F270000\
+      01000000\
+      01\
+      01000080\
+      0000000000003E4000000000000024400000000000002E40\
+      """
+
+      multi_point = %MultiPointZ{
+        points: MapSet.new([[30.0, 10.0, 15.0]])
+      }
+
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns a WKB as xdr-binary for an empty MultiPointZ" do
       wkb = """
       00\
       80000004\
       00000000\
       """
 
-      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :xdr) == wkb
+      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :xdr) == Hex.to_binary(wkb)
     end
 
-    test "returns a WKB fro an empty MultiPointZ (ndr)" do
+    test "returns a WKB as xdr-string for an empty MultiPointZ" do
+      wkb = """
+      00\
+      80000004\
+      00000000\
+      """
+
+      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :xdr, mode: :hex) == wkb
+    end
+
+    test "returns a WKB as ndr-binary from an empty MultiPointZ" do
       wkb = """
       01\
       04000080\
       00000000\
       """
 
-      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :ndr) == wkb
+      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :ndr) == Hex.to_binary(wkb)
+    end
+
+    test "returns a WKB as ndr-string from an empty MultiPointZ" do
+      wkb = """
+      01\
+      04000080\
+      00000000\
+      """
+
+      assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB xdr-string from a MultiPointZ with SRID" do
+      wkb = """
+      00\
+      A0000004\
+      0000270F\
+      00000001\
+      00\
+      80000001\
+      C051C4217D2849CB404524D8EC95BFF040265FB15B573EAB\
+      """
+
+      multi_point =
+        MultiPointZ.new([
+          PointZ.new(-71.064544, 42.28787, 11.1869)
+        ])
+
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999, mode: :hex) == wkb
+    end
+
+    test "returns WKB xdr-binary from a MultiPointZ with SRID" do
+      wkb = """
+      00\
+      A0000004\
+      0000270F\
+      00000001\
+      00\
+      80000001\
+      C051C4217D2849CB404524D8EC95BFF040265FB15B573EAB\
+      """
+
+      multi_point =
+        MultiPointZ.new([
+          PointZ.new(-71.064544, 42.28787, 11.1869)
+        ])
+
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999) == Hex.to_binary(wkb)
     end
   end
 
@@ -280,7 +476,7 @@ defmodule Geometry.MultiPointZTest do
     end
 
     test "raises an error for an invalid WKT" do
-      message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Goofy'"
+      message = ~s(expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: "Goofy")
 
       assert_raise Geometry.Error, message, fn ->
         MultiPointZ.from_wkt!("Goofy")

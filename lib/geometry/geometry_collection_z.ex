@@ -233,6 +233,9 @@ defmodule Geometry.GeometryCollectionZ do
   The option `endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:ndr`.
 
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
+
   An example of a simpler geometry can be found in the description for the
   `Geometry.PointZ.to_wkb/1` function.
   """
@@ -240,13 +243,14 @@ defmodule Geometry.GeometryCollectionZ do
         when opts: [endian: Geometry.endian(), srid: Geometry.srid()]
   def to_wkb(%GeometryCollectionZ{geometries: geometries}, opts \\ []) do
     endian = Keyword.get(opts, :endian, Geometry.default_endian())
+    mode = Keyword.get(opts, :mode, Geometry.default_mode())
     srid = Keyword.get(opts, :srid)
 
     <<
-      WKB.byte_order(endian)::binary(),
-      wkb_code(endian, not is_nil(srid))::binary(),
-      WKB.srid(srid, endian)::binary(),
-      to_wkb_geometries(geometries, endian)::binary()
+      WKB.byte_order(endian, mode)::binary(),
+      wkb_code(endian, not is_nil(srid), mode)::binary(),
+      WKB.srid(srid, endian, mode)::binary(),
+      to_wkb_geometries(geometries, endian, mode)::binary()
     >>
   end
 
@@ -257,18 +261,18 @@ defmodule Geometry.GeometryCollectionZ do
   If the geometry contains a SRID the id is added to the tuple.
 
   An example of a simpler geometry can be found in the description for the
-  `Geometry.PointZ.from_wkb/1` function.
+  `Geometry.PointZ.from_wkb/2` function.
   """
-  @spec from_wkb(Geometry.wkb()) ::
+  @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
           {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
-  def from_wkb(wkb), do: WKB.to_geometry(wkb, GeometryCollectionZ)
+  def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, GeometryCollectionZ)
 
   @doc """
-  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
   """
-  @spec from_wkb!(Geometry.wkb()) :: t() | {t(), Geometry.srid()}
-  def from_wkb!(wkb) do
-    case WKB.to_geometry(wkb, GeometryCollectionZ) do
+  @spec from_wkb!(Geometry.wkb(), Geometry.mode()) :: t() | {t(), Geometry.srid()}
+  def from_wkb!(wkb, mode \\ :binary) do
+    case WKB.to_geometry(wkb, mode, GeometryCollectionZ) do
       {:ok, geometry} -> geometry
       {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
@@ -352,20 +356,29 @@ defmodule Geometry.GeometryCollectionZ do
       end)::binary(), ")">>
   end
 
-  @compile {:inline, to_wkb_geometries: 2}
-  defp to_wkb_geometries(geometries, endian) do
-    Enum.reduce(geometries, WKB.length(geometries, endian), fn %module{} = geometry, acc ->
-      <<acc::binary(), module.to_wkb(geometry, endian: endian)::binary()>>
+  @compile {:inline, to_wkb_geometries: 3}
+  defp to_wkb_geometries(geometries, endian, mode) do
+    Enum.reduce(geometries, WKB.length(geometries, endian, mode), fn %module{} = geometry, acc ->
+      <<acc::binary(), module.to_wkb(geometry, endian: endian, mode: mode)::binary()>>
     end)
   end
 
-  @compile {:inline, wkb_code: 2}
-  defp wkb_code(endian, srid?) do
+  @compile {:inline, wkb_code: 3}
+  defp wkb_code(endian, srid?, :hex) do
     case {endian, srid?} do
       {:xdr, false} -> "80000007"
       {:ndr, false} -> "07000080"
       {:xdr, true} -> "A0000007"
       {:ndr, true} -> "070000A0"
+    end
+  end
+
+  defp wkb_code(endian, srid?, :binary) do
+    case {endian, srid?} do
+      {:xdr, false} -> <<0x80000007::big-integer-size(32)>>
+      {:ndr, false} -> <<0x80000007::little-integer-size(32)>>
+      {:xdr, true} -> <<0xA0000007::big-integer-size(32)>>
+      {:ndr, true} -> <<0xA0000007::little-integer-size(32)>>
     end
   end
 

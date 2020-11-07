@@ -180,6 +180,8 @@ defmodule Geometry do
   """
   @type endian :: :ndr | :xdr
 
+  @type mode :: :binary | :hex
+
   @doc """
   Returns true if a geometry is empty.
 
@@ -199,22 +201,26 @@ defmodule Geometry do
   end
 
   @doc """
-  Returns the WKB representation of a geometry. An optional `:srid` can be set
-  in the options.
+  Returns the WKB representation of a geometry.
 
-  The option `endian` indicates whether `:xdr` big endian or `:ndr` little
+  With option `:srid` an EWKB representation with the SRID is returned.
+
+  The option `:endian` indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:xdr`.
+
+  The `:mode` determines whether a hex-string or binary is returned. The default
+  is `:binary`.
 
   ## Examples
 
-      iex> Geometry.to_wkb(PointZ.new(1, 2, 3), endian: :ndr)
+      iex> Geometry.to_wkb(PointZ.new(1, 2, 3), endian: :ndr, mode: :hex)
       "0101000080000000000000F03F00000000000000400000000000000840"
 
-      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711)
+      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711) |> Hex.from_binary()
       "0020000001000012673FF00000000000004000000000000000"
   """
   @spec to_wkb(t(), opts) :: String.t()
-        when opts: [endian: endian(), srid: srid()]
+        when opts: [endian: endian(), srid: srid(), mode: mode()]
   def to_wkb(%module{} = geometry, opts \\ []) when module in @geometries do
     module.to_wkb(geometry, opts)
   end
@@ -225,23 +231,26 @@ defmodule Geometry do
 
   If WKB contains an SRID the tuple is extended by the id.
 
+  The optional second argument determines if a `:hex`-string or a `:binary`
+  input is expected. The default is `:binary`.
+
   ## Examples
 
-      iex> Geometry.from_wkb("0101000080000000000000F03F00000000000000400000000000000840")
+      iex> Geometry.from_wkb("0101000080000000000000F03F00000000000000400000000000000840", :hex)
       {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
 
-      iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000")
+      iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000", :hex)
       {:ok, %Point{coordinate: [1.0, 2.0]}, 4711}
   """
-  @spec from_wkb(wkb()) :: {:ok, t()} | {:ok, t(), srid()} | wkb_error
-  def from_wkb(wkb), do: WKB.Parser.parse(wkb)
+  @spec from_wkb(wkb(), mode()) :: {:ok, t()} | {:ok, t(), srid()} | wkb_error
+  def from_wkb(wkb, mode \\ :binary), do: WKB.Parser.parse(wkb, mode)
 
   @doc """
-  The same as `from_wkb/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
   """
-  @spec from_wkb!(wkb()) :: t() | {t(), srid()}
-  def from_wkb!(wkb) do
-    case WKB.Parser.parse(wkb) do
+  @spec from_wkb!(wkb(), mode()) :: t() | {t(), srid()}
+  def from_wkb!(wkb, mode \\ :binary) do
+    case WKB.Parser.parse(wkb, mode) do
       {:ok, geometry} -> geometry
       {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
@@ -355,4 +364,8 @@ defmodule Geometry do
   @doc false
   @spec default_endian :: endian()
   def default_endian, do: :xdr
+
+  @doc false
+  @spec default_mode :: mode()
+  def default_mode, do: :binary
 end
