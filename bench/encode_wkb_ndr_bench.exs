@@ -25,7 +25,7 @@ defmodule EncodeWkbNdrBench do
   })
 
   job geometry({geometry, _geo}) do
-    Geometry.to_wkb(geometry, endian: @endian)
+    Geometry.to_wkb(geometry, endian: @endian, mode: :hex)
   end
 
   job geo({_geometry, geo}) do

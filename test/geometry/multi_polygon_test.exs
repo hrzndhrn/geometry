@@ -5,6 +5,7 @@ defmodule Geometry.MultiPolygonTest do
   use ExUnit.Case, async: true
 
   alias Geometry.{
+    Hex,
     LineString,
     MultiPolygon,
     Point,
@@ -13,10 +14,9 @@ defmodule Geometry.MultiPolygonTest do
 
   doctest Geometry.MultiPolygon, import: true
 
-  @moduletag :multi_plygon
+  @moduletag :multi_polygon
 
   describe "to_geo_json/1" do
-    @tag :new
     test "returns geo-json-term" do
       geo_json =
         [
@@ -56,7 +56,6 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_geo_json!/1" do
-    @tag :new
     test "returns MultiPolygon" do
       geo_json =
         Jason.decode!("""
@@ -102,7 +101,6 @@ defmodule Geometry.MultiPolygonTest do
       assert MultiPolygon.from_geo_json!(geo_json) == multi_polygon
     end
 
-    @tag :new
     test "raises an error for an invalid geo-json-term" do
       message = "type not found"
 
@@ -113,7 +111,6 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_wkt/1" do
-    @tag :new
     test "returns MultiPolygon" do
       wkt = """
       MULTIPOLYGON (
@@ -161,7 +158,6 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "from_wkt!/1" do
-    @tag :new
     test "returns MultiPolygon" do
       wkt = """
        MULTIPOLYGON (
@@ -207,7 +203,6 @@ defmodule Geometry.MultiPolygonTest do
       assert MultiPolygon.from_wkt!(wkt) == multi_polygon
     end
 
-    @tag :new
     test "returns MultiPolygon with SRID" do
       wkt = """
        SRID=1234;MULTIPOLYGON (
@@ -253,9 +248,8 @@ defmodule Geometry.MultiPolygonTest do
       assert MultiPolygon.from_wkt!(wkt) == {multi_polygon, 1234}
     end
 
-    @tag :new
     test "raises an exception for invalid WKT" do
-      message = "expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: 'Pluto'"
+      message = ~s(expected 'SRID', 'Geometry' or 'SRID;Geometry' at 1:0, got: "Pluto")
 
       assert_raise Geometry.Error, message, fn ->
         MultiPolygon.from_wkt!("Pluto")
@@ -264,7 +258,6 @@ defmodule Geometry.MultiPolygonTest do
   end
 
   describe "to_wkt/2" do
-    @tag :new
     test "returns wkt-string" do
       multi_polygon = %MultiPolygon{
         polygons:
@@ -318,9 +311,8 @@ defmodule Geometry.MultiPolygonTest do
     end
   end
 
-  describe "from_wkb/1" do
-    @tag :new
-    test "returns a MultiPolygon (ndr)" do
+  describe "from_wkb/2" do
+    test "returns a MultiPolygon from ndr-string" do
       wkb = """
       01\
       06000000\
@@ -376,13 +368,71 @@ defmodule Geometry.MultiPolygonTest do
           ])
       }
 
-      assert MultiPolygon.from_wkb(wkb) == {:ok, multi_polygon}
+      assert MultiPolygon.from_wkb(wkb, :hex) == {:ok, multi_polygon}
+    end
+
+    test "returns a MultiPolygon from ndr-binary" do
+      wkb = """
+      01\
+      06000000\
+      02000000\
+      01\
+      03000000\
+      02000000\
+      04000000\
+      000000000000F03F000000000000F03F\
+      0000000000002240000000000000F03F\
+      00000000000022400000000000002040\
+      000000000000F03F000000000000F03F\
+      04000000\
+      00000000000018400000000000000040\
+      0000000000001C400000000000000040\
+      0000000000001C400000000000000840\
+      00000000000018400000000000000040\
+      01\
+      03000000\
+      01000000\
+      04000000\
+      00000000000018400000000000000040\
+      00000000000020400000000000000040\
+      00000000000020400000000000001040\
+      00000000000018400000000000000040\
+      """
+
+      multi_polygon = %MultiPolygon{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0],
+                [9.0, 1.0],
+                [9.0, 8.0],
+                [1.0, 1.0]
+              ],
+              [
+                [6.0, 2.0],
+                [7.0, 2.0],
+                [7.0, 3.0],
+                [6.0, 2.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0],
+                [8.0, 2.0],
+                [8.0, 4.0],
+                [6.0, 2.0]
+              ]
+            ]
+          ])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPolygon.from_wkb() == {:ok, multi_polygon}
     end
   end
 
   describe "to_wkb/2" do
-    @tag :new
-    test "returns WKB for Polygon" do
+    test "returns WKB ndr-binary for MultiPolygon" do
       wkb_start = "0106000000020000000103000000"
 
       multi_polygon = %MultiPolygon{
@@ -414,14 +464,94 @@ defmodule Geometry.MultiPolygonTest do
       }
 
       assert result = MultiPolygon.to_wkb(multi_polygon, endian: :ndr)
-      assert String.starts_with?(result, wkb_start)
+      assert String.starts_with?(result, Hex.to_binary(wkb_start))
       assert MultiPolygon.from_wkb!(result) == multi_polygon
+    end
+
+    test "returns WKB as ndr-string for MultiPolygon" do
+      wkb_start = "0106000000020000000103000000"
+
+      multi_polygon = %MultiPolygon{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0],
+                [9.0, 1.0],
+                [9.0, 8.0],
+                [1.0, 1.0]
+              ],
+              [
+                [6.0, 2.0],
+                [7.0, 2.0],
+                [7.0, 3.0],
+                [6.0, 2.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0],
+                [8.0, 2.0],
+                [8.0, 4.0],
+                [6.0, 2.0]
+              ]
+            ]
+          ])
+      }
+
+      assert result = MultiPolygon.to_wkb(multi_polygon, endian: :ndr, mode: :hex)
+      assert String.starts_with?(result, wkb_start)
+      assert MultiPolygon.from_wkb!(result, :hex) == multi_polygon
+    end
+
+    test "returns WKB as xdr-string for an empty MultiPolygon" do
+      wkb = "000000000600000000"
+
+      assert MultiPolygon.to_wkb(MultiPolygon.new(), mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for an empty MultiPolygon" do
+      wkb = "000000000600000000"
+
+      assert MultiPolygon.to_wkb(MultiPolygon.new()) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string for an empty MultiPolygon with SRID" do
+      wkb = "00200000060000023400000000"
+
+      assert MultiPolygon.to_wkb(MultiPolygon.new(), srid: 564, mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for an empty MultiPolygon with SRID" do
+      wkb = "00200000060000023400000000"
+
+      assert MultiPolygon.to_wkb(MultiPolygon.new(), srid: 564) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string for an empty MultiPolygon with SRID" do
+      wkb = "01060000200903000000000000"
+
+      assert MultiPolygon.to_wkb(
+               MultiPolygon.new(),
+               endian: :ndr,
+               srid: 777,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary for an empty MultiPolygon with SRID" do
+      wkb = "01060000200903000000000000"
+
+      assert MultiPolygon.to_wkb(
+               MultiPolygon.new(),
+               endian: :ndr,
+               srid: 777
+             ) == Hex.to_binary(wkb)
     end
   end
 
-  describe "from_wkb!/1" do
-    @tag :new
-    test "returns a MultiPolygon (ndr)" do
+  describe "from_wkb!/2" do
+    test "returns a MultiPolygon from ndr-string" do
       wkb = """
       01\
       06000000\
@@ -477,11 +607,78 @@ defmodule Geometry.MultiPolygonTest do
           ])
       }
 
-      assert MultiPolygon.from_wkb!(wkb) == multi_polygon
+      assert MultiPolygon.from_wkb!(wkb, :hex) == multi_polygon
     end
 
-    test "raises an error for an invalid WKB" do
-      message = "expected endian flag '00' or '01', at position 0"
+    test "returns a MultiPolygon from ndr-binary" do
+      wkb = """
+      01\
+      06000000\
+      02000000\
+      01\
+      03000000\
+      02000000\
+      04000000\
+      000000000000F03F000000000000F03F\
+      0000000000002240000000000000F03F\
+      00000000000022400000000000002040\
+      000000000000F03F000000000000F03F\
+      04000000\
+      00000000000018400000000000000040\
+      0000000000001C400000000000000040\
+      0000000000001C400000000000000840\
+      00000000000018400000000000000040\
+      01\
+      03000000\
+      01000000\
+      04000000\
+      00000000000018400000000000000040\
+      00000000000020400000000000000040\
+      00000000000020400000000000001040\
+      00000000000018400000000000000040\
+      """
+
+      multi_polygon = %MultiPolygon{
+        polygons:
+          MapSet.new([
+            [
+              [
+                [1.0, 1.0],
+                [9.0, 1.0],
+                [9.0, 8.0],
+                [1.0, 1.0]
+              ],
+              [
+                [6.0, 2.0],
+                [7.0, 2.0],
+                [7.0, 3.0],
+                [6.0, 2.0]
+              ]
+            ],
+            [
+              [
+                [6.0, 2.0],
+                [8.0, 2.0],
+                [8.0, 4.0],
+                [6.0, 2.0]
+              ]
+            ]
+          ])
+      }
+
+      assert wkb |> Hex.to_binary() |> MultiPolygon.from_wkb!() == multi_polygon
+    end
+
+    test "raises an error for an invalid WKB string" do
+      message = ~s(expected endian flag "00" or "01", at position 0)
+
+      assert_raise Geometry.Error, message, fn ->
+        MultiPolygon.from_wkb!("", :hex)
+      end
+    end
+
+    test "raises an error for an invalid WKB binary" do
+      message = "expected endian flag, at position 0"
 
       assert_raise Geometry.Error, message, fn ->
         MultiPolygon.from_wkb!("")

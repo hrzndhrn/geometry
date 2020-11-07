@@ -659,7 +659,6 @@ defmodule Geometry.WKT.ParserTest do
                {:error, "expected Point data", "(1 2", {3, 10}, 10}
     end
 
-    @tag :only
     test "Mixed collection" do
       wkt = """
       GeometryCollection ZM (

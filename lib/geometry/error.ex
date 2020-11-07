@@ -9,7 +9,7 @@ defmodule Geometry.Error do
 
   @max_rest 9
 
-  @impl true
+  @impl Exception
   def exception({:error, message, rest, {line, offset}, byte_offset}) do
     col = byte_offset - offset
 
@@ -19,7 +19,7 @@ defmodule Geometry.Error do
         false -> rest
       end
 
-    %Error{message: "#{message} at #{line}:#{col}, got: '#{data}'"}
+    %Error{message: "#{message} at #{line}:#{col}, got: #{inspect(data)}"}
   end
 
   def exception({:error, message, _rest, offset}) do
