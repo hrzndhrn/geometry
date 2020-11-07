@@ -283,6 +283,62 @@ defmodule Geometry.PolygonZMTest do
 
       assert PolygonZM.to_wkb(polygon, srid: 333, endian: :ndr, mode: :hex) == wkb
     end
+
+    test "returns WKB xdr-string from PolygonZM with SRID" do
+      wkb = """
+      00\
+      E0000003\
+      00001267\
+      00000001\
+      00000004\
+      403E000000000000402400000000000040140000000000004000000000000000\
+      4044000000000000404400000000000040100000000000004020000000000000\
+      4034000000000000404400000000000040200000000000004020000000000000\
+      403E000000000000402400000000000040140000000000004000000000000000\
+      """
+
+      polygon =
+        PolygonZM.new([
+          LineStringZM.new([
+            PointZM.new(30, 10, 5, 2),
+            PointZM.new(40, 40, 4, 8),
+            PointZM.new(20, 40, 8, 8),
+            PointZM.new(30, 10, 5, 2)
+          ])
+        ])
+
+      srid = 4711
+
+      assert PolygonZM.to_wkb(polygon, srid: srid, mode: :hex) == wkb
+    end
+
+    test "returns WKB xdr-binary from PolygonZM with SRID" do
+      wkb = """
+      00\
+      E0000003\
+      00001267\
+      00000001\
+      00000004\
+      403E000000000000402400000000000040140000000000004000000000000000\
+      4044000000000000404400000000000040100000000000004020000000000000\
+      4034000000000000404400000000000040200000000000004020000000000000\
+      403E000000000000402400000000000040140000000000004000000000000000\
+      """
+
+      polygon =
+        PolygonZM.new([
+          LineStringZM.new([
+            PointZM.new(30, 10, 5, 2),
+            PointZM.new(40, 40, 4, 8),
+            PointZM.new(20, 40, 8, 8),
+            PointZM.new(30, 10, 5, 2)
+          ])
+        ])
+
+      srid = 4711
+
+      assert PolygonZM.to_wkb(polygon, srid: srid) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb!/2" do

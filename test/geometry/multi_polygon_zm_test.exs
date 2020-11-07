@@ -500,6 +500,51 @@ defmodule Geometry.MultiPolygonZMTest do
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygonZM.from_wkb!(result, :hex) == multi_polygon
     end
+
+    test "returns WKB as xdr-string for an empty MultiPolygonZM" do
+      wkb = "00C000000600000000"
+
+      assert MultiPolygonZM.to_wkb(MultiPolygonZM.new(), mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for an empty MultiPolygonZM" do
+      wkb = "00C000000600000000"
+
+      assert MultiPolygonZM.to_wkb(MultiPolygonZM.new()) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string for an empty MultiPolygonZM with SRID" do
+      wkb = "00E00000060000023400000000"
+
+      assert MultiPolygonZM.to_wkb(MultiPolygonZM.new(), srid: 564, mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for an empty MultiPolygonZM with SRID" do
+      wkb = "00E00000060000023400000000"
+
+      assert MultiPolygonZM.to_wkb(MultiPolygonZM.new(), srid: 564) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string for an empty MultiPolygonZM with SRID" do
+      wkb = "01060000E00903000000000000"
+
+      assert MultiPolygonZM.to_wkb(
+               MultiPolygonZM.new(),
+               endian: :ndr,
+               srid: 777,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary for an empty MultiPolygonZM with SRID" do
+      wkb = "01060000E00903000000000000"
+
+      assert MultiPolygonZM.to_wkb(
+               MultiPolygonZM.new(),
+               endian: :ndr,
+               srid: 777
+             ) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb!/2" do

@@ -286,6 +286,62 @@ defmodule Geometry.PolygonTest do
 
       assert Polygon.to_wkb(polygon, srid: 333, endian: :ndr, mode: :hex) == wkb
     end
+
+    test "returns WKB xdr-string from Polygon with SRID" do
+      wkb = """
+      00\
+      20000003\
+      00001267\
+      00000001\
+      00000004\
+      403E0000000000004024000000000000\
+      40440000000000004044000000000000\
+      40340000000000004044000000000000\
+      403E0000000000004024000000000000\
+      """
+
+      polygon =
+        Polygon.new([
+          LineString.new([
+            Point.new(30, 10),
+            Point.new(40, 40),
+            Point.new(20, 40),
+            Point.new(30, 10)
+          ])
+        ])
+
+      srid = 4711
+
+      assert Polygon.to_wkb(polygon, srid: srid, mode: :hex) == wkb
+    end
+
+    test "returns WKB xdr-binary from Polygon with SRID" do
+      wkb = """
+      00\
+      20000003\
+      00001267\
+      00000001\
+      00000004\
+      403E0000000000004024000000000000\
+      40440000000000004044000000000000\
+      40340000000000004044000000000000\
+      403E0000000000004024000000000000\
+      """
+
+      polygon =
+        Polygon.new([
+          LineString.new([
+            Point.new(30, 10),
+            Point.new(40, 40),
+            Point.new(20, 40),
+            Point.new(30, 10)
+          ])
+        ])
+
+      srid = 4711
+
+      assert Polygon.to_wkb(polygon, srid: srid) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb!/2" do

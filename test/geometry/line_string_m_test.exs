@@ -448,5 +448,47 @@ defmodule Geometry.LineStringMTest do
                srid: 77
              ) == Hex.to_binary(wkb)
     end
+
+    test "returns WKB as ndr-string from LineStringM with SRID" do
+      wkb = """
+      01\
+      02000060\
+      67120000\
+      02000000\
+      CB49287D21C451C0F0BF95ECD82445409A9999999999F13F\
+      E5D022DBF93E24C0CDCCCCCCCC0C24409A99999999990140\
+      """
+
+      line_string =
+        LineStringM.new([
+          PointM.new(-71.064544, 42.28787, 1.1),
+          PointM.new(-10.123, 10.025, 2.2)
+        ])
+
+      srid = 4711
+
+      assert LineStringM.to_wkb(line_string, srid: srid, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB as ndr-binary from LineStringM with SRID" do
+      wkb = """
+      01\
+      02000060\
+      67120000\
+      02000000\
+      CB49287D21C451C0F0BF95ECD82445409A9999999999F13F\
+      E5D022DBF93E24C0CDCCCCCCCC0C24409A99999999990140\
+      """
+
+      line_string =
+        LineStringM.new([
+          PointM.new(-71.064544, 42.28787, 1.1),
+          PointM.new(-10.123, 10.025, 2.2)
+        ])
+
+      srid = 4711
+
+      assert LineStringM.to_wkb(line_string, srid: srid, endian: :ndr) == Hex.to_binary(wkb)
+    end
   end
 end

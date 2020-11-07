@@ -412,6 +412,44 @@ defmodule Geometry.MultiPointZTest do
 
       assert MultiPointZ.to_wkb(%MultiPointZ{}, endian: :ndr, mode: :hex) == wkb
     end
+
+    test "returns WKB xdr-string from a MultiPointZ with SRID" do
+      wkb = """
+      00\
+      A0000004\
+      0000270F\
+      00000001\
+      00\
+      80000001\
+      C051C4217D2849CB404524D8EC95BFF040265FB15B573EAB\
+      """
+
+      multi_point =
+        MultiPointZ.new([
+          PointZ.new(-71.064544, 42.28787, 11.1869)
+        ])
+
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999, mode: :hex) == wkb
+    end
+
+    test "returns WKB xdr-binary from a MultiPointZ with SRID" do
+      wkb = """
+      00\
+      A0000004\
+      0000270F\
+      00000001\
+      00\
+      80000001\
+      C051C4217D2849CB404524D8EC95BFF040265FB15B573EAB\
+      """
+
+      multi_point =
+        MultiPointZ.new([
+          PointZ.new(-71.064544, 42.28787, 11.1869)
+        ])
+
+      assert MultiPointZ.to_wkb(multi_point, srid: 9999) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkt!/1" do

@@ -193,7 +193,7 @@ defmodule Geometry.WKB.Parser do
     {:ok, rest, offset + 1}
   end
 
-  defp check_endian(rest, offset, endian, :binary) do
+  defp check_endian(rest, offset, endian, _mode) do
     {:error, "expected endian #{inspect(endian)}", rest, offset}
   end
 

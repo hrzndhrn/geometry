@@ -503,6 +503,51 @@ defmodule Geometry.MultiPolygonMTest do
       assert String.starts_with?(result, wkb_start)
       assert MultiPolygonM.from_wkb!(result, :hex) == multi_polygon
     end
+
+    test "returns WKB as xdr-string for an empty MultiPolygonM" do
+      wkb = "004000000600000000"
+
+      assert MultiPolygonM.to_wkb(MultiPolygonM.new(), mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for an empty MultiPolygonM" do
+      wkb = "004000000600000000"
+
+      assert MultiPolygonM.to_wkb(MultiPolygonM.new()) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string for an empty MultiPolygonM with SRID" do
+      wkb = "00600000060000023400000000"
+
+      assert MultiPolygonM.to_wkb(MultiPolygonM.new(), srid: 564, mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for an empty MultiPolygonM with SRID" do
+      wkb = "00600000060000023400000000"
+
+      assert MultiPolygonM.to_wkb(MultiPolygonM.new(), srid: 564) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string for an empty MultiPolygonM with SRID" do
+      wkb = "01060000600903000000000000"
+
+      assert MultiPolygonM.to_wkb(
+               MultiPolygonM.new(),
+               endian: :ndr,
+               srid: 777,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary for an empty MultiPolygonM with SRID" do
+      wkb = "01060000600903000000000000"
+
+      assert MultiPolygonM.to_wkb(
+               MultiPolygonM.new(),
+               endian: :ndr,
+               srid: 777
+             ) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb!/2" do

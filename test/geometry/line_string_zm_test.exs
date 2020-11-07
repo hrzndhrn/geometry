@@ -447,5 +447,47 @@ defmodule Geometry.LineStringZMTest do
                srid: 77
              ) == Hex.to_binary(wkb)
     end
+
+    test "returns WKB as ndr-string from LineStringZM with SRID" do
+      wkb = """
+      01\
+      020000E0\
+      67120000\
+      02000000\
+      CB49287D21C451C0F0BF95ECD824454066666666666614409A9999999999F13F\
+      E5D022DBF93E24C0CDCCCCCCCC0C2440CDCCCCCCCCCC21409A99999999990140\
+      """
+
+      line_string =
+        LineStringZM.new([
+          PointZM.new(-71.064544, 42.28787, 5.1, 1.1),
+          PointZM.new(-10.123, 10.025, 8.9, 2.2)
+        ])
+
+      srid = 4711
+
+      assert LineStringZM.to_wkb(line_string, srid: srid, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB as ndr-binary from LineStringZM with SRID" do
+      wkb = """
+      01\
+      020000E0\
+      67120000\
+      02000000\
+      CB49287D21C451C0F0BF95ECD824454066666666666614409A9999999999F13F\
+      E5D022DBF93E24C0CDCCCCCCCC0C2440CDCCCCCCCCCC21409A99999999990140\
+      """
+
+      line_string =
+        LineStringZM.new([
+          PointZM.new(-71.064544, 42.28787, 5.1, 1.1),
+          PointZM.new(-10.123, 10.025, 8.9, 2.2)
+        ])
+
+      srid = 4711
+
+      assert LineStringZM.to_wkb(line_string, srid: srid, endian: :ndr) == Hex.to_binary(wkb)
+    end
   end
 end

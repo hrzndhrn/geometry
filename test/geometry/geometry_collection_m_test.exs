@@ -74,6 +74,58 @@ defmodule Geometry.GeometryCollectionMTest do
       assert String.starts_with?(result, wkb)
       assert GeometryCollectionM.from_wkb!(result, :hex) == collection
     end
+
+    test "returns WKB as xdr-string for a GeometryCollectionM" do
+      wkb = "004000000700000000"
+
+      assert GeometryCollectionM.to_wkb(GeometryCollectionM.new(), mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary for a GeometryCollectionM" do
+      wkb = "004000000700000000"
+
+      assert GeometryCollectionM.to_wkb(GeometryCollectionM.new()) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string for a GeometryCollectionM with SRID" do
+      wkb = "01070000607B00000000000000"
+
+      assert GeometryCollectionM.to_wkb(
+               GeometryCollectionM.new(),
+               endian: :ndr,
+               srid: 123,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as ndr-binary for a GeometryCollectionM with SRID" do
+      wkb = "01070000607B00000000000000"
+
+      assert GeometryCollectionM.to_wkb(
+               GeometryCollectionM.new(),
+               endian: :ndr,
+               srid: 123
+             ) == Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as xdr-string for a GeometryCollectionM with SRID" do
+      wkb = "00600000070000014100000000"
+
+      assert GeometryCollectionM.to_wkb(
+               GeometryCollectionM.new(),
+               srid: 321,
+               mode: :hex
+             ) == wkb
+    end
+
+    test "returns WKB as xdr-binary for a GeometryCollectionM with SRID" do
+      wkb = "00600000070000014100000000"
+
+      assert GeometryCollectionM.to_wkb(
+               GeometryCollectionM.new(),
+               srid: 321
+             ) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb!/2" do

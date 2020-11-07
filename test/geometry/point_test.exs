@@ -222,6 +222,16 @@ defmodule Geometry.PointTest do
                mode: :hex
              ) == wkb
     end
+
+    test "returns ndr-binary for Point with SRID" do
+      wkb = "01010000204D0100009A9999999999F13F9A99999999990140"
+
+      assert Point.to_wkb(
+               Point.new(1.1, 2.2),
+               endian: :ndr,
+               srid: 333
+             ) == Hex.to_binary(wkb)
+    end
   end
 
   describe "to_geo_json/1:" do

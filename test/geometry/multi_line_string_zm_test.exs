@@ -215,6 +215,161 @@ defmodule Geometry.MultiLineStringZMTest do
       assert String.starts_with?(result, wkb_start)
       assert MultiLineStringZM.from_wkb!(result, :hex) == multi_line_string
     end
+
+    test "returns WKB as xdr-string from a MultiLineStringZM with an SRID" do
+      wkb = """
+      00\
+      E0000005\
+      0000028E\
+      00000001\
+      00\
+      C0000002\
+      00000002\
+      3FF199999999999A3FF33333333333333FF4CCCCCCCCCCCD3FF6666666666666\
+      3FF80000000000003FF999999999999A3FFB3333333333333FFCCCCCCCCCCCCD\
+      """
+
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(1.5, 1.6, 1.7, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringZM.to_wkb(multi_line_string, srid: 654, mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary from a MultiLineStringZM with an SRID" do
+      wkb = """
+      00\
+      E0000005\
+      0000028E\
+      00000001\
+      00\
+      C0000002\
+      00000002\
+      3FF199999999999A3FF33333333333333FF4CCCCCCCCCCCD3FF6666666666666\
+      3FF80000000000003FF999999999999A3FFB3333333333333FFCCCCCCCCCCCCD\
+      """
+
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(1.5, 1.6, 1.7, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringZM.to_wkb(multi_line_string, srid: 654) ==
+               Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from a MultiLineStringZM" do
+      wkb = """
+      01\
+      050000C0\
+      01000000\
+      01\
+      020000C0\
+      02000000\
+      9A9999999999F13F333333333333F33FCDCCCCCCCCCCF43F666666666666F63F\
+      000000000000F83F9A9999999999F93F333333333333FB3FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(1.5, 1.6, 1.7, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringZM.to_wkb(multi_line_string, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB as ndr-binary from a MultiLineStringZM" do
+      wkb = """
+      01\
+      050000C0\
+      01000000\
+      01\
+      020000C0\
+      02000000\
+      9A9999999999F13F333333333333F33FCDCCCCCCCCCCF43F666666666666F63F\
+      000000000000F83F9A9999999999F93F333333333333FB3FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(1.5, 1.6, 1.7, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringZM.to_wkb(multi_line_string, endian: :ndr) ==
+               Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from a MultiLineStringZM with SRID" do
+      wkb = """
+      01\
+      050000E0\
+      15030000\
+      01000000\
+      01\
+      020000C0\
+      02000000\
+      9A9999999999F13F333333333333F33FCDCCCCCCCCCCF43F666666666666F63F\
+      000000000000F83F9A9999999999F93F333333333333FB3FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(1.5, 1.6, 1.7, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringZM.to_wkb(
+               multi_line_string,
+               srid: 789,
+               endian: :ndr,
+               mode: :hex
+             ) ==
+               wkb
+    end
+
+    test "returns WKB as ndr-binary from a MultiLineStringZM with SRID" do
+      wkb = """
+      01\
+      050000E0\
+      15030000\
+      01000000\
+      01\
+      020000C0\
+      02000000\
+      9A9999999999F13F333333333333F33FCDCCCCCCCCCCF43F666666666666F63F\
+      000000000000F83F9A9999999999F93F333333333333FB3FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringZM.new([
+          LineStringZM.new([
+            PointZM.new(1.1, 1.2, 1.3, 1.4),
+            PointZM.new(1.5, 1.6, 1.7, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringZM.to_wkb(
+               multi_line_string,
+               srid: 789,
+               endian: :ndr
+             ) ==
+               Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb/2" do

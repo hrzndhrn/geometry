@@ -286,6 +286,62 @@ defmodule Geometry.PolygonZTest do
 
       assert PolygonZ.to_wkb(polygon, srid: 333, endian: :ndr, mode: :hex) == wkb
     end
+
+    test "returns WKB xdr-string from PolygonZ with SRID" do
+      wkb = """
+      00\
+      A0000003\
+      00001267\
+      00000001\
+      00000004\
+      403E00000000000040240000000000004014000000000000\
+      404400000000000040440000000000004010000000000000\
+      403400000000000040440000000000004020000000000000\
+      403E00000000000040240000000000004014000000000000\
+      """
+
+      polygon =
+        PolygonZ.new([
+          LineStringZ.new([
+            PointZ.new(30, 10, 5),
+            PointZ.new(40, 40, 4),
+            PointZ.new(20, 40, 8),
+            PointZ.new(30, 10, 5)
+          ])
+        ])
+
+      srid = 4711
+
+      assert PolygonZ.to_wkb(polygon, srid: srid, mode: :hex) == wkb
+    end
+
+    test "returns WKB xdr-binary from PolygonZ with SRID" do
+      wkb = """
+      00\
+      A0000003\
+      00001267\
+      00000001\
+      00000004\
+      403E00000000000040240000000000004014000000000000\
+      404400000000000040440000000000004010000000000000\
+      403400000000000040440000000000004020000000000000\
+      403E00000000000040240000000000004014000000000000\
+      """
+
+      polygon =
+        PolygonZ.new([
+          LineStringZ.new([
+            PointZ.new(30, 10, 5),
+            PointZ.new(40, 40, 4),
+            PointZ.new(20, 40, 8),
+            PointZ.new(30, 10, 5)
+          ])
+        ])
+
+      srid = 4711
+
+      assert PolygonZ.to_wkb(polygon, srid: srid) == Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb!/2" do

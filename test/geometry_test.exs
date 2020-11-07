@@ -1227,9 +1227,12 @@ defmodule GeometryTest do
 
       assert Geometry.from_wkb(wkb, :hex) ==
                {:error, ~s(unexpected code "C0000002" for sub-geometry), "", 20}
+
+      assert Geometry.from_wkb(Hex.to_binary(wkb)) ==
+               {:error, "unexpected code 3221225474 for sub-geometry", "", 10}
     end
 
-    test "returns an error tuple for a changing endian (xdr)" do
+    test "returns an error tuple for an unexpected endian" do
       wkb = """
       00\
       C0000004\
@@ -1239,7 +1242,10 @@ defmodule GeometryTest do
       """
 
       assert Geometry.from_wkb(wkb, :hex) ==
-               {:error, ~s(expected endian flag "00", got "01"), "C0000001", 18}
+               {:error, "expected endian flag \"00\", got \"01\"", "C0000001", 18}
+
+      assert Geometry.from_wkb(Hex.to_binary(wkb)) ==
+               {:error, "expected endian :xdr", <<1, 192, 0, 0, 1>>, 9}
     end
 
     test "returns an error tuple for a changing endian (ndr)" do
@@ -1292,20 +1298,29 @@ defmodule GeometryTest do
 
       assert Geometry.from_wkb(wkb, :hex) ==
                {:error, ~s(unknown sub-geomtry code: "C00AAA01"), "", 20}
+
+      assert Geometry.from_wkb(Hex.to_binary(wkb)) ==
+               {:error, "unknown sub-geomtry code: 27921088", "", 10}
     end
 
     test "returns an error tuple for an unknown endian flag" do
-      wkb = "11rest"
+      wkb = "1100"
 
       assert Geometry.from_wkb(wkb, :hex) ==
-               {:error, ~s(expected endian flag "00" or "01", got "11"), "rest", 0}
+               {:error, ~s(expected endian flag "00" or "01", got "11"), "00", 0}
+
+      assert Geometry.from_wkb(Hex.to_binary(wkb)) ==
+               {:error, "expected endian flag", <<0x11, 0x0>>, 0}
     end
 
     test "returns an error tuple for an unknown geometry code" do
-      wkb = "0012345678rest"
+      wkb = "00123456780000"
 
       assert Geometry.from_wkb(wkb, :hex) ==
-               {:error, ~s(unknown geomtry code: "12345678"), "rest", 2}
+               {:error, ~s(unknown geomtry code: "12345678"), "0000", 2}
+
+      assert Geometry.from_wkb(Hex.to_binary(wkb)) ==
+               {:error, "unknown geomtry code: 305419896", <<0, 0>>, 1}
     end
 
     test "returns an error tuple for an invalid geometry code" do

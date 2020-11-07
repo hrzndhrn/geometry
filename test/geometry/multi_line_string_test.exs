@@ -218,6 +218,161 @@ defmodule Geometry.MultiLineStringTest do
       assert String.starts_with?(result, wkb_start)
       assert MultiLineString.from_wkb!(result, :hex) == multi_line_string
     end
+
+    test "returns WKB as xdr-string from a MultiLineString with an SRID" do
+      wkb = """
+      00\
+      20000005\
+      0000028E\
+      00000001\
+      00\
+      00000002\
+      00000002\
+      3FF199999999999A3FF3333333333333\
+      3FF80000000000003FF999999999999A\
+      """
+
+      multi_line_string =
+        MultiLineString.new([
+          LineString.new([
+            Point.new(1.1, 1.2),
+            Point.new(1.5, 1.6)
+          ])
+        ])
+
+      assert MultiLineString.to_wkb(multi_line_string, srid: 654, mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary from a MultiLineString with an SRID" do
+      wkb = """
+      00\
+      20000005\
+      0000028E\
+      00000001\
+      00\
+      00000002\
+      00000002\
+      3FF199999999999A3FF3333333333333\
+      3FF80000000000003FF999999999999A\
+      """
+
+      multi_line_string =
+        MultiLineString.new([
+          LineString.new([
+            Point.new(1.1, 1.2),
+            Point.new(1.5, 1.6)
+          ])
+        ])
+
+      assert MultiLineString.to_wkb(multi_line_string, srid: 654) ==
+               Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from a MultiLineString" do
+      wkb = """
+      01\
+      05000000\
+      01000000\
+      01\
+      02000000\
+      02000000\
+      9A9999999999F13F333333333333F33F\
+      000000000000F83F9A9999999999F93F\
+      """
+
+      multi_line_string =
+        MultiLineString.new([
+          LineString.new([
+            Point.new(1.1, 1.2),
+            Point.new(1.5, 1.6)
+          ])
+        ])
+
+      assert MultiLineString.to_wkb(multi_line_string, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB as ndr-binary from a MultiLineString" do
+      wkb = """
+      01\
+      05000000\
+      01000000\
+      01\
+      02000000\
+      02000000\
+      9A9999999999F13F333333333333F33F\
+      000000000000F83F9A9999999999F93F\
+      """
+
+      multi_line_string =
+        MultiLineString.new([
+          LineString.new([
+            Point.new(1.1, 1.2),
+            Point.new(1.5, 1.6)
+          ])
+        ])
+
+      assert MultiLineString.to_wkb(multi_line_string, endian: :ndr) ==
+               Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from a MultiLineString with SRID" do
+      wkb = """
+      01\
+      05000020\
+      15030000\
+      01000000\
+      01\
+      02000000\
+      02000000\
+      9A9999999999F13F333333333333F33F\
+      000000000000F83F9A9999999999F93F\
+      """
+
+      multi_line_string =
+        MultiLineString.new([
+          LineString.new([
+            Point.new(1.1, 1.2),
+            Point.new(1.5, 1.6)
+          ])
+        ])
+
+      assert MultiLineString.to_wkb(
+               multi_line_string,
+               srid: 789,
+               endian: :ndr,
+               mode: :hex
+             ) ==
+               wkb
+    end
+
+    test "returns WKB as ndr-binary from a MultiLineString with SRID" do
+      wkb = """
+      01\
+      05000020\
+      15030000\
+      01000000\
+      01\
+      02000000\
+      02000000\
+      9A9999999999F13F333333333333F33F\
+      000000000000F83F9A9999999999F93F\
+      """
+
+      multi_line_string =
+        MultiLineString.new([
+          LineString.new([
+            Point.new(1.1, 1.2),
+            Point.new(1.5, 1.6)
+          ])
+        ])
+
+      assert MultiLineString.to_wkb(
+               multi_line_string,
+               srid: 789,
+               endian: :ndr
+             ) ==
+               Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb/2" do

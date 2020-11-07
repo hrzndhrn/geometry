@@ -218,6 +218,161 @@ defmodule Geometry.MultiLineStringMTest do
       assert String.starts_with?(result, wkb_start)
       assert MultiLineStringM.from_wkb!(result, :hex) == multi_line_string
     end
+
+    test "returns WKB as xdr-string from a MultiLineStringM with an SRID" do
+      wkb = """
+      00\
+      60000005\
+      0000028E\
+      00000001\
+      00\
+      40000002\
+      00000002\
+      3FF199999999999A3FF33333333333333FF6666666666666\
+      3FF80000000000003FF999999999999A3FFCCCCCCCCCCCCD\
+      """
+
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(1.5, 1.6, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringM.to_wkb(multi_line_string, srid: 654, mode: :hex) == wkb
+    end
+
+    test "returns WKB as xdr-binary from a MultiLineStringM with an SRID" do
+      wkb = """
+      00\
+      60000005\
+      0000028E\
+      00000001\
+      00\
+      40000002\
+      00000002\
+      3FF199999999999A3FF33333333333333FF6666666666666\
+      3FF80000000000003FF999999999999A3FFCCCCCCCCCCCCD\
+      """
+
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(1.5, 1.6, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringM.to_wkb(multi_line_string, srid: 654) ==
+               Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from a MultiLineStringM" do
+      wkb = """
+      01\
+      05000040\
+      01000000\
+      01\
+      02000040\
+      02000000\
+      9A9999999999F13F333333333333F33F666666666666F63F\
+      000000000000F83F9A9999999999F93FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(1.5, 1.6, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringM.to_wkb(multi_line_string, endian: :ndr, mode: :hex) == wkb
+    end
+
+    test "returns WKB as ndr-binary from a MultiLineStringM" do
+      wkb = """
+      01\
+      05000040\
+      01000000\
+      01\
+      02000040\
+      02000000\
+      9A9999999999F13F333333333333F33F666666666666F63F\
+      000000000000F83F9A9999999999F93FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(1.5, 1.6, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringM.to_wkb(multi_line_string, endian: :ndr) ==
+               Hex.to_binary(wkb)
+    end
+
+    test "returns WKB as ndr-string from a MultiLineStringM with SRID" do
+      wkb = """
+      01\
+      05000060\
+      15030000\
+      01000000\
+      01\
+      02000040\
+      02000000\
+      9A9999999999F13F333333333333F33F666666666666F63F\
+      000000000000F83F9A9999999999F93FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(1.5, 1.6, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringM.to_wkb(
+               multi_line_string,
+               srid: 789,
+               endian: :ndr,
+               mode: :hex
+             ) ==
+               wkb
+    end
+
+    test "returns WKB as ndr-binary from a MultiLineStringM with SRID" do
+      wkb = """
+      01\
+      05000060\
+      15030000\
+      01000000\
+      01\
+      02000040\
+      02000000\
+      9A9999999999F13F333333333333F33F666666666666F63F\
+      000000000000F83F9A9999999999F93FCDCCCCCCCCCCFC3F\
+      """
+
+      multi_line_string =
+        MultiLineStringM.new([
+          LineStringM.new([
+            PointM.new(1.1, 1.2, 1.4),
+            PointM.new(1.5, 1.6, 1.8)
+          ])
+        ])
+
+      assert MultiLineStringM.to_wkb(
+               multi_line_string,
+               srid: 789,
+               endian: :ndr
+             ) ==
+               Hex.to_binary(wkb)
+    end
   end
 
   describe "from_wkb/2" do
