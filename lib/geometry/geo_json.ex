@@ -112,9 +112,7 @@ defmodule Geometry.GeoJson do
   def to_geometry_collection(json, module, opts \\ [])
 
   def to_geometry_collection(%{"type" => "GeometryCollection"} = json, module, opts) do
-    json
-    |> Map.fetch("geometries")
-    |> case do
+    case Map.fetch(json, "geometries") do
       {:ok, geometries} ->
         with list when is_list(list) <- geometry_collection_items(geometries, opts) do
           {:ok, module.new(list)}
