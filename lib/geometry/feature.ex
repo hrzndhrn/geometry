@@ -5,11 +5,11 @@ defmodule Geometry.Feature do
 
   alias Geometry.{Feature, GeoJson}
 
-  defstruct [:geometry, :properties]
+  defstruct [:geometry, properties: %{}]
 
   @type t :: %Feature{
           geometry: Geometry.t() | nil,
-          properties: map() | nil
+          properties: map()
         }
 
   @doc """
@@ -20,7 +20,7 @@ defmodule Geometry.Feature do
       iex> Feature.new()
       %Feature{}
   """
-  @spec new :: Feature.t()
+  @spec new :: %Feature{geometry: nil, properties: %{}}
   def new, do: %Feature{}
 
   @doc """
@@ -37,7 +37,7 @@ defmodule Geometry.Feature do
         properties: %{facility: :hotel}
       }
   """
-  @spec new(geometry: Geometry.t(), properties: map()) :: Feature.t()
+  @spec new(geometry: Geometry.t(), properties: map()) :: t()
   def new(data), do: struct(Feature, data)
 
   @doc """

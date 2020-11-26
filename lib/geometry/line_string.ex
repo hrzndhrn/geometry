@@ -158,20 +158,21 @@ defmodule Geometry.LineString do
       iex> LineString.from_wkt(
       ...>   "SRID=7219;LineString (-5.1 7.8, 0.1 0.2)"
       ...> )
-      {:ok, %LineString{
-        points: [
-          [-5.1, 7.8],
-          [0.1, 0.2]
-        ]
-      }, 7219}
+      {:ok, {
+        %LineString{
+          points: [
+            [-5.1, 7.8],
+            [0.1, 0.2]
+          ]
+        },
+        7219
+      }}
 
       iex> LineString.from_wkt("LineString EMPTY")
       {:ok, %LineString{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()}
-          | {:ok, t(), Geometry.srid()}
-          | Geometry.wkt_error()
+          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, LineString)
 
   @doc """
@@ -181,7 +182,6 @@ defmodule Geometry.LineString do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, LineString) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -257,9 +257,7 @@ defmodule Geometry.LineString do
   `Geometry.Point.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()}
-          | {:ok, t(), Geometry.srid()}
-          | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, LineString)
 
   @doc """
@@ -269,7 +267,6 @@ defmodule Geometry.LineString do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, LineString) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

@@ -305,9 +305,12 @@ defmodule Geometry.GeometryCollectionMTest do
 
       assert GeometryCollectionM.from_wkb(wkb, :hex) ==
                {:ok,
-                %GeometryCollectionM{
-                  geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
-                }, 55}
+                {
+                  %GeometryCollectionM{
+                    geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
+                  },
+                  55
+                }}
     end
 
     test "returns a GeometryCollectionM with an SRID from ndr-binary" do
@@ -323,9 +326,12 @@ defmodule Geometry.GeometryCollectionMTest do
 
       assert wkb |> Hex.to_binary() |> GeometryCollectionM.from_wkb() ==
                {:ok,
-                %GeometryCollectionM{
-                  geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
-                }, 55}
+                {
+                  %GeometryCollectionM{
+                    geometries: MapSet.new([%PointM{coordinate: [1.0, 2.0, 4.0]}])
+                  },
+                  55
+                }}
     end
 
     test "returns an error for an unexpected SRID in ndr-string" do
@@ -371,13 +377,17 @@ defmodule Geometry.GeometryCollectionMTest do
     end
 
     test "returns a GeometryCollectionM with an SRID" do
-      assert GeometryCollectionM.from_wkt("SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))") ==
+      assert GeometryCollectionM.from_wkt(
+               "SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))"
+             ) ==
                {
                  :ok,
-                 %GeometryCollectionM{
-                   geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
-                 },
-                 123
+                 {
+                   %GeometryCollectionM{
+                     geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
+                   },
+                   123
+                 }
                }
     end
 

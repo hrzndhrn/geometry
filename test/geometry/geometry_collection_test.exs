@@ -305,9 +305,12 @@ defmodule Geometry.GeometryCollectionTest do
 
       assert GeometryCollection.from_wkb(wkb, :hex) ==
                {:ok,
-                %GeometryCollection{
-                  geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
-                }, 55}
+                {
+                  %GeometryCollection{
+                    geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
+                  },
+                  55
+                }}
     end
 
     test "returns a GeometryCollection with an SRID from ndr-binary" do
@@ -323,9 +326,12 @@ defmodule Geometry.GeometryCollectionTest do
 
       assert wkb |> Hex.to_binary() |> GeometryCollection.from_wkb() ==
                {:ok,
-                %GeometryCollection{
-                  geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
-                }, 55}
+                {
+                  %GeometryCollection{
+                    geometries: MapSet.new([%Point{coordinate: [1.0, 2.0]}])
+                  },
+                  55
+                }}
     end
 
     test "returns an error for an unexpected SRID in ndr-string" do
@@ -371,13 +377,17 @@ defmodule Geometry.GeometryCollectionTest do
     end
 
     test "returns a GeometryCollection with an SRID" do
-      assert GeometryCollection.from_wkt("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
+      assert GeometryCollection.from_wkt(
+               "SRID=123;GeometryCollection (Point (1.1 2.2))"
+             ) ==
                {
                  :ok,
-                 %GeometryCollection{
-                   geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
-                 },
-                 123
+                 {
+                   %GeometryCollection{
+                     geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
+                   },
+                   123
+                 }
                }
     end
 
@@ -398,7 +408,9 @@ defmodule Geometry.GeometryCollectionTest do
     end
 
     test "returns a GeometryCollection with an SRID" do
-      assert GeometryCollection.from_wkt!("SRID=123;GeometryCollection (Point (1.1 2.2))") ==
+      assert GeometryCollection.from_wkt!(
+               "SRID=123;GeometryCollection (Point (1.1 2.2))"
+             ) ==
                {%GeometryCollection{
                   geometries: MapSet.new([%Point{coordinate: [1.1, 2.2]}])
                 }, 123}

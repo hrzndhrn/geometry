@@ -7,7 +7,7 @@ defmodule Geometry.MixProject do
     [
       app: :geometry,
       name: "Geometry",
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.10",
       description: description(),
       source_url: @github,
@@ -113,7 +113,7 @@ defmodule Geometry.MixProject do
 
   defp dialyzer do
     [
-      flags: [:unmatched_returns],
+      flags: [:unmatched_returns, :error_handling],
       plt_file: {:no_warn, "test/support/plts/dialyzer.plt"},
       plt_ignore_apps: [
         :benchee,

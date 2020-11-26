@@ -261,29 +261,31 @@ defmodule Geometry.PolygonZM do
       ...>   )
       ...> "
       iex> |> PolygonZM.from_wkt()
-      {:ok,
-       %PolygonZM{
-         rings: [
-           [
-             [35, 10, 11, 22],
-             [45, 45, 22, 33],
-             [15, 40, 33, 44],
-             [10, 20, 55, 66],
-             [35, 10, 11, 22]
-           ], [
-             [20, 30, 22, 55],
-             [35, 35, 33, 66],
-             [30, 20, 88, 99],
-             [20, 30, 22, 55]
-           ]
-         ]
-       }, 789}
+      {:ok, {
+        %PolygonZM{
+          rings: [
+            [
+              [35, 10, 11, 22],
+              [45, 45, 22, 33],
+              [15, 40, 33, 44],
+              [10, 20, 55, 66],
+              [35, 10, 11, 22]
+            ], [
+              [20, 30, 22, 55],
+              [35, 35, 33, 66],
+              [30, 20, 88, 99],
+              [20, 30, 22, 55]
+            ]
+          ]
+        },
+        789
+      }}
 
       iex> PolygonZM.from_wkt("Polygon ZM EMPTY")
       {:ok, %PolygonZM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, PolygonZM)
 
   @doc """
@@ -293,7 +295,6 @@ defmodule Geometry.PolygonZM do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, PolygonZM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -371,7 +372,7 @@ defmodule Geometry.PolygonZM do
   `Geometry.PointZM.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, PolygonZM)
 
   @doc """
@@ -381,7 +382,6 @@ defmodule Geometry.PolygonZM do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, PolygonZM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

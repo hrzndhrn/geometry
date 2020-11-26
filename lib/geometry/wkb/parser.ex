@@ -92,10 +92,7 @@ defmodule Geometry.WKB.Parser do
     0xE0000007 => {GeometryCollectionZM, true}
   }
 
-  @spec parse(wkb, mode) ::
-          {:ok, geometry}
-          | {:ok, geometry, srid}
-          | {:error, message, rest, offset}
+  @spec parse(wkb, mode) :: {:ok, geometry | {geometry, srid}} | {:error, message, rest, offset}
         when wkb: Geometry.wkb(),
              mode: Geometry.mode(),
              geometry: Geometry.t(),
@@ -110,7 +107,7 @@ defmodule Geometry.WKB.Parser do
          {:ok, geometry, rest, offset} <- geometry_body(module, rest, offset, endian, mode),
          :ok <- eos(rest, offset) do
       case srid? do
-        true -> {:ok, geometry, srid}
+        true -> {:ok, {geometry, srid}}
         false -> {:ok, geometry}
       end
     end

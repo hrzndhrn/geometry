@@ -13,13 +13,13 @@ defmodule Geometry.WKT do
   end
 
   @spec to_geometry(Geometry.wkt(), module()) ::
-          {:ok, Geometry.t()} | {:ok, Geometry.t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, Geometry.t()} | {Geometry.t(), Geometry.srid()} | Geometry.wkt_error()
   def to_geometry(wkt, module) do
     case to_geometry(wkt) do
-      {:ok, geometry} = result ->
+      {:ok, {geometry, _srid}} = result ->
         with :ok <- check_geometry(geometry, module), do: result
 
-      {:ok, geometry, _srid} = result ->
+      {:ok, geometry} = result ->
         with :ok <- check_geometry(geometry, module), do: result
 
       error ->

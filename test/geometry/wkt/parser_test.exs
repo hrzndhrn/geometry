@@ -46,8 +46,8 @@ defmodule Geometry.WKT.ParserTest do
   end
 
   describe "Point from EWKT:" do
-    prove Parser.parse("SRID=4437;Point(1 2)") == {:ok, %Point{coordinate: [1, 2]}, 4437}
-    prove Parser.parse(" SriD = 1 ; Point(1 2)") == {:ok, %Point{coordinate: [1, 2]}, 1}
+    prove Parser.parse("SRID=4437;Point(1 2)") == {:ok, {%Point{coordinate: [1, 2]}, 4437}}
+    prove Parser.parse(" SriD = 1 ; Point(1 2)") == {:ok, {%Point{coordinate: [1, 2]}, 1}}
   end
 
   describe "Point" do

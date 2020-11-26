@@ -133,19 +133,18 @@ defmodule Geometry.GeometryCollectionM do
 
       iex> GeometryCollectionM.from_wkt(
       ...>   "SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))")
-      {
-        :ok,
+      {:ok, {
         %GeometryCollectionM{
           geometries: MapSet.new([%PointM{coordinate: [1.1, 2.2, 4.4]}])
         },
         123
-      }
+      }}
 
       iex> GeometryCollectionM.from_wkt("GeometryCollection M EMPTY")
       {:ok, %GeometryCollectionM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, GeometryCollectionM)
 
   @doc """
@@ -155,7 +154,6 @@ defmodule Geometry.GeometryCollectionM do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, GeometryCollectionM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -264,7 +262,7 @@ defmodule Geometry.GeometryCollectionM do
   `Geometry.PointM.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, GeometryCollectionM)
 
   @doc """
@@ -274,7 +272,6 @@ defmodule Geometry.GeometryCollectionM do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, GeometryCollectionM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

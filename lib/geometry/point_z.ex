@@ -14,8 +14,10 @@ defmodule Geometry.PointZ do
   @empty %{
     {:ndr, :hex} => "000000000000F87F000000000000F87F000000000000F87F",
     {:xdr, :hex} => "7FF80000000000007FF80000000000007FF8000000000000",
-    {:ndr, :binary} => Hex.to_binary("000000000000F87F000000000000F87F000000000000F87F"),
-    {:xdr, :binary} => Hex.to_binary("7FF80000000000007FF80000000000007FF8000000000000")
+    {:ndr, :binary} =>
+      Hex.to_binary("000000000000F87F000000000000F87F000000000000F87F"),
+    {:xdr, :binary} =>
+      Hex.to_binary("7FF80000000000007FF80000000000007FF8000000000000")
   }
 
   @type t :: %PointZ{coordinate: Geometry.coordinate() | nil}
@@ -124,13 +126,13 @@ defmodule Geometry.PointZ do
       {:ok, %PointZ{coordinate: [-5.1, 7.8, 9.9]}}
 
       iex> PointZ.from_wkt("SRID=7219;Point Z (-5.1 7.8 9.9)")
-      {:ok, %PointZ{coordinate: [-5.1, 7.8, 9.9]}, 7219}
+      {:ok, {%PointZ{coordinate: [-5.1, 7.8, 9.9]}, 7219}}
 
       iex> PointZ.from_wkt("Point Z EMPTY")
       {:ok, %PointZ{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t()} | {t(), Geometry.srid()} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, PointZ)
 
   @doc """
@@ -140,7 +142,6 @@ defmodule Geometry.PointZ do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, PointZ) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -258,11 +259,10 @@ defmodule Geometry.PointZ do
       ...>   "00A0000001000012673FF199999999999A400199999999999A400A666666666666",
       ...>   :hex
       ...> )
-      {:ok, %PointZ{coordinate: [1.1, 2.2, 3.3]}, 4711}
+      {:ok, {%PointZ{coordinate: [1.1, 2.2, 3.3]}, 4711}}
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()}
-          | {:ok, t(), Geometry.srid()}
+          {:ok, t() | {t(), Geometry.srid()}}
           | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, PointZ)
 
@@ -273,7 +273,6 @@ defmodule Geometry.PointZ do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, PointZ) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -303,7 +302,12 @@ defmodule Geometry.PointZ do
 
   @doc false
   @compile {:inline, to_wkb: 4}
-  @spec to_wkb(Geometry.coordinate(), Geometry.srid() | nil, Geometry.endian(), Geometry.mode()) ::
+  @spec to_wkb(
+          Geometry.coordinate() | nil,
+          Geometry.srid() | nil,
+          Geometry.endian(),
+          Geometry.mode()
+        ) ::
           binary()
   def to_wkb(coordinate, srid, endian, mode) do
     <<
@@ -322,10 +326,6 @@ defmodule Geometry.PointZ do
              mode: Geometry.mode(),
              wkb: Geometry.wkb()
   def to_wkb_coordinate(nil, endian, mode), do: Map.fetch!(@empty, {endian, mode})
-  # do: "000000000000F87F000000000000F87F000000000000F87F"
-
-  # def to_wkb_coordinate(nil, :xdr, :hex),
-  # do: "7FF80000000000007FF80000000000007FF8000000000000"
 
   def to_wkb_coordinate([x, y, z], endian, mode) do
     <<

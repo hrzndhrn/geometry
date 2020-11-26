@@ -204,18 +204,21 @@ defmodule Geometry.MultiPoint do
       iex> MultiPoint.from_wkt(
       ...>   "SRID=7219;MultiPoint (-5.1 7.8, 0.1 0.2)"
       ...> )
-      {:ok, %MultiPoint{
-        points: MapSet.new([
-          [-5.1, 7.8],
-          [0.1, 0.2]
-        ])
-      }, 7219}
+      {:ok, {
+        %MultiPoint{
+          points: MapSet.new([
+            [-5.1, 7.8],
+            [0.1, 0.2]
+          ])
+        },
+        7219
+      }}
 
       iex> MultiPoint.from_wkt("MultiPoint EMPTY")
       ...> {:ok, %MultiPoint{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, MultiPoint)
 
   @doc """
@@ -225,7 +228,6 @@ defmodule Geometry.MultiPoint do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, MultiPoint) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -306,7 +308,7 @@ defmodule Geometry.MultiPoint do
   `Geometry.Point.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, MultiPoint)
 
   @doc """
@@ -316,7 +318,6 @@ defmodule Geometry.MultiPoint do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, MultiPoint) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

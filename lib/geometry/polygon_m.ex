@@ -261,29 +261,31 @@ defmodule Geometry.PolygonM do
       ...>   )
       ...> "
       iex> |> PolygonM.from_wkt()
-      {:ok,
-       %PolygonM{
-         rings: [
-           [
-             [35, 10, 22],
-             [45, 45, 33],
-             [15, 40, 44],
-             [10, 20, 66],
-             [35, 10, 22]
-           ], [
-             [20, 30, 55],
-             [35, 35, 66],
-             [30, 20, 99],
-             [20, 30, 55]
-           ]
-         ]
-       }, 789}
+      {:ok, {
+        %PolygonM{
+          rings: [
+            [
+              [35, 10, 22],
+              [45, 45, 33],
+              [15, 40, 44],
+              [10, 20, 66],
+              [35, 10, 22]
+            ], [
+              [20, 30, 55],
+              [35, 35, 66],
+              [30, 20, 99],
+              [20, 30, 55]
+            ]
+          ]
+        },
+        789
+      }}
 
       iex> PolygonM.from_wkt("Polygon M EMPTY")
       {:ok, %PolygonM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, PolygonM)
 
   @doc """
@@ -293,7 +295,6 @@ defmodule Geometry.PolygonM do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, PolygonM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -371,7 +372,7 @@ defmodule Geometry.PolygonM do
   `Geometry.PointM.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, PolygonM)
 
   @doc """
@@ -381,7 +382,6 @@ defmodule Geometry.PolygonM do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, PolygonM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

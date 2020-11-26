@@ -69,12 +69,15 @@ defmodule Geometry.LineStringZTest do
 
     prove LineStringZ.from_wkt("srid=77;LineString Z (1.1 -2.2 3, 5 7 4)") ==
             {:ok,
-             %LineStringZ{
-               points: [
-                 [1.1, -2.2, 3],
-                 [5, 7, 4]
-               ]
-             }, 77}
+             {
+               %LineStringZ{
+                 points: [
+                   [1.1, -2.2, 3],
+                   [5, 7, 4]
+                 ]
+               },
+               77
+             }}
 
     prove LineStringZ.from_wkt("Point Z (5 6 7)") ==
             {:error, %{expected: LineStringZ, got: PointZ}}
@@ -117,7 +120,9 @@ defmodule Geometry.LineStringZTest do
   describe "empty?/:" do
     prove LineStringZ.empty?(LineStringZ.new()) == true
 
-    prove LineStringZ.empty?(LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(1, 2, 3)])) == false
+    prove LineStringZ.empty?(
+            LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(1, 2, 3)])
+          ) == false
   end
 
   describe "from_geo_json/1:" do
@@ -237,12 +242,15 @@ defmodule Geometry.LineStringZTest do
 
       assert LineStringZ.from_wkb(wkb, :hex) ==
                {:ok,
-                %LineStringZ{
-                  points: [
-                    [-1.1, -2.2, -3.3],
-                    [5.5, 6.6, 7.7]
-                  ]
-                }, 77}
+                {
+                  %LineStringZ{
+                    points: [
+                      [-1.1, -2.2, -3.3],
+                      [5.5, 6.6, 7.7]
+                    ]
+                  },
+                  77
+                }}
     end
 
     test "returns an ok tuple with LineStringZ and SRID from xdr-binary" do
@@ -257,12 +265,15 @@ defmodule Geometry.LineStringZTest do
 
       assert wkb |> Hex.to_binary() |> LineStringZ.from_wkb() ==
                {:ok,
-                %LineStringZ{
-                  points: [
-                    [-1.1, -2.2, -3.3],
-                    [5.5, 6.6, 7.7]
-                  ]
-                }, 77}
+                {
+                  %LineStringZ{
+                    points: [
+                      [-1.1, -2.2, -3.3],
+                      [5.5, 6.6, 7.7]
+                    ]
+                  },
+                  77
+                }}
     end
   end
 

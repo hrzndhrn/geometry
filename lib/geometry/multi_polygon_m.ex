@@ -314,42 +314,44 @@ defmodule Geometry.MultiPolygonM do
       ...>     )
       ...>   )
       ...> ")
-      {:ok,
-       %MultiPolygonM{
-         polygons:
-           MapSet.new([
-             [
-               [
-                 [20, 35, 10],
-                 [10, 30, 20],
-                 [10, 10, 15],
-                 [30, 5, 15],
-                 [45, 20, 16],
-                 [20, 35, 10]
-               ],
-               [
-                 [30, 20, 15],
-                 [20, 15, 10],
-                 [20, 25, 25],
-                 [30, 20, 15]
-               ]
-             ],
-             [
-               [
-                 [40, 40, 20],
-                 [20, 45, 10],
-                 [45, 30, 30],
-                 [40, 40, 20]
-               ]
-             ]
-           ])
-       }, 1234}
+      {:ok, {
+        %MultiPolygonM{
+          polygons:
+            MapSet.new([
+              [
+                [
+                  [20, 35, 10],
+                  [10, 30, 20],
+                  [10, 10, 15],
+                  [30, 5, 15],
+                  [45, 20, 16],
+                  [20, 35, 10]
+                ],
+                [
+                  [30, 20, 15],
+                  [20, 15, 10],
+                  [20, 25, 25],
+                  [30, 20, 15]
+                ]
+              ],
+              [
+                [
+                  [40, 40, 20],
+                  [20, 45, 10],
+                  [45, 30, 30],
+                  [40, 40, 20]
+                ]
+              ]
+            ])
+        },
+        1234
+      }}
 
       iex> MultiPolygonM.from_wkt("MultiPolygon M EMPTY")
       {:ok, %MultiPolygonM{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, MultiPolygonM)
 
   @doc """
@@ -359,7 +361,6 @@ defmodule Geometry.MultiPolygonM do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, MultiPolygonM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -458,7 +459,7 @@ defmodule Geometry.MultiPolygonM do
   `Geometry.PointM.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, MultiPolygonM)
 
   @doc """
@@ -468,7 +469,6 @@ defmodule Geometry.MultiPolygonM do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, MultiPolygonM) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

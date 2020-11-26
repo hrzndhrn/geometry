@@ -231,8 +231,7 @@ defmodule Geometry.MultiLineString do
       ...>     (40 30, 30 30)
       ...>   )
       ...> ")
-      {
-        :ok,
+      {:ok, {
         %MultiLineString{
           line_strings:
             MapSet.new([
@@ -241,13 +240,13 @@ defmodule Geometry.MultiLineString do
             ])
         },
         1234
-      }
+      }}
 
       iex> MultiLineString.from_wkt("MultiLineString EMPTY")
       {:ok, %MultiLineString{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, MultiLineString)
 
   @doc """
@@ -257,7 +256,6 @@ defmodule Geometry.MultiLineString do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, MultiLineString) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -355,7 +353,7 @@ defmodule Geometry.MultiLineString do
   `Geometry.Point.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, MultiLineString)
 
   @doc """
@@ -365,7 +363,6 @@ defmodule Geometry.MultiLineString do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, MultiLineString) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

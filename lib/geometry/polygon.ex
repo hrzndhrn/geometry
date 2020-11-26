@@ -261,29 +261,31 @@ defmodule Geometry.Polygon do
       ...>   )
       ...> "
       iex> |> Polygon.from_wkt()
-      {:ok,
-       %Polygon{
-         rings: [
-           [
-             [35, 10],
-             [45, 45],
-             [15, 40],
-             [10, 20],
-             [35, 10]
-           ], [
-             [20, 30],
-             [35, 35],
-             [30, 20],
-             [20, 30]
-           ]
-         ]
-       }, 789}
+      {:ok, {
+        %Polygon{
+          rings: [
+            [
+              [35, 10],
+              [45, 45],
+              [15, 40],
+              [10, 20],
+              [35, 10]
+            ], [
+              [20, 30],
+              [35, 35],
+              [30, 20],
+              [20, 30]
+            ]
+          ]
+        },
+        789
+      }}
 
       iex> Polygon.from_wkt("Polygon EMPTY")
       {:ok, %Polygon{}}
   """
   @spec from_wkt(Geometry.wkt()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkt_error()
   def from_wkt(wkt), do: WKT.to_geometry(wkt, Polygon)
 
   @doc """
@@ -293,7 +295,6 @@ defmodule Geometry.Polygon do
   def from_wkt!(wkt) do
     case WKT.to_geometry(wkt, Polygon) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -371,7 +372,7 @@ defmodule Geometry.Polygon do
   `Geometry.Point.from_wkb/2` function.
   """
   @spec from_wkb(Geometry.wkb(), Geometry.mode()) ::
-          {:ok, t()} | {:ok, t(), Geometry.srid()} | Geometry.wkb_error()
+          {:ok, t() | {t(), Geometry.srid()}} | Geometry.wkb_error()
   def from_wkb(wkb, mode \\ :binary), do: WKB.to_geometry(wkb, mode, Polygon)
 
   @doc """
@@ -381,7 +382,6 @@ defmodule Geometry.Polygon do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.to_geometry(wkb, mode, Polygon) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

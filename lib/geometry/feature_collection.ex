@@ -284,7 +284,7 @@ defmodule Geometry.FeatureCollection do
       ...>     Feature.new(geometry: Point.new(11, 12))
       ...>   ])
       ...> )
-      [%Feature{geometry: %Point{coordinate: [11, 12]}, properties: nil}]
+      [%Feature{geometry: %Point{coordinate: [11, 12]}, properties: %{}}]
   """
   @spec to_list(t()) :: [Geometry.t()]
   def to_list(%FeatureCollection{features: features}), do: MapSet.to_list(features)

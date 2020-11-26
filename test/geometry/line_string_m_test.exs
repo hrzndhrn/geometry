@@ -69,12 +69,15 @@ defmodule Geometry.LineStringMTest do
 
     prove LineStringM.from_wkt("srid=77;LineString M (1.1 -2.2 5, 5 7 1.1)") ==
             {:ok,
-             %LineStringM{
-               points: [
-                 [1.1, -2.2, 5],
-                 [5, 7, 1.1]
-               ]
-             }, 77}
+             {
+               %LineStringM{
+                 points: [
+                   [1.1, -2.2, 5],
+                   [5, 7, 1.1]
+                 ]
+               },
+               77
+             }}
 
     prove LineStringM.from_wkt("Point M (5 6 8)") ==
             {:error, %{expected: LineStringM, got: PointM}}
@@ -117,7 +120,9 @@ defmodule Geometry.LineStringMTest do
   describe "empty?/:" do
     prove LineStringM.empty?(LineStringM.new()) == true
 
-    prove LineStringM.empty?(LineStringM.new([PointM.new(1, 2, 4), PointM.new(1, 2, 4)])) == false
+    prove LineStringM.empty?(
+            LineStringM.new([PointM.new(1, 2, 4), PointM.new(1, 2, 4)])
+          ) == false
   end
 
   describe "from_geo_json/1:" do
@@ -237,12 +242,15 @@ defmodule Geometry.LineStringMTest do
 
       assert LineStringM.from_wkb(wkb, :hex) ==
                {:ok,
-                %LineStringM{
-                  points: [
-                    [-1.1, -2.2, -4.4],
-                    [5.5, 6.6, 8.8]
-                  ]
-                }, 77}
+                {
+                  %LineStringM{
+                    points: [
+                      [-1.1, -2.2, -4.4],
+                      [5.5, 6.6, 8.8]
+                    ]
+                  },
+                  77
+                }}
     end
 
     test "returns an ok tuple with LineStringM and SRID from xdr-binary" do
@@ -257,12 +265,15 @@ defmodule Geometry.LineStringMTest do
 
       assert wkb |> Hex.to_binary() |> LineStringM.from_wkb() ==
                {:ok,
-                %LineStringM{
-                  points: [
-                    [-1.1, -2.2, -4.4],
-                    [5.5, 6.6, 8.8]
-                  ]
-                }, 77}
+                {
+                  %LineStringM{
+                    points: [
+                      [-1.1, -2.2, -4.4],
+                      [5.5, 6.6, 8.8]
+                    ]
+                  },
+                  77
+                }}
     end
   end
 

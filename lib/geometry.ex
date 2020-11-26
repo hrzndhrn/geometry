@@ -140,7 +140,7 @@ defmodule Geometry do
   Errors that can occur when a geometry is generating from WKT.
   """
   @type wkt_error ::
-          {:error, :unexpected, %{expected: t(), got: t()}}
+          {:error, %{expected: t(), got: t()}}
           | {
               :error,
               message :: String.t(),
@@ -153,13 +153,13 @@ defmodule Geometry do
   Errors that can occur when a geometry is generating from WKT.
   """
   @type wkb_error ::
-          {:error, :unexpected, %{expected: t(), got: t()}}
+          {:error, %{expected: t(), got: t()}}
           | {:error, message :: String.t(), rest :: binary(), offset :: non_neg_integer()}
 
   @typedoc """
   A [GeoJson](https://geojson.org) term.
   """
-  @type geo_json_term :: term()
+  @type geo_json_term :: map()
 
   @typedoc """
   Errors that can occur when a geometry is generating from GeoJson.
@@ -240,9 +240,9 @@ defmodule Geometry do
       {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
 
       iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000", :hex)
-      {:ok, %Point{coordinate: [1.0, 2.0]}, 4711}
+      {:ok, {%Point{coordinate: [1.0, 2.0]}, 4711}}
   """
-  @spec from_wkb(wkb(), mode()) :: {:ok, t()} | {:ok, t(), srid()} | wkb_error
+  @spec from_wkb(wkb(), mode()) :: {:ok, t() | {t(), srid()}} | wkb_error
   def from_wkb(wkb, mode \\ :binary), do: WKB.Parser.parse(wkb, mode)
 
   @doc """
@@ -252,7 +252,6 @@ defmodule Geometry do
   def from_wkb!(wkb, mode \\ :binary) do
     case WKB.Parser.parse(wkb, mode) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end
@@ -290,9 +289,9 @@ defmodule Geometry do
       {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
 
       iex> Geometry.from_wkt("SRID=42;Point (1.1 2.2)")
-      {:ok, %Point{coordinate: [1.1, 2.2]}, 42}
+      {:ok, {%Point{coordinate: [1.1, 2.2]}, 42}}
   """
-  @spec from_wkt(wkt()) :: {:ok, t()} | {:ok, t(), srid()} | wkt_error
+  @spec from_wkt(wkt()) :: {:ok, t() | {t(), srid()}} | wkt_error
   def from_wkt(wkt), do: WKT.Parser.parse(wkt)
 
   @doc """
@@ -302,7 +301,6 @@ defmodule Geometry do
   def from_wkt!(wkt) do
     case WKT.Parser.parse(wkt) do
       {:ok, geometry} -> geometry
-      {:ok, geometry, srid} -> {geometry, srid}
       error -> raise Geometry.Error, error
     end
   end

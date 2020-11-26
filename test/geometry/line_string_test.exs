@@ -69,12 +69,15 @@ defmodule Geometry.LineStringTest do
 
     prove LineString.from_wkt("srid=77;LineString (1.1 -2.2, 5 7)") ==
             {:ok,
-             %LineString{
-               points: [
-                 [1.1, -2.2],
-                 [5, 7]
-               ]
-             }, 77}
+             {
+               %LineString{
+                 points: [
+                   [1.1, -2.2],
+                   [5, 7]
+                 ]
+               },
+               77
+             }}
 
     prove LineString.from_wkt("Point (5 6)") ==
             {:error, %{expected: LineString, got: Point}}
@@ -117,7 +120,9 @@ defmodule Geometry.LineStringTest do
   describe "empty?/:" do
     prove LineString.empty?(LineString.new()) == true
 
-    prove LineString.empty?(LineString.new([Point.new(1, 2), Point.new(1, 2)])) == false
+    prove LineString.empty?(
+            LineString.new([Point.new(1, 2), Point.new(1, 2)])
+          ) == false
   end
 
   describe "from_geo_json/1:" do
@@ -237,12 +242,15 @@ defmodule Geometry.LineStringTest do
 
       assert LineString.from_wkb(wkb, :hex) ==
                {:ok,
-                %LineString{
-                  points: [
-                    [-1.1, -2.2],
-                    [5.5, 6.6]
-                  ]
-                }, 77}
+                {
+                  %LineString{
+                    points: [
+                      [-1.1, -2.2],
+                      [5.5, 6.6]
+                    ]
+                  },
+                  77
+                }}
     end
 
     test "returns an ok tuple with LineString and SRID from xdr-binary" do
@@ -257,12 +265,15 @@ defmodule Geometry.LineStringTest do
 
       assert wkb |> Hex.to_binary() |> LineString.from_wkb() ==
                {:ok,
-                %LineString{
-                  points: [
-                    [-1.1, -2.2],
-                    [5.5, 6.6]
-                  ]
-                }, 77}
+                {
+                  %LineString{
+                    points: [
+                      [-1.1, -2.2],
+                      [5.5, 6.6]
+                    ]
+                  },
+                  77
+                }}
     end
   end
 

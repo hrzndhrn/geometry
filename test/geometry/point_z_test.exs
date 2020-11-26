@@ -51,7 +51,7 @@ defmodule Geometry.PointZTest do
             {:ok, %PointZ{coordinate: [5, 4, 9]}}
 
     prove PointZ.from_wkt("srid=11;Point Z (1.1 -2.2 3.3)") ==
-            {:ok, %PointZ{coordinate: [1.1, -2.2, 3.3]}, 11}
+            {:ok, {%PointZ{coordinate: [1.1, -2.2, 3.3]}, 11}}
 
     prove PointZ.from_wkt("LineString Z (5 7 8, 3 3 3)") ==
             {:error, %{expected: Geometry.PointZ, got: Geometry.LineStringZ}}
@@ -184,7 +184,10 @@ defmodule Geometry.PointZTest do
     end
 
     test "returns xdr-binary for PointZ" do
-      wkb = Hex.to_binary("00800000013FF199999999999A400199999999999A400A666666666666")
+      wkb =
+        Hex.to_binary(
+          "00800000013FF199999999999A400199999999999A400A666666666666"
+        )
 
       assert PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3)) == wkb
       assert PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3), endian: :xdr) == wkb
@@ -196,7 +199,10 @@ defmodule Geometry.PointZTest do
     end
 
     test "returns xdr-binary for PointZ with SRID" do
-      wkb = Hex.to_binary("00A00000010000014D3FF199999999999A400199999999999A400A666666666666")
+      wkb =
+        Hex.to_binary(
+          "00A00000010000014D3FF199999999999A400199999999999A400A666666666666"
+        )
 
       assert PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3), srid: 333) == wkb
     end
@@ -207,7 +213,10 @@ defmodule Geometry.PointZTest do
     end
 
     test "returns ndr-binary for PointZ" do
-      wkb = Hex.to_binary("01010000809A9999999999F13F9A999999999901406666666666660A40")
+      wkb =
+        Hex.to_binary(
+          "01010000809A9999999999F13F9A999999999901406666666666660A40"
+        )
 
       assert PointZ.to_wkb(PointZ.new(1.1, 2.2, 3.3), endian: :ndr) == wkb
     end

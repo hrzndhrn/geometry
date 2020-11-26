@@ -45,7 +45,7 @@ defmodule GeometryTest do
     prove Geometry.from_wkt("Point Z (4 5 9)") == {:ok, %PointZ{coordinate: [4, 5, 9]}}
     prove Geometry.from_wkt("Point M (4 6 7)") == {:ok, %PointM{coordinate: [4, 6, 7]}}
     prove Geometry.from_wkt("Point ZM (5 4 1 3)") == {:ok, %PointZM{coordinate: [5, 4, 1, 3]}}
-    prove Geometry.from_wkt("SRID=44;Point (4 5)") == {:ok, %Point{coordinate: [4, 5]}, 44}
+    prove Geometry.from_wkt("SRID=44;Point (4 5)") == {:ok, {%Point{coordinate: [4, 5]}, 44}}
   end
 
   describe "from_wkt/1" do
@@ -905,7 +905,7 @@ defmodule GeometryTest do
 
     test "returns Point with SRID" do
       wkb = "00200000010000014DBFF3333333333333400B333333333333"
-      assert Geometry.from_wkb(wkb, :hex) == {:ok, %Point{coordinate: [-1.2, 3.4]}, 333}
+      assert Geometry.from_wkb(wkb, :hex) == {:ok, {%Point{coordinate: [-1.2, 3.4]}, 333}}
     end
 
     test "returns empty LineStringZM" do
@@ -1006,10 +1006,12 @@ defmodule GeometryTest do
 
       assert Geometry.from_wkb(wkb, :hex) == {
                :ok,
-               %LineString{
-                 points: [[1.0, 2.0], [5.0, 6.0]]
-               },
-               543
+               {
+                 %LineString{
+                   points: [[1.0, 2.0], [5.0, 6.0]]
+                 },
+                 543
+               }
              }
     end
 
@@ -1062,23 +1064,26 @@ defmodule GeometryTest do
 
       assert Geometry.from_wkb(wkb, :hex) ==
                {:ok,
-                %PolygonZM{
-                  rings: [
-                    [
-                      [35.0, 10.0, 15.0, 25.0],
-                      [45.0, 45.0, 10.0, 20.0],
-                      [15.0, 40.0, 20.0, 10.0],
-                      [10.0, 20.0, 15.0, 25.0],
-                      [35.0, 10.0, 15.0, 25.0]
-                    ],
-                    [
-                      [20.0, 30.0, 15.0, 10.0],
-                      [35.0, 35.0, 10.0, 50.0],
-                      [30.0, 20.0, 25.0, 35.0],
-                      [20.0, 30.0, 15.0, 10.0]
+                {
+                  %PolygonZM{
+                    rings: [
+                      [
+                        [35.0, 10.0, 15.0, 25.0],
+                        [45.0, 45.0, 10.0, 20.0],
+                        [15.0, 40.0, 20.0, 10.0],
+                        [10.0, 20.0, 15.0, 25.0],
+                        [35.0, 10.0, 15.0, 25.0]
+                      ],
+                      [
+                        [20.0, 30.0, 15.0, 10.0],
+                        [35.0, 35.0, 10.0, 50.0],
+                        [30.0, 20.0, 25.0, 35.0],
+                        [20.0, 30.0, 15.0, 10.0]
+                      ]
                     ]
-                  ]
-                }, 333}
+                  },
+                  333
+                }}
     end
 
     test "returns a MultiPointZM (xdr)" do

@@ -4,13 +4,13 @@ defmodule Geometry.WKT.Parser do
   import Geometry.WKT.Parsers
 
   @spec parse(Geometry.wkt()) ::
-          {:ok, Geometry.t()} | {:ok, Geometry.t(), Geometry.srid()} | Geometry.wkt_error()
+          {:ok, Geometry.t() | {Geometry.t(), Geometry.srid()}} | Geometry.wkt_error()
   def parse(string) do
     with {:ok, [info], rest, _context, line, byte_offset} <- geometry(string),
          {:ok, geometry, _rest, _context, _line, _byte_offset} <-
            geometry_text({info.geometry, info.tag}, rest, line: line, byte_offset: byte_offset) do
       case Map.fetch(info, :srid) do
-        {:ok, srid} -> {:ok, geometry, srid}
+        {:ok, srid} -> {:ok, {geometry, srid}}
         :error -> {:ok, geometry}
       end
     else

@@ -6,7 +6,7 @@ defmodule Geometry.WKB do
   alias Geometry.WKB.Parser
 
   @compile {:inline, byte_order: 2}
-  @spec byte_order(Geometry.endian(), Geometry.mode()) :: binary()
+  @spec byte_order(Geometry.endian(), Geometry.mode()) :: <<_::8>>
   def byte_order(:xdr, :hex), do: "00"
   def byte_order(:ndr, :hex), do: "01"
   def byte_order(:xdr, :binary), do: <<0::8>>
@@ -20,7 +20,7 @@ defmodule Geometry.WKB do
   def srid(int, :ndr, :binary), do: <<int::little-integer-size(32)>>
 
   @spec to_geometry(wkb, mode, module()) ::
-          {:ok, geometry} | {:ok, geometry, srid} | {:error, message, rest, offset}
+          {:ok, geometry | {geometry, srid}} | {:error, message, rest, offset}
         when wkb: Geometry.wkb(),
              mode: Geometry.mode(),
              geometry: Geometry.t(),
@@ -30,10 +30,10 @@ defmodule Geometry.WKB do
              offset: non_neg_integer()
   def to_geometry(wkb, mode, module) do
     case to_geometry(wkb, mode) do
-      {:ok, geometry} = result ->
+      {:ok, {geometry, _srid}} = result ->
         with :ok <- check_geometry(geometry, module), do: result
 
-      {:ok, geometry, _srid} = result ->
+      {:ok, geometry} = result ->
         with :ok <- check_geometry(geometry, module), do: result
 
       error ->

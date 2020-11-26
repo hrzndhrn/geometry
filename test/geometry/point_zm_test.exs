@@ -48,7 +48,7 @@ defmodule Geometry.PointZMTest do
             {:ok, %PointZM{coordinate: [5, 4, 9, 1]}}
 
     prove PointZM.from_wkt("srid=11;Point ZM (1.1 -2.2 3.3 4.4)") ==
-            {:ok, %PointZM{coordinate: [1.1, -2.2, 3.3, 4.4]}, 11}
+            {:ok, {%PointZM{coordinate: [1.1, -2.2, 3.3, 4.4]}, 11}}
 
     prove PointZM.from_wkt("LineString ZM (5 7 8 9, 3 3 3 3)") ==
             {:error, %{expected: Geometry.PointZM, got: Geometry.LineStringZM}}

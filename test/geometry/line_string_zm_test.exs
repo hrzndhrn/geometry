@@ -66,12 +66,15 @@ defmodule Geometry.LineStringZMTest do
 
     prove LineStringZM.from_wkt("srid=77;LineString ZM (1.1 -2.2 3 5, 5 7 4 1.1)") ==
             {:ok,
-             %LineStringZM{
-               points: [
-                 [1.1, -2.2, 3, 5],
-                 [5, 7, 4, 1.1]
-               ]
-             }, 77}
+             {
+               %LineStringZM{
+                 points: [
+                   [1.1, -2.2, 3, 5],
+                   [5, 7, 4, 1.1]
+                 ]
+               },
+               77
+             }}
 
     prove LineStringZM.from_wkt("Point ZM (5 6 7 8)") ==
             {:error, %{expected: LineStringZM, got: PointZM}}
@@ -236,12 +239,15 @@ defmodule Geometry.LineStringZMTest do
 
       assert LineStringZM.from_wkb(wkb, :hex) ==
                {:ok,
-                %LineStringZM{
-                  points: [
-                    [-1.1, -2.2, -3.3, -4.4],
-                    [5.5, 6.6, 7.7, 8.8]
-                  ]
-                }, 77}
+                {
+                  %LineStringZM{
+                    points: [
+                      [-1.1, -2.2, -3.3, -4.4],
+                      [5.5, 6.6, 7.7, 8.8]
+                    ]
+                  },
+                  77
+                }}
     end
 
     test "returns an ok tuple with LineStringZM and SRID from xdr-binary" do
@@ -256,12 +262,15 @@ defmodule Geometry.LineStringZMTest do
 
       assert wkb |> Hex.to_binary() |> LineStringZM.from_wkb() ==
                {:ok,
-                %LineStringZM{
-                  points: [
-                    [-1.1, -2.2, -3.3, -4.4],
-                    [5.5, 6.6, 7.7, 8.8]
-                  ]
-                }, 77}
+                {
+                  %LineStringZM{
+                    points: [
+                      [-1.1, -2.2, -3.3, -4.4],
+                      [5.5, 6.6, 7.7, 8.8]
+                    ]
+                  },
+                  77
+                }}
     end
   end
 
