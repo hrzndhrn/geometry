@@ -184,10 +184,7 @@ defmodule Geometry.PointMTest do
     end
 
     test "returns xdr-binary for PointM" do
-      wkb =
-        Hex.to_binary(
-          "00400000013FF199999999999A400199999999999A401199999999999A"
-        )
+      wkb = Hex.to_binary("00400000013FF199999999999A400199999999999A401199999999999A")
 
       assert PointM.to_wkb(PointM.new(1.1, 2.2, 4.4)) == wkb
       assert PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), endian: :xdr) == wkb
@@ -199,10 +196,7 @@ defmodule Geometry.PointMTest do
     end
 
     test "returns xdr-binary for PointM with SRID" do
-      wkb =
-        Hex.to_binary(
-          "00600000010000014D3FF199999999999A400199999999999A401199999999999A"
-        )
+      wkb = Hex.to_binary("00600000010000014D3FF199999999999A400199999999999A401199999999999A")
 
       assert PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), srid: 333) == wkb
     end
@@ -213,10 +207,7 @@ defmodule Geometry.PointMTest do
     end
 
     test "returns ndr-binary for PointM" do
-      wkb =
-        Hex.to_binary(
-          "01010000409A9999999999F13F9A999999999901409A99999999991140"
-        )
+      wkb = Hex.to_binary("01010000409A9999999999F13F9A999999999901409A99999999991140")
 
       assert PointM.to_wkb(PointM.new(1.1, 2.2, 4.4), endian: :ndr) == wkb
     end

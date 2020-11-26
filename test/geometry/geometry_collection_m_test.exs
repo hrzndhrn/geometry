@@ -377,9 +377,7 @@ defmodule Geometry.GeometryCollectionMTest do
     end
 
     test "returns a GeometryCollectionM with an SRID" do
-      assert GeometryCollectionM.from_wkt(
-               "SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))"
-             ) ==
+      assert GeometryCollectionM.from_wkt("SRID=123;GeometryCollection M (Point M (1.1 2.2 4.4))") ==
                {
                  :ok,
                  {

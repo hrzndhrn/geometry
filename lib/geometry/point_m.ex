@@ -14,10 +14,8 @@ defmodule Geometry.PointM do
   @empty %{
     {:ndr, :hex} => "000000000000F87F000000000000F87F000000000000F87F",
     {:xdr, :hex} => "7FF80000000000007FF80000000000007FF8000000000000",
-    {:ndr, :binary} =>
-      Hex.to_binary("000000000000F87F000000000000F87F000000000000F87F"),
-    {:xdr, :binary} =>
-      Hex.to_binary("7FF80000000000007FF80000000000007FF8000000000000")
+    {:ndr, :binary} => Hex.to_binary("000000000000F87F000000000000F87F000000000000F87F"),
+    {:xdr, :binary} => Hex.to_binary("7FF80000000000007FF80000000000007FF8000000000000")
   }
 
   @type t :: %PointM{coordinate: Geometry.coordinate() | nil}

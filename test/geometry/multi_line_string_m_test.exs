@@ -170,7 +170,7 @@ defmodule Geometry.MultiLineStringMTest do
 
   describe "to_wkb/2" do
     test "returns WKB as xdr-binary from a MultiLineStringM" do
-      wkb_start =  "0040000005000000020040000002"
+      wkb_start = "0040000005000000020040000002"
 
       multi_line_string = %MultiLineStringM{
         line_strings:
@@ -195,7 +195,7 @@ defmodule Geometry.MultiLineStringMTest do
     end
 
     test "returns WKB as xdr-string from a MultiLineStringM" do
-      wkb_start =  "0040000005000000020040000002"
+      wkb_start = "0040000005000000020040000002"
 
       multi_line_string = %MultiLineStringM{
         line_strings:
