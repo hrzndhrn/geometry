@@ -329,9 +329,8 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [line_string, coordinates] ->
     defp unquote(line_string)(str, offset, endian, mode) do
-      with {:ok, length, rest, offset} <- length(str, offset, endian, mode),
-           {:ok, acc, rest, offset} <- unquote(coordinates)(length, rest, offset, endian, mode) do
-        {:ok, acc, rest, offset}
+      with {:ok, length, rest, offset} <- length(str, offset, endian, mode) do
+        unquote(coordinates)(length, rest, offset, endian, mode)
       end
     end
   end)
@@ -340,9 +339,8 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [polygon, rings] ->
     defp unquote(polygon)(str, offset, endian, mode) do
-      with {:ok, length, rest, offset} <- length(str, offset, endian, mode),
-           {:ok, acc, rest, offset} <- unquote(rings)(length, rest, offset, endian, mode) do
-        {:ok, acc, rest, offset}
+      with {:ok, length, rest, offset} <- length(str, offset, endian, mode) do
+        unquote(rings)(length, rest, offset, endian, mode)
       end
     end
   end)
@@ -351,9 +349,8 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [multi_point, points] ->
     defp unquote(multi_point)(str, offset, endian, mode) do
-      with {:ok, length, rest, offset} <- length(str, offset, endian, mode),
-           {:ok, acc, rest, offset} <- unquote(points)(length, rest, offset, endian, mode) do
-        {:ok, acc, rest, offset}
+      with {:ok, length, rest, offset} <- length(str, offset, endian, mode) do
+        unquote(points)(length, rest, offset, endian, mode)
       end
     end
   end)
@@ -362,9 +359,8 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [multi_line_string, line_strings] ->
     defp unquote(multi_line_string)(str, offset, endian, mode) do
-      with {:ok, length, rest, offset} <- length(str, offset, endian, mode),
-           {:ok, acc, rest, offset} <- unquote(line_strings)(length, rest, offset, endian, mode) do
-        {:ok, acc, rest, offset}
+      with {:ok, length, rest, offset} <- length(str, offset, endian, mode) do
+        unquote(line_strings)(length, rest, offset, endian, mode)
       end
     end
   end)
@@ -373,9 +369,8 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [multi_polygon, polygons] ->
     defp unquote(multi_polygon)(str, offset, endian, mode) do
-      with {:ok, length, rest, offset} <- length(str, offset, endian, mode),
-           {:ok, acc, rest, offset} <- unquote(polygons)(length, rest, offset, endian, mode) do
-        {:ok, acc, rest, offset}
+      with {:ok, length, rest, offset} <- length(str, offset, endian, mode) do
+        unquote(polygons)(length, rest, offset, endian, mode)
       end
     end
   end)
@@ -384,10 +379,8 @@ defmodule Geometry.WKB.Parser do
   |> args.()
   |> Enum.each(fn [geometry_collection, geometry_collection_items] ->
     defp unquote(geometry_collection)(str, offset, endian, mode) do
-      with {:ok, length, rest, offset} <- length(str, offset, endian, mode),
-           {:ok, acc, rest, offset} <-
-             unquote(geometry_collection_items)(length, rest, offset, endian, mode) do
-        {:ok, acc, rest, offset}
+      with {:ok, length, rest, offset} <- length(str, offset, endian, mode) do
+        unquote(geometry_collection_items)(length, rest, offset, endian, mode)
       end
     end
   end)

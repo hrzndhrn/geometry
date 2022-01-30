@@ -20,7 +20,7 @@ defmodule Geometry.Feature do
       iex> Feature.new()
       %Feature{}
   """
-  @spec new :: %Feature{geometry: nil, properties: %{}}
+  @spec new :: Feature.t()
   def new, do: %Feature{}
 
   @doc """

@@ -23,11 +23,11 @@ defmodule EncodeGeoJsonBench do
   })
 
   job geometry({geometry, _geo}) do
-    Geometry.to_geo_json(geometry)
+    geometry |> Geometry.to_geo_json() |> Jason.encode!()
   end
 
   job geo({_geometry, geo}) do
-    Geo.JSON.encode!(geo)
+    geo |> Geo.JSON.encode!() |> Jason.encode!()
   end
 
   defp decode!(wkt) do

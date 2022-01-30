@@ -7,7 +7,7 @@ defmodule Geometry.MixProject do
     [
       app: :geometry,
       name: "Geometry",
-      version: "0.3.0",
+      version: "0.3.1",
       elixir: "~> 1.10",
       description: description(),
       source_url: @github,
@@ -140,6 +140,7 @@ defmodule Geometry.MixProject do
       {:excoveralls, "~> 0.14", only: :test, runtime: false},
       {:geo, "~> 3.4", only: :dev},
       {:jason, "~> 1.3", only: [:dev, :test]},
+      {:prove, "~> 0.1", only: :test},
       {:xema, "~> 0.15", only: :test}
     ]
   end
