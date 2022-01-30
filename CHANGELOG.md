@@ -4,6 +4,7 @@
 
 + Use `Base.encode16/1` and `Base.decode16!/1`
 + Add dep `:prove`
++ Require Elixir version `~> 1.11`
 
 ## 0.3.0 - 2020/11/26
 

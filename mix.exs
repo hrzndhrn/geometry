@@ -8,7 +8,7 @@ defmodule Geometry.MixProject do
       app: :geometry,
       name: "Geometry",
       version: "0.3.1",
-      elixir: "~> 1.10",
+      elixir: "~> 1.11",
       description: description(),
       source_url: @github,
       start_permanent: Mix.env() == :prod,
