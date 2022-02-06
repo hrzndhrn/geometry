@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.1 - 2020/11/26
+## 0.3.1 - 2022/01/30
 
 + Use `Base.encode16/1` and `Base.decode16!/1`
 + Add dep `:prove`
