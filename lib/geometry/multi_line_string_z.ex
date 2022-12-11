@@ -36,7 +36,12 @@ defmodule Geometry.MultiLineStringZ do
       }
   """
 
-  alias Geometry.{GeoJson, LineStringZ, MultiLineStringZ, PointZ, WKB, WKT}
+  alias Geometry.GeoJson
+  alias Geometry.LineStringZ
+  alias Geometry.MultiLineStringZ
+  alias Geometry.PointZ
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct line_strings: MapSet.new()
 

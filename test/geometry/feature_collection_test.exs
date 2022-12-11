@@ -1,14 +1,12 @@
 defmodule Geometry.FeatureCollectionTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{
-    Feature,
-    FeatureCollection,
-    LineString,
-    Point,
-    PointM,
-    PointZ
-  }
+  alias Geometry.Feature
+  alias Geometry.FeatureCollection
+  alias Geometry.LineString
+  alias Geometry.Point
+  alias Geometry.PointM
+  alias Geometry.PointZ
 
   doctest Geometry.FeatureCollection, import: true
 

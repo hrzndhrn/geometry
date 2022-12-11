@@ -6,7 +6,10 @@ defmodule Geometry.PolygonZTest do
 
   import Prove
 
-  alias Geometry.{Hex, LineStringZ, PointZ, PolygonZ}
+  alias Geometry.Hex
+  alias Geometry.LineStringZ
+  alias Geometry.PointZ
+  alias Geometry.PolygonZ
 
   doctest Geometry.PolygonZ, import: true
 

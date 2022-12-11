@@ -1,7 +1,10 @@
 defmodule Geometry.MultiLineStringZMTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{Hex, LineStringZM, MultiLineStringZM, PointZM}
+  alias Geometry.Hex
+  alias Geometry.LineStringZM
+  alias Geometry.MultiLineStringZM
+  alias Geometry.PointZM
 
   doctest Geometry.MultiLineStringZM, import: true
 

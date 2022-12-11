@@ -6,7 +6,9 @@ defmodule Geometry.PointZTest do
 
   import Prove
 
-  alias Geometry.{Hex, LineString, PointZ}
+  alias Geometry.Hex
+  alias Geometry.LineString
+  alias Geometry.PointZ
 
   doctest PointZ, import: true
 

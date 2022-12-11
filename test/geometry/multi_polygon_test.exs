@@ -4,13 +4,11 @@ defmodule Geometry.MultiPolygonTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{
-    Hex,
-    LineString,
-    MultiPolygon,
-    Point,
-    Polygon
-  }
+  alias Geometry.Hex
+  alias Geometry.LineString
+  alias Geometry.MultiPolygon
+  alias Geometry.Point
+  alias Geometry.Polygon
 
   doctest Geometry.MultiPolygon, import: true
 

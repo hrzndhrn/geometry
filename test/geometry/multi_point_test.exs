@@ -4,7 +4,9 @@ defmodule Geometry.MultiPointTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{Hex, MultiPoint, Point}
+  alias Geometry.Hex
+  alias Geometry.MultiPoint
+  alias Geometry.Point
 
   doctest MultiPoint, import: true
 

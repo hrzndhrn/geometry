@@ -3,7 +3,9 @@ defmodule Geometry.LineStringZMTest do
 
   import Prove
 
-  alias Geometry.{Hex, LineStringZM, PointZM}
+  alias Geometry.Hex
+  alias Geometry.LineStringZM
+  alias Geometry.PointZM
 
   doctest Geometry.LineStringZM, import: true
 

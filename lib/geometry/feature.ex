@@ -3,7 +3,8 @@ defmodule Geometry.Feature do
   A combination of a `geometry` and `properties`.
   """
 
-  alias Geometry.{Feature, GeoJson}
+  alias Geometry.Feature
+  alias Geometry.GeoJson
 
   defstruct [:geometry, properties: %{}]
 

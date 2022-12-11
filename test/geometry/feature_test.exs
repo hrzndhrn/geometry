@@ -1,7 +1,10 @@
 defmodule Geometry.FeatureTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{Feature, Point, PointM, PointZ}
+  alias Geometry.Feature
+  alias Geometry.Point
+  alias Geometry.PointM
+  alias Geometry.PointZ
 
   doctest Geometry.Feature, import: true
 

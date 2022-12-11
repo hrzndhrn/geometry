@@ -30,12 +30,10 @@ defmodule Geometry.GeometryCollectionZ do
       }
   """
 
-  alias Geometry.{
-    GeoJson,
-    GeometryCollectionZ,
-    WKB,
-    WKT
-  }
+  alias Geometry.GeoJson
+  alias Geometry.GeometryCollectionZ
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct geometries: MapSet.new()
 

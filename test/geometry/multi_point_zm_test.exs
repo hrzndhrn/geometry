@@ -1,7 +1,9 @@
 defmodule Geometry.MultiPointZMTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{Hex, MultiPointZM, PointZM}
+  alias Geometry.Hex
+  alias Geometry.MultiPointZM
+  alias Geometry.PointZM
 
   doctest MultiPointZM, import: true
 

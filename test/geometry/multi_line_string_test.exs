@@ -4,7 +4,10 @@ defmodule Geometry.MultiLineStringTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{Hex, LineString, MultiLineString, Point}
+  alias Geometry.Hex
+  alias Geometry.LineString
+  alias Geometry.MultiLineString
+  alias Geometry.Point
 
   doctest Geometry.MultiLineString, import: true
 

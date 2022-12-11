@@ -3,7 +3,10 @@ defmodule Geometry.PolygonZMTest do
 
   import Prove
 
-  alias Geometry.{Hex, LineStringZM, PointZM, PolygonZM}
+  alias Geometry.Hex
+  alias Geometry.LineStringZM
+  alias Geometry.PointZM
+  alias Geometry.PolygonZM
 
   doctest Geometry.PolygonZM, import: true
 

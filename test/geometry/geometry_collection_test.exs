@@ -4,13 +4,11 @@ defmodule Geometry.GeometryCollectionTest do
 
   use ExUnit.Case, async: true
 
-  alias Geometry.{
-    GeometryCollection,
-    Hex,
-    LineString,
-    Point,
-    Polygon
-  }
+  alias Geometry.GeometryCollection
+  alias Geometry.Hex
+  alias Geometry.LineString
+  alias Geometry.Point
+  alias Geometry.Polygon
 
   doctest Geometry.GeometryCollection, import: true
 

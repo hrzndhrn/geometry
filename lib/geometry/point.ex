@@ -8,7 +8,11 @@ defmodule Geometry.Point do
 
   import Geometry.Guards
 
-  alias Geometry.{GeoJson, Hex, Point, WKB, WKT}
+  alias Geometry.GeoJson
+  alias Geometry.Hex
+  alias Geometry.Point
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct [:coordinate]
 

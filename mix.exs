@@ -139,6 +139,7 @@ defmodule Geometry.MixProject do
       {:geo, "~> 3.4", only: :dev},
       {:jason, "~> 1.3", only: [:dev, :test]},
       {:prove, "~> 0.1", only: :test},
+      {:recode, "~> 0.4", only: :dev},
       {:xema, "~> 0.15", only: :test}
     ]
   end

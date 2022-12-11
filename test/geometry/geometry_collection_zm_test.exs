@@ -1,13 +1,11 @@
 defmodule Geometry.GeometryCollectionZMTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{
-    GeometryCollectionZM,
-    Hex,
-    LineStringZM,
-    PointZM,
-    PolygonZM
-  }
+  alias Geometry.GeometryCollectionZM
+  alias Geometry.Hex
+  alias Geometry.LineStringZM
+  alias Geometry.PointZM
+  alias Geometry.PolygonZM
 
   doctest Geometry.GeometryCollectionZM, import: true
 

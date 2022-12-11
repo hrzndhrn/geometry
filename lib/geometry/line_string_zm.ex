@@ -5,7 +5,11 @@ defmodule Geometry.LineStringZM do
   A none empty line-string requires at least two points.
   """
 
-  alias Geometry.{GeoJson, LineStringZM, PointZM, WKB, WKT}
+  alias Geometry.GeoJson
+  alias Geometry.LineStringZM
+  alias Geometry.PointZM
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct points: []
 

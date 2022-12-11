@@ -1,13 +1,11 @@
 defmodule Geometry.MultiPolygonZMTest do
   use ExUnit.Case, async: true
 
-  alias Geometry.{
-    Hex,
-    LineStringZM,
-    MultiPolygonZM,
-    PointZM,
-    PolygonZM
-  }
+  alias Geometry.Hex
+  alias Geometry.LineStringZM
+  alias Geometry.MultiPolygonZM
+  alias Geometry.PointZM
+  alias Geometry.PolygonZM
 
   doctest Geometry.MultiPolygonZM, import: true
 

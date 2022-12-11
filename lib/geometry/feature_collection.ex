@@ -38,7 +38,9 @@ defmodule Geometry.FeatureCollection do
       }
   """
 
-  alias Geometry.{Feature, FeatureCollection, GeoJson}
+  alias Geometry.Feature
+  alias Geometry.FeatureCollection
+  alias Geometry.GeoJson
 
   defstruct features: MapSet.new()
 

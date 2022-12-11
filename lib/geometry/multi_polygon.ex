@@ -65,7 +65,11 @@ defmodule Geometry.MultiPolygon do
       }
   """
 
-  alias Geometry.{GeoJson, MultiPolygon, Polygon, WKB, WKT}
+  alias Geometry.GeoJson
+  alias Geometry.MultiPolygon
+  alias Geometry.Polygon
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct polygons: MapSet.new()
 

@@ -27,7 +27,11 @@ defmodule Geometry.MultiPointM do
       }
   """
 
-  alias Geometry.{GeoJson, MultiPointM, PointM, WKB, WKT}
+  alias Geometry.GeoJson
+  alias Geometry.MultiPointM
+  alias Geometry.PointM
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct points: MapSet.new()
 

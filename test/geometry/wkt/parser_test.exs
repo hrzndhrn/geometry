@@ -5,34 +5,32 @@ defmodule Geometry.WKT.ParserTest do
 
   alias Geometry.WKT.Parser
 
-  alias Geometry.{
-    GeometryCollectionZM,
-    LineString,
-    LineStringM,
-    LineStringZ,
-    LineStringZM,
-    MultiLineString,
-    MultiLineStringM,
-    MultiLineStringZ,
-    MultiLineStringZM,
-    MultiPoint,
-    MultiPointM,
-    MultiPointZ,
-    MultiPointZM,
-    MultiPointZM,
-    MultiPolygon,
-    MultiPolygonM,
-    MultiPolygonZ,
-    MultiPolygonZM,
-    Point,
-    PointM,
-    PointZ,
-    PointZM,
-    Polygon,
-    PolygonM,
-    PolygonZ,
-    PolygonZM
-  }
+  alias Geometry.GeometryCollectionZM
+  alias Geometry.LineString
+  alias Geometry.LineStringM
+  alias Geometry.LineStringZ
+  alias Geometry.LineStringZM
+  alias Geometry.MultiLineString
+  alias Geometry.MultiLineStringM
+  alias Geometry.MultiLineStringZ
+  alias Geometry.MultiLineStringZM
+  alias Geometry.MultiPoint
+  alias Geometry.MultiPointM
+  alias Geometry.MultiPointZ
+  alias Geometry.MultiPointZM
+  alias Geometry.MultiPointZM
+  alias Geometry.MultiPolygon
+  alias Geometry.MultiPolygonM
+  alias Geometry.MultiPolygonZ
+  alias Geometry.MultiPolygonZM
+  alias Geometry.Point
+  alias Geometry.PointM
+  alias Geometry.PointZ
+  alias Geometry.PointZM
+  alias Geometry.Polygon
+  alias Geometry.PolygonM
+  alias Geometry.PolygonZ
+  alias Geometry.PolygonZM
 
   describe "Point (Z/M/ZM):" do
     prove Parser.parse("Point(1 2)") == {:ok, %Point{coordinate: [1, 2]}}

@@ -5,7 +5,11 @@ defmodule Geometry.PolygonZM do
   A none empty line-string requires at least one ring with four points.
   """
 
-  alias Geometry.{GeoJson, LineStringZM, PolygonZM, WKB, WKT}
+  alias Geometry.GeoJson
+  alias Geometry.LineStringZM
+  alias Geometry.PolygonZM
+  alias Geometry.WKB
+  alias Geometry.WKT
 
   defstruct rings: []
 
