@@ -291,7 +291,7 @@ defmodule Geometry.LineString do
   end
 
   @doc false
-  @compile {:inline, to_wkb: 2}
+  @compile {:inline, to_wkb: 4}
   @spec to_wkb(coordinates, srid, endian, mode) :: wkb
         when coordinates: Geometry.coordinates(),
              srid: Geometry.srid() | nil,
