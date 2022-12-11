@@ -300,12 +300,20 @@ defmodule Geometry.FeatureCollection do
       {:ok, FeatureCollection.member?(geometry_collection, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(geometry_collection) do
-      size = FeatureCollection.size(geometry_collection)
+    if function_exported?(Enumerable.List, :slice, 4) do
+      # credo:disable-for-next-line Credo.Check.Readability.Specs
+      def slice(geometry_collection) do
+        size = FeatureCollection.size(geometry_collection)
 
-      {:ok, size,
-       &Enumerable.List.slice(FeatureCollection.to_list(geometry_collection), &1, &2, size)}
+        {:ok, size,
+         &Enumerable.List.slice(FeatureCollection.to_list(geometry_collection), &1, &2, size)}
+      end
+    else
+      def slice(geometry_collection) do
+        size = FeatureCollection.size(geometry_collection)
+
+        {:ok, size, &FeatureCollection.to_list/1}
+      end
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.Specs

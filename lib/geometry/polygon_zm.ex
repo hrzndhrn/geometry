@@ -332,7 +332,7 @@ defmodule Geometry.PolygonZM do
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
   def to_wkt(%PolygonZM{rings: rings}, opts \\ []) do
-    WKT.to_ewkt(<<"Polygon ZM ", to_wkt_rings(rings)::binary()>>, opts)
+    WKT.to_ewkt(<<"Polygon ZM ", to_wkt_rings(rings)::binary>>, opts)
   end
 
   @doc """
@@ -394,10 +394,10 @@ defmodule Geometry.PolygonZM do
   def to_wkt_rings([ring | rings]) do
     <<
       "(",
-      LineStringZM.to_wkt_points(ring)::binary(),
+      LineStringZM.to_wkt_points(ring)::binary,
       Enum.reduce(rings, "", fn ring, acc ->
-        <<acc::binary(), ", ", LineStringZM.to_wkt_points(ring)::binary()>>
-      end)::binary(),
+        <<acc::binary, ", ", LineStringZM.to_wkt_points(ring)::binary>>
+      end)::binary,
       ")"
     >>
   end
@@ -412,17 +412,17 @@ defmodule Geometry.PolygonZM do
              wkb: Geometry.wkb()
   def to_wkb(rings, srid, endian, mode) do
     <<
-      WKB.byte_order(endian, mode)::binary(),
-      wkb_code(endian, not is_nil(srid), mode)::binary(),
-      WKB.srid(srid, endian, mode)::binary(),
-      to_wkb_rings(rings, endian, mode)::binary()
+      WKB.byte_order(endian, mode)::binary,
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary,
+      to_wkb_rings(rings, endian, mode)::binary
     >>
   end
 
   @compile {:inline, to_wkb_rings: 3}
   defp to_wkb_rings(rings, endian, mode) do
     Enum.reduce(rings, WKB.length(rings, endian, mode), fn ring, acc ->
-      <<acc::binary(), LineStringZM.to_wkb_points(ring, endian, mode)::binary()>>
+      <<acc::binary, LineStringZM.to_wkb_points(ring, endian, mode)::binary>>
     end)
   end
 

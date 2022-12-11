@@ -78,7 +78,7 @@ defmodule Geometry.Hex do
 
   @compile {:inline, endian8: 1}
   defp endian8(<<a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>>) do
-    <<d::binary(), c::binary(), b::binary(), a::binary>>
+    <<d::binary, c::binary, b::binary, a::binary>>
   end
 
   @compile {:inline, endian16: 1}
@@ -87,13 +87,13 @@ defmodule Geometry.Hex do
            e::binary-size(2), f::binary-size(2), g::binary-size(2), h::binary-size(2)>>
        ) do
     <<
-      h::binary(),
-      g::binary(),
-      f::binary(),
-      e::binary(),
-      d::binary(),
-      c::binary(),
-      b::binary(),
+      h::binary,
+      g::binary,
+      f::binary,
+      e::binary,
+      d::binary,
+      c::binary,
+      b::binary,
       a::binary
     >>
   end

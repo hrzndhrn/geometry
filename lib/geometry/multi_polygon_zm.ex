@@ -419,7 +419,7 @@ defmodule Geometry.MultiPolygonZM do
     WKT.to_ewkt(
       <<
         "MultiPolygon ZM ",
-        polygons |> MapSet.to_list() |> to_wkt_polygons()::binary()
+        polygons |> MapSet.to_list() |> to_wkt_polygons()::binary
       >>,
       opts
     )
@@ -585,8 +585,8 @@ defmodule Geometry.MultiPolygonZM do
   defp to_wkt_polygons([polygon | polygons]) do
     <<"(",
       Enum.reduce(polygons, PolygonZM.to_wkt_rings(polygon), fn polygon, acc ->
-        <<acc::binary(), ", ", PolygonZM.to_wkt_rings(polygon)::binary()>>
-      end)::binary(), ")">>
+        <<acc::binary, ", ", PolygonZM.to_wkt_rings(polygon)::binary>>
+      end)::binary, ")">>
   end
 
   @doc false
@@ -598,17 +598,17 @@ defmodule Geometry.MultiPolygonZM do
              wkb: Geometry.wkb()
   def to_wkb(%MultiPolygonZM{polygons: polygons}, srid, endian, mode) do
     <<
-      WKB.byte_order(endian, mode)::binary(),
-      wkb_code(endian, not is_nil(srid), mode)::binary(),
-      WKB.srid(srid, endian, mode)::binary(),
-      to_wkb_polygons(MapSet.to_list(polygons), endian, mode)::binary()
+      WKB.byte_order(endian, mode)::binary,
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary,
+      to_wkb_polygons(MapSet.to_list(polygons), endian, mode)::binary
     >>
   end
 
   @compile {:inline, to_wkb_polygons: 3}
   defp to_wkb_polygons(polygons, endian, mode) do
     Enum.reduce(polygons, WKB.length(polygons, endian, mode), fn polygon, acc ->
-      <<acc::binary(), PolygonZM.to_wkb(polygon, nil, endian, mode)::binary()>>
+      <<acc::binary, PolygonZM.to_wkb(polygon, nil, endian, mode)::binary>>
     end)
   end
 
@@ -632,30 +632,34 @@ defmodule Geometry.MultiPolygonZM do
   end
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(multi_polygon) do
       {:ok, MultiPolygonZM.size(multi_polygon)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(multi_polygon, val) do
       {:ok, MultiPolygonZM.member?(multi_polygon, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(multi_polygon) do
-      size = MultiPolygonZM.size(multi_polygon)
-      {:ok, size, &Enumerable.List.slice(MultiPolygonZM.to_list(multi_polygon), &1, &2, size)}
+    if function_exported?(Enumerable.List, :slice, 4) do
+      def slice(multi_polygon) do
+        size = MultiPolygonZM.size(multi_polygon)
+
+        {:ok, size, &Enumerable.List.slice(MultiPolygonZM.to_list(multi_polygon), &1, &2, size)}
+      end
+    else
+      def slice(multi_polygon) do
+        size = MultiPolygonZM.size(multi_polygon)
+
+        {:ok, size, &MultiPolygonZM.to_list/1}
+      end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(multi_polygon, acc, fun) do
       Enumerable.List.reduce(MultiPolygonZM.to_list(multi_polygon), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%MultiPolygonZM{polygons: polygons}) do
       fun = fn
         list, {:cont, x} ->

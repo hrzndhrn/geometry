@@ -108,7 +108,7 @@ defmodule Geometry.GeometryCollectionZM do
     WKT.to_ewkt(
       <<
         "GeometryCollection ZM ",
-        geometries |> MapSet.to_list() |> to_wkt_geometries()::binary()
+        geometries |> MapSet.to_list() |> to_wkt_geometries()::binary
       >>,
       opts
     )
@@ -245,10 +245,10 @@ defmodule Geometry.GeometryCollectionZM do
     srid = Keyword.get(opts, :srid)
 
     <<
-      WKB.byte_order(endian, mode)::binary(),
-      wkb_code(endian, not is_nil(srid), mode)::binary(),
-      WKB.srid(srid, endian, mode)::binary(),
-      to_wkb_geometries(geometries, endian, mode)::binary()
+      WKB.byte_order(endian, mode)::binary,
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary,
+      to_wkb_geometries(geometries, endian, mode)::binary
     >>
   end
 
@@ -349,14 +349,14 @@ defmodule Geometry.GeometryCollectionZM do
   defp to_wkt_geometries([geometry | geometries]) do
     <<"(",
       Enum.reduce(geometries, Geometry.to_wkt(geometry), fn %module{} = geometry, acc ->
-        <<acc::binary(), ", ", module.to_wkt(geometry)::binary()>>
-      end)::binary(), ")">>
+        <<acc::binary, ", ", module.to_wkt(geometry)::binary>>
+      end)::binary, ")">>
   end
 
   @compile {:inline, to_wkb_geometries: 3}
   defp to_wkb_geometries(geometries, endian, mode) do
     Enum.reduce(geometries, WKB.length(geometries, endian, mode), fn %module{} = geometry, acc ->
-      <<acc::binary(), module.to_wkb(geometry, endian: endian, mode: mode)::binary()>>
+      <<acc::binary, module.to_wkb(geometry, endian: endian, mode: mode)::binary>>
     end)
   end
 
@@ -380,32 +380,35 @@ defmodule Geometry.GeometryCollectionZM do
   end
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(geometry_collection) do
       {:ok, GeometryCollectionZM.size(geometry_collection)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(geometry_collection, val) do
       {:ok, GeometryCollectionZM.member?(geometry_collection, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(geometry_collection) do
-      size = GeometryCollectionZM.size(geometry_collection)
+    if function_exported?(Enumerable.List, :slice, 4) do
+      def slice(geometry_collection) do
+        size = GeometryCollectionZM.size(geometry_collection)
 
-      {:ok, size,
-       &Enumerable.List.slice(GeometryCollectionZM.to_list(geometry_collection), &1, &2, size)}
+        {:ok, size,
+         &Enumerable.List.slice(GeometryCollectionZM.to_list(geometry_collection), &1, &2, size)}
+      end
+    else
+      def slice(geometry_collection) do
+        size = GeometryCollectionZM.size(geometry_collection)
+
+        {:ok, size, &GeometryCollectionZM.to_list/1}
+      end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(geometry_collection, acc, fun) do
       Enumerable.List.reduce(GeometryCollectionZM.to_list(geometry_collection), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%GeometryCollectionZM{geometries: geometries}) do
       fun = fn
         list, {:cont, x} ->

@@ -111,7 +111,7 @@ defmodule Geometry.PointZM do
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
   def to_wkt(%PointZM{coordinate: coordinate}, opts \\ []) do
-    WKT.to_ewkt(<<"Point ZM ", to_wkt_point(coordinate)::binary()>>, opts)
+    WKT.to_ewkt(<<"Point ZM ", to_wkt_point(coordinate)::binary>>, opts)
   end
 
   @doc """
@@ -282,20 +282,20 @@ defmodule Geometry.PointZM do
   @spec to_wkt_coordinate(Geometry.coordinate()) :: String.t()
   def to_wkt_coordinate([x, y, z, m]) do
     <<
-      to_wkt_number(x)::binary(),
+      to_wkt_number(x)::binary,
       @blank,
-      to_wkt_number(y)::binary(),
+      to_wkt_number(y)::binary,
       @blank,
-      to_wkt_number(z)::binary(),
+      to_wkt_number(z)::binary,
       @blank,
-      to_wkt_number(m)::binary()
+      to_wkt_number(m)::binary
     >>
   end
 
   @compile {:inline, to_wkt_point: 1}
   defp to_wkt_point(nil), do: "EMPTY"
 
-  defp to_wkt_point(coordinate), do: <<"(", to_wkt_coordinate(coordinate)::binary(), ")">>
+  defp to_wkt_point(coordinate), do: <<"(", to_wkt_coordinate(coordinate)::binary, ")">>
 
   @compile {:inline, to_wkt_number: 1}
   defp to_wkt_number(num) when is_integer(num), do: Integer.to_string(num)
@@ -313,9 +313,9 @@ defmodule Geometry.PointZM do
           binary()
   def to_wkb(coordinate, srid, endian, mode) do
     <<
-      WKB.byte_order(endian, mode)::binary(),
+      WKB.byte_order(endian, mode)::binary,
       wkb_code(endian, not is_nil(srid), mode)::binary,
-      WKB.srid(srid, endian, mode)::binary(),
+      WKB.srid(srid, endian, mode)::binary,
       to_wkb_coordinate(coordinate, endian, mode)::binary
     >>
   end
@@ -331,10 +331,10 @@ defmodule Geometry.PointZM do
 
   def to_wkb_coordinate([x, y, z, m], endian, mode) do
     <<
-      to_wkb_number(x, endian, mode)::binary(),
-      to_wkb_number(y, endian, mode)::binary(),
-      to_wkb_number(z, endian, mode)::binary(),
-      to_wkb_number(m, endian, mode)::binary()
+      to_wkb_number(x, endian, mode)::binary,
+      to_wkb_number(y, endian, mode)::binary,
+      to_wkb_number(z, endian, mode)::binary,
+      to_wkb_number(m, endian, mode)::binary
     >>
   end
 

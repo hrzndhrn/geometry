@@ -138,15 +138,15 @@ defmodule Geometry.WKB.Parser do
     end
   end
 
-  defp endian(<<"00", rest::binary()>>, offset, :hex) do
+  defp endian(<<"00", rest::binary>>, offset, :hex) do
     {:ok, :xdr, rest, offset + 2}
   end
 
-  defp endian(<<"01", rest::binary()>>, offset, :hex) do
+  defp endian(<<"01", rest::binary>>, offset, :hex) do
     {:ok, :ndr, rest, offset + 2}
   end
 
-  defp endian(<<got::binary-size(2), rest::binary()>>, offset, :hex) do
+  defp endian(<<got::binary-size(2), rest::binary>>, offset, :hex) do
     {:error, ~s(expected endian flag "00" or "01", got #{inspect(got)}), rest, offset}
   end
 
@@ -154,11 +154,11 @@ defmodule Geometry.WKB.Parser do
     {:error, ~s(expected endian flag "00" or "01"), str, offset}
   end
 
-  defp endian(<<0::8, rest::binary()>>, offset, :binary) do
+  defp endian(<<0::8, rest::binary>>, offset, :binary) do
     {:ok, :xdr, rest, offset + 1}
   end
 
-  defp endian(<<1::8, rest::binary()>>, offset, :binary) do
+  defp endian(<<1::8, rest::binary>>, offset, :binary) do
     {:ok, :ndr, rest, offset + 1}
   end
 
@@ -166,7 +166,7 @@ defmodule Geometry.WKB.Parser do
     {:error, "expected endian flag", str, offset}
   end
 
-  defp check_endian(<<endian::binary-size(2), rest::binary()>>, offset, expected, :hex) do
+  defp check_endian(<<endian::binary-size(2), rest::binary>>, offset, expected, :hex) do
     case {endian, expected} do
       {"00", :xdr} ->
         {:ok, rest, offset + 2}
@@ -182,11 +182,11 @@ defmodule Geometry.WKB.Parser do
     end
   end
 
-  defp check_endian(<<0::8, rest::binary()>>, offset, :xdr, :binary) do
+  defp check_endian(<<0::8, rest::binary>>, offset, :xdr, :binary) do
     {:ok, rest, offset + 1}
   end
 
-  defp check_endian(<<1::8, rest::binary()>>, offset, :ndr, :binary) do
+  defp check_endian(<<1::8, rest::binary>>, offset, :ndr, :binary) do
     {:ok, rest, offset + 1}
   end
 
@@ -194,7 +194,7 @@ defmodule Geometry.WKB.Parser do
     {:error, "expected endian #{inspect(endian)}", rest, offset}
   end
 
-  defp code(<<code::binary-size(8), rest::binary()>>, offset, endian, :hex) do
+  defp code(<<code::binary-size(8), rest::binary>>, offset, endian, :hex) do
     case fetch_info(code, endian) do
       {:ok, info} ->
         {:ok, info, rest, offset + 8}
@@ -207,11 +207,11 @@ defmodule Geometry.WKB.Parser do
     end
   end
 
-  defp code(<<code::big-integer-size(32), rest::binary()>>, offset, :xdr, :binary) do
+  defp code(<<code::big-integer-size(32), rest::binary>>, offset, :xdr, :binary) do
     code(code, rest, offset)
   end
 
-  defp code(<<code::little-integer-size(32), rest::binary()>>, offset, :ndr, :binary) do
+  defp code(<<code::little-integer-size(32), rest::binary>>, offset, :ndr, :binary) do
     code(code, rest, offset)
   end
 
@@ -229,7 +229,7 @@ defmodule Geometry.WKB.Parser do
     end
   end
 
-  defp check_code(<<code::binary-size(8), rest::binary()>>, offset, endian, :hex, type) do
+  defp check_code(<<code::binary-size(8), rest::binary>>, offset, endian, :hex, type) do
     case fetch_info(code, endian) do
       {:ok, {module, _srid?}} ->
         case Macro.underscore(module) == "geometry/#{type}" do
@@ -245,11 +245,11 @@ defmodule Geometry.WKB.Parser do
     end
   end
 
-  defp check_code(<<code::big-integer-size(32), rest::binary()>>, offset, :xdr, :binary, type) do
+  defp check_code(<<code::big-integer-size(32), rest::binary>>, offset, :xdr, :binary, type) do
     check_code(code, rest, offset, type)
   end
 
-  defp check_code(<<code::little-integer-size(32), rest::binary()>>, offset, :ndr, :binary, type) do
+  defp check_code(<<code::little-integer-size(32), rest::binary>>, offset, :ndr, :binary, type) do
     check_code(code, rest, offset, type)
   end
 
@@ -497,18 +497,18 @@ defmodule Geometry.WKB.Parser do
     end
   end)
 
-  defp length(<<hex::binary-size(8), rest::binary()>>, offset, endian, :hex) do
+  defp length(<<hex::binary-size(8), rest::binary>>, offset, endian, :hex) do
     case Hex.to_integer(hex, endian) do
       {:ok, length} -> {:ok, length, rest, offset + 8}
       :error -> {:error, "invalid length #{inspect(hex)}", rest, offset}
     end
   end
 
-  defp length(<<length::big-integer-size(32), rest::binary()>>, offset, :xdr, :binary) do
+  defp length(<<length::big-integer-size(32), rest::binary>>, offset, :xdr, :binary) do
     {:ok, length, rest, offset + 4}
   end
 
-  defp length(<<length::little-integer-size(32), rest::binary()>>, offset, :ndr, :binary) do
+  defp length(<<length::little-integer-size(32), rest::binary>>, offset, :ndr, :binary) do
     {:ok, length, rest, offset + 4}
   end
 
@@ -518,7 +518,7 @@ defmodule Geometry.WKB.Parser do
 
   defp coordinate_zm(
          <<x::binary-size(16), y::binary-size(16), z::binary-size(16), m::binary-size(16),
-           rest::binary()>>,
+           rest::binary>>,
          offset,
          endian,
          :hex
@@ -538,7 +538,7 @@ defmodule Geometry.WKB.Parser do
 
   defp coordinate_zm(
          <<x::big-float-size(64), y::big-float-size(64), z::big-float-size(64),
-           m::big-float-size(64), rest::binary()>>,
+           m::big-float-size(64), rest::binary>>,
          offset,
          :xdr,
          :binary
@@ -548,7 +548,7 @@ defmodule Geometry.WKB.Parser do
 
   defp coordinate_zm(
          <<x::little-float-size(64), y::little-float-size(64), z::little-float-size(64),
-           m::little-float-size(64), rest::binary()>>,
+           m::little-float-size(64), rest::binary>>,
          offset,
          :ndr,
          :binary
@@ -557,7 +557,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate_z(
-         <<x::binary-size(16), y::binary-size(16), z::binary-size(16), rest::binary()>>,
+         <<x::binary-size(16), y::binary-size(16), z::binary-size(16), rest::binary>>,
          offset,
          endian,
          :hex
@@ -574,7 +574,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate_z(
-         <<x::big-float-size(64), y::big-float-size(64), z::big-float-size(64), rest::binary()>>,
+         <<x::big-float-size(64), y::big-float-size(64), z::big-float-size(64), rest::binary>>,
          offset,
          :xdr,
          :binary
@@ -584,7 +584,7 @@ defmodule Geometry.WKB.Parser do
 
   defp coordinate_z(
          <<x::little-float-size(64), y::little-float-size(64), z::little-float-size(64),
-           rest::binary()>>,
+           rest::binary>>,
          offset,
          :ndr,
          :binary
@@ -593,7 +593,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate_m(
-         <<x::binary-size(16), y::binary-size(16), m::binary-size(16), rest::binary()>>,
+         <<x::binary-size(16), y::binary-size(16), m::binary-size(16), rest::binary>>,
          offset,
          endian,
          :hex
@@ -610,7 +610,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate_m(
-         <<x::big-float-size(64), y::big-float-size(64), m::big-float-size(64), rest::binary()>>,
+         <<x::big-float-size(64), y::big-float-size(64), m::big-float-size(64), rest::binary>>,
          offset,
          :xdr,
          :binary
@@ -620,7 +620,7 @@ defmodule Geometry.WKB.Parser do
 
   defp coordinate_m(
          <<x::little-float-size(64), y::little-float-size(64), m::little-float-size(64),
-           rest::binary()>>,
+           rest::binary>>,
          offset,
          :ndr,
          :binary
@@ -629,7 +629,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate(
-         <<x::binary-size(16), y::binary-size(16), rest::binary()>>,
+         <<x::binary-size(16), y::binary-size(16), rest::binary>>,
          offset,
          endian,
          :hex
@@ -644,7 +644,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate(
-         <<x::big-float-size(64), y::big-float-size(64), rest::binary()>>,
+         <<x::big-float-size(64), y::big-float-size(64), rest::binary>>,
          offset,
          :xdr,
          :binary
@@ -653,7 +653,7 @@ defmodule Geometry.WKB.Parser do
   end
 
   defp coordinate(
-         <<x::little-float-size(64), y::little-float-size(64), rest::binary()>>,
+         <<x::little-float-size(64), y::little-float-size(64), rest::binary>>,
          offset,
          :ndr,
          :binary
@@ -671,18 +671,18 @@ defmodule Geometry.WKB.Parser do
 
   defp srid(str, offset, false = _srid?, _endian, _mode), do: {:ok, nil, str, offset}
 
-  defp srid(<<srid::binary-size(8), rest::binary()>>, offset, _srid?, endian, :hex) do
+  defp srid(<<srid::binary-size(8), rest::binary>>, offset, _srid?, endian, :hex) do
     case Hex.to_integer(srid, endian) do
       {:ok, srid} -> {:ok, srid, rest, offset + 8}
       :error -> {:error, "invalid SRID #{inspect(srid)}", rest, offset}
     end
   end
 
-  defp srid(<<srid::big-integer-size(32), rest::binary()>>, offset, _srid?, :xdr, :binary) do
+  defp srid(<<srid::big-integer-size(32), rest::binary>>, offset, _srid?, :xdr, :binary) do
     {:ok, srid, rest, offset + 4}
   end
 
-  defp srid(<<srid::little-integer-size(32), rest::binary()>>, offset, _srid?, :ndr, :binary) do
+  defp srid(<<srid::little-integer-size(32), rest::binary>>, offset, _srid?, :ndr, :binary) do
     {:ok, srid, rest, offset + 4}
   end
 
