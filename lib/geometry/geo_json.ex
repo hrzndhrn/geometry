@@ -92,11 +92,9 @@ defmodule Geometry.GeoJson do
     @spec unquote(:"to_#{geometry}")(Geometry.geo_json_term(), module()) ::
             {:ok, unquote(:"#{geometry}")()} | Geometry.geo_json_error()
     def unquote(:"to_#{geometry}")(%{"type" => "#{unquote(type)}"} = json, module) do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       coordinates(json, module)
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def(unquote(:"to_#{geometry}")(_json, _module), do: {:error, :type_not_found})
   end)
 

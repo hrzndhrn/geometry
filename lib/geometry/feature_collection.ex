@@ -292,18 +292,15 @@ defmodule Geometry.FeatureCollection do
   def to_list(%FeatureCollection{features: features}), do: MapSet.to_list(features)
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(geometry_collection) do
       {:ok, FeatureCollection.size(geometry_collection)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(geometry_collection, val) do
       {:ok, FeatureCollection.member?(geometry_collection, val)}
     end
 
     if function_exported?(Enumerable.List, :slice, 4) do
-      # credo:disable-for-next-line Credo.Check.Readability.Specs
       def slice(geometry_collection) do
         size = FeatureCollection.size(geometry_collection)
 
@@ -318,14 +315,12 @@ defmodule Geometry.FeatureCollection do
       end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(geometry_collection, acc, fun) do
       Enumerable.List.reduce(FeatureCollection.to_list(geometry_collection), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%FeatureCollection{features: features}) do
       fun = fn
         list, {:cont, x} ->

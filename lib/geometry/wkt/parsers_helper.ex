@@ -1,4 +1,3 @@
-# credo:disable-for-this-file Credo.Check.Readability.SinglePipe
 defmodule Geometry.WKT.ParsersHelper do
   @moduledoc false
 
@@ -78,7 +77,6 @@ defmodule Geometry.WKT.ParsersHelper do
   Enum.each(@types, fn type ->
     @spec unquote(:"point_#{type}")() :: NimbleParsec.t()
     def unquote(:"point_#{type}")() do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       choice([
         open()
         |> unquote(:"coordinate_#{type}")()
@@ -92,7 +90,6 @@ defmodule Geometry.WKT.ParsersHelper do
   Enum.each(@types, fn type ->
     @spec unquote(:"line_string_#{type}")(NimbleParsec.t()) :: NimbleParsec.t()
     def unquote(:"line_string_#{type}")(combinator \\ empty()) do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       concat(
         combinator,
         choice([
@@ -110,7 +107,6 @@ defmodule Geometry.WKT.ParsersHelper do
   Enum.each(@types, fn type ->
     @spec unquote(:"polygon_#{type}")(NimbleParsec.t()) :: NimbleParsec.t()
     def unquote(:"polygon_#{type}")(combinator \\ empty()) do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       concat(
         combinator,
         choice([
@@ -141,7 +137,6 @@ defmodule Geometry.WKT.ParsersHelper do
   Enum.each(@types, fn type ->
     @spec unquote(:"multi_point_#{type}")() :: NimbleParsec.t()
     def unquote(:"multi_point_#{type}")() do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       choice([
         open()
         |> unquote(:"point_or_coordinate_#{type}")()
@@ -165,7 +160,6 @@ defmodule Geometry.WKT.ParsersHelper do
   Enum.each(@types, fn type ->
     @spec unquote(:"multi_line_string_#{type}")() :: NimbleParsec.t()
     def unquote(:"multi_line_string_#{type}")() do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       choice([
         open()
         |> unquote(:"line_string_#{type}")()
@@ -181,7 +175,6 @@ defmodule Geometry.WKT.ParsersHelper do
   Enum.each(@types, fn type ->
     @spec unquote(:"multi_polygon_#{type}")() :: NimbleParsec.t()
     def unquote(:"multi_polygon_#{type}")() do
-      # credo:disable-for-previous-line Credo.Check.Readability.Specs
       choice([
         open()
         |> unquote(:"polygon_#{type}")()
