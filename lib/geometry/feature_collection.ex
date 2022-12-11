@@ -304,8 +304,7 @@ defmodule Geometry.FeatureCollection do
     def slice(geometry_collection) do
       size = FeatureCollection.size(geometry_collection)
 
-      {:ok, size,
-       &Enumerable.List.slice(FeatureCollection.to_list(geometry_collection), &1, &2, size)}
+      {:ok, size, &FeatureCollection.to_list/1}
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.Specs

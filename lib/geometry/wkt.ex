@@ -32,7 +32,7 @@ defmodule Geometry.WKT do
   defp ewkt(nil, wkt), do: wkt
 
   defp ewkt(srid, wkt) when is_integer(srid),
-    do: <<"SRID=", to_string(srid)::binary(), ";", wkt::binary>>
+    do: <<"SRID=", to_string(srid)::binary, ";", wkt::binary>>
 
   defp check_geometry(%geometry{}, geometry), do: :ok
 

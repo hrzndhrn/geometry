@@ -215,7 +215,7 @@ defmodule Geometry.LineStringZM do
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
   def to_wkt(%LineStringZM{points: points}, opts \\ []) do
-    WKT.to_ewkt(<<"LineString ZM ", to_wkt_points(points)::binary()>>, opts)
+    WKT.to_ewkt(<<"LineString ZM ", to_wkt_points(points)::binary>>, opts)
   end
 
   @doc """
@@ -279,8 +279,8 @@ defmodule Geometry.LineStringZM do
   def to_wkt_points([coordinate | points]) do
     <<"(",
       Enum.reduce(points, PointZM.to_wkt_coordinate(coordinate), fn coordinate, acc ->
-        <<acc::binary(), ", ", PointZM.to_wkt_coordinate(coordinate)::binary()>>
-      end)::binary(), ")">>
+        <<acc::binary, ", ", PointZM.to_wkt_coordinate(coordinate)::binary>>
+      end)::binary, ")">>
   end
 
   @doc false
@@ -293,10 +293,10 @@ defmodule Geometry.LineStringZM do
              wkb: Geometry.wkb()
   def to_wkb(points, srid, endian, mode) do
     <<
-      WKB.byte_order(endian, mode)::binary(),
-      wkb_code(endian, not is_nil(srid), mode)::binary(),
-      WKB.srid(srid, endian, mode)::binary(),
-      to_wkb_points(points, endian, mode)::binary()
+      WKB.byte_order(endian, mode)::binary,
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary,
+      to_wkb_points(points, endian, mode)::binary
     >>
   end
 
@@ -309,7 +309,7 @@ defmodule Geometry.LineStringZM do
              wkb: Geometry.wkb()
   def to_wkb_points(points, endian, mode) do
     Enum.reduce(points, WKB.length(points, endian, mode), fn coordinate, acc ->
-      <<acc::binary(), PointZM.to_wkb_coordinate(coordinate, endian, mode)::binary()>>
+      <<acc::binary, PointZM.to_wkb_coordinate(coordinate, endian, mode)::binary>>
     end)
   end
 

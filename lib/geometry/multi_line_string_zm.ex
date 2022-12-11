@@ -313,7 +313,7 @@ defmodule Geometry.MultiLineStringZM do
     WKT.to_ewkt(
       <<
         "MultiLineString ZM ",
-        line_strings |> MapSet.to_list() |> to_wkt_line_strings()::binary()
+        line_strings |> MapSet.to_list() |> to_wkt_line_strings()::binary
       >>,
       opts
     )
@@ -447,8 +447,8 @@ defmodule Geometry.MultiLineStringZM do
   defp to_wkt_line_strings([line_string | line_strings]) do
     <<"(",
       Enum.reduce(line_strings, LineStringZM.to_wkt_points(line_string), fn line_string, acc ->
-        <<acc::binary(), ", ", LineStringZM.to_wkt_points(line_string)::binary()>>
-      end)::binary(), ")">>
+        <<acc::binary, ", ", LineStringZM.to_wkt_points(line_string)::binary>>
+      end)::binary, ")">>
   end
 
   @doc false
@@ -460,17 +460,17 @@ defmodule Geometry.MultiLineStringZM do
              wkb: Geometry.wkb()
   def to_wkb(%MultiLineStringZM{line_strings: line_strings}, srid, endian, mode) do
     <<
-      WKB.byte_order(endian, mode)::binary(),
-      wkb_code(endian, not is_nil(srid), mode)::binary(),
-      WKB.srid(srid, endian, mode)::binary(),
-      to_wkb_line_strings(line_strings, endian, mode)::binary()
+      WKB.byte_order(endian, mode)::binary,
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary,
+      to_wkb_line_strings(line_strings, endian, mode)::binary
     >>
   end
 
   @compile {:inline, to_wkb_line_strings: 3}
   defp to_wkb_line_strings(line_strings, endian, mode) do
     Enum.reduce(line_strings, WKB.length(line_strings, endian, mode), fn line_string, acc ->
-      <<acc::binary(), LineStringZM.to_wkb(line_string, nil, endian, mode)::binary()>>
+      <<acc::binary, LineStringZM.to_wkb(line_string, nil, endian, mode)::binary>>
     end)
   end
 
@@ -508,8 +508,7 @@ defmodule Geometry.MultiLineStringZM do
     def slice(multi_line_string) do
       size = MultiLineStringZM.size(multi_line_string)
 
-      {:ok, size,
-       &Enumerable.List.slice(MultiLineStringZM.to_list(multi_line_string), &1, &2, size)}
+      {:ok, size, &MultiLineStringZM.to_list/1}
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.Specs

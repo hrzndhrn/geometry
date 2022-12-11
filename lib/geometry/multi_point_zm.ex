@@ -268,7 +268,7 @@ defmodule Geometry.MultiPointZM do
     WKT.to_ewkt(
       <<
         "MultiPoint ZM ",
-        points |> MapSet.to_list() |> to_wkt_points()::binary()
+        points |> MapSet.to_list() |> to_wkt_points()::binary
       >>,
       opts
     )
@@ -390,8 +390,8 @@ defmodule Geometry.MultiPointZM do
   defp to_wkt_points([coordinate | points]) do
     <<"(",
       Enum.reduce(points, PointZM.to_wkt_coordinate(coordinate), fn coordinate, acc ->
-        <<acc::binary(), ", ", PointZM.to_wkt_coordinate(coordinate)::binary()>>
-      end)::binary(), ")">>
+        <<acc::binary, ", ", PointZM.to_wkt_coordinate(coordinate)::binary>>
+      end)::binary, ")">>
   end
 
   @doc false
@@ -399,17 +399,17 @@ defmodule Geometry.MultiPointZM do
   @spec to_wkb(t(), Geometry.srid(), Geometry.endian(), Geometry.mode()) :: Geometry.wkb()
   def to_wkb(%MultiPointZM{points: points}, srid, endian, mode) do
     <<
-      WKB.byte_order(endian, mode)::binary(),
-      wkb_code(endian, not is_nil(srid), mode)::binary(),
-      WKB.srid(srid, endian, mode)::binary(),
-      to_wkb_points(MapSet.to_list(points), endian, mode)::binary()
+      WKB.byte_order(endian, mode)::binary,
+      wkb_code(endian, not is_nil(srid), mode)::binary,
+      WKB.srid(srid, endian, mode)::binary,
+      to_wkb_points(MapSet.to_list(points), endian, mode)::binary
     >>
   end
 
   @compile {:inline, to_wkb_points: 3}
   defp to_wkb_points(points, endian, mode) do
     Enum.reduce(points, WKB.length(points, endian, mode), fn point, acc ->
-      <<acc::binary(), PointZM.to_wkb(point, nil, endian, mode)::binary()>>
+      <<acc::binary, PointZM.to_wkb(point, nil, endian, mode)::binary>>
     end)
   end
 
@@ -446,7 +446,8 @@ defmodule Geometry.MultiPointZM do
     # credo:disable-for-next-line Credo.Check.Readability.Specs
     def slice(multi_point) do
       size = MultiPointZM.size(multi_point)
-      {:ok, size, &Enumerable.List.slice(MultiPointZM.to_list(multi_point), &1, &2, size)}
+
+      {:ok, size, &MultiPointZM.to_list/1}
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.Specs

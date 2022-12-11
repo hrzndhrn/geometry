@@ -43,9 +43,8 @@ defmodule Geometry.MixProject do
       carp: :test,
       coveralls: :test,
       "coveralls.detail": :test,
-      "coveralls.post": :test,
       "coveralls.html": :test,
-      "coveralls.travis": :test,
+      "coveralls.github": :test,
       "geometry.gen": :test
     ]
   end
@@ -131,8 +130,7 @@ defmodule Geometry.MixProject do
     [
       {:nimble_parsec, "~> 0.5 or ~> 1.0"},
       # dev and test
-      {:benchee, "~> 1.0", only: :dev},
-      {:benchee_dsl, "~> 0.1.0", only: :dev},
+      {:benchee_dsl, "~> 0.1", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
