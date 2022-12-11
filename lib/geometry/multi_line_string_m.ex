@@ -497,31 +497,35 @@ defmodule Geometry.MultiLineStringM do
   end
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(multi_line_string) do
       {:ok, MultiLineStringM.size(multi_line_string)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(multi_line_string, val) do
       {:ok, MultiLineStringM.member?(multi_line_string, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(multi_line_string) do
-      size = MultiLineStringM.size(multi_line_string)
+    if function_exported?(Enumerable.List, :slice, 4) do
+      def slice(multi_line_string) do
+        size = MultiLineStringM.size(multi_line_string)
 
-      {:ok, size, &MultiLineStringM.to_list/1}
+        {:ok, size,
+         &Enumerable.List.slice(MultiLineStringM.to_list(multi_line_string), &1, &2, size)}
+      end
+    else
+      def slice(multi_line_string) do
+        size = MultiLineStringM.size(multi_line_string)
+
+        {:ok, size, &MultiLineStringM.to_list/1}
+      end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(multi_line_string, acc, fun) do
       Enumerable.List.reduce(MultiLineStringM.to_list(multi_line_string), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%MultiLineStringM{line_strings: line_strings}) do
       fun = fn
         list, {:cont, x} ->

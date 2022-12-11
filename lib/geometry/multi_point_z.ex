@@ -436,31 +436,34 @@ defmodule Geometry.MultiPointZ do
   end
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(multi_point) do
       {:ok, MultiPointZ.size(multi_point)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(multi_point, val) do
       {:ok, MultiPointZ.member?(multi_point, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(multi_point) do
-      size = MultiPointZ.size(multi_point)
+    if function_exported?(Enumerable.List, :slice, 4) do
+      def slice(multi_point) do
+        size = MultiPointZ.size(multi_point)
 
-      {:ok, size, &MultiPointZ.to_list/1}
+        {:ok, size, &Enumerable.List.slice(MultiPointZ.to_list(multi_point), &1, &2, size)}
+      end
+    else
+      def slice(multi_point) do
+        size = MultiPointZ.size(multi_point)
+
+        {:ok, size, &MultiPointZ.to_list/1}
+      end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(multi_point, acc, fun) do
       Enumerable.List.reduce(MultiPointZ.to_list(multi_point), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%MultiPointZ{points: points}) do
       fun = fn
         list, {:cont, x} ->

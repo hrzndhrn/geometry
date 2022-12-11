@@ -383,31 +383,35 @@ defmodule Geometry.GeometryCollectionM do
   end
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(geometry_collection) do
       {:ok, GeometryCollectionM.size(geometry_collection)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(geometry_collection, val) do
       {:ok, GeometryCollectionM.member?(geometry_collection, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(geometry_collection) do
-      size = GeometryCollectionM.size(geometry_collection)
+    if function_exported?(Enumerable.List, :slice, 4) do
+      def slice(geometry_collection) do
+        size = GeometryCollectionM.size(geometry_collection)
 
-      {:ok, size, &GeometryCollectionM.to_list/1}
+        {:ok, size,
+         &Enumerable.List.slice(GeometryCollection.to_list(geometry_collection), &1, &2, size)}
+      end
+    else
+      def slice(geometry_collection) do
+        size = GeometryCollectionM.size(geometry_collection)
+
+        {:ok, size, &GeometryCollectionM.to_list/1}
+      end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(geometry_collection, acc, fun) do
       Enumerable.List.reduce(GeometryCollectionM.to_list(geometry_collection), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%GeometryCollectionM{geometries: geometries}) do
       fun = fn
         list, {:cont, x} ->

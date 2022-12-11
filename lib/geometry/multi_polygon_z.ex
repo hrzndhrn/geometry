@@ -635,30 +635,34 @@ defmodule Geometry.MultiPolygonZ do
   end
 
   defimpl Enumerable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def count(multi_polygon) do
       {:ok, MultiPolygonZ.size(multi_polygon)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def member?(multi_polygon, val) do
       {:ok, MultiPolygonZ.member?(multi_polygon, val)}
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
-    def slice(multi_polygon) do
-      size = MultiPolygonZ.size(multi_polygon)
-      {:ok, size, &MultiPolygonZ.to_list/1}
+    if function_exported?(Enumerable.List, :slice, 4) do
+      def slice(multi_polygon) do
+        size = MultiPolygonZ.size(multi_polygon)
+
+        {:ok, size, &Enumerable.List.slice(MultiPolygonZ.to_list(multi_polygon), &1, &2, size)}
+      end
+    else
+      def slice(multi_polygon) do
+        size = MultiPolygonZ.size(multi_polygon)
+
+        {:ok, size, &MultiPolygonZ.to_list/1}
+      end
     end
 
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def reduce(multi_polygon, acc, fun) do
       Enumerable.List.reduce(MultiPolygonZ.to_list(multi_polygon), acc, fun)
     end
   end
 
   defimpl Collectable do
-    # credo:disable-for-next-line Credo.Check.Readability.Specs
     def into(%MultiPolygonZ{polygons: polygons}) do
       fun = fn
         list, {:cont, x} ->
