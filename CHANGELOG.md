@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2 - 2022/12/11
+
++ Refactor `slice` implementations.
++ Add `recode` package.
+
 ## 0.3.1 - 2022/01/30
 
 + Use `Base.encode16/1` and `Base.decode16!/1`
