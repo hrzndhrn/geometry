@@ -306,7 +306,7 @@ defmodule Geometry.FeatureCollection do
         size = FeatureCollection.size(geometry_collection)
 
         {:ok, size,
-         &Enumerable.List.slice(GeometryCollection.to_list(geometry_collection), &1, &2, size)}
+         &Enumerable.List.slice(FeatureCollection.to_list(geometry_collection), &1, &2, size)}
       end
     else
       def slice(geometry_collection) do
