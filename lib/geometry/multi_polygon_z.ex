@@ -419,6 +419,7 @@ defmodule Geometry.MultiPolygonZ do
   #     (40 40 10, 20 45 20, 45 30 15, 40 40 10)
   #   )
   # )
+  ```
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]

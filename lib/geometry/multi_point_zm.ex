@@ -265,6 +265,7 @@ defmodule Geometry.MultiPointZM do
     srid: 123
   )
   # => "SRID=123;MultiPoint ZM (7.1 8.1 1.1 1, 9.2 5.2 2.2 2)"
+  ```
   """
   @spec to_wkt(t(), opts) :: Geometry.wkt()
         when opts: [srid: Geometry.srid()]
