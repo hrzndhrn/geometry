@@ -3,9 +3,14 @@ defmodule Geometry do
   A set of geometry types for WKT/WKB and GeoJson.
   """
 
+  alias Geometry.Decoder
+  alias Geometry.Encoder
+  alias Geometry.Protocol
+
+  alias Geometry.DecodeError
+
   alias Geometry.Feature
   alias Geometry.FeatureCollection
-  alias Geometry.GeoJson
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -35,49 +40,11 @@ defmodule Geometry do
   alias Geometry.PolygonZ
   alias Geometry.PolygonZM
 
-  alias Geometry.WKB
-  alias Geometry.WKT
+  @default_endian :ndr
 
-  @geometries [
-    GeometryCollection,
-    GeometryCollectionM,
-    GeometryCollectionZ,
-    GeometryCollectionZM,
-    LineString,
-    LineStringM,
-    LineStringZ,
-    LineStringZM,
-    MultiLineString,
-    MultiLineStringM,
-    MultiLineStringZ,
-    MultiLineStringZM,
-    MultiPoint,
-    MultiPointM,
-    MultiPointZ,
-    MultiPointZM,
-    MultiPolygon,
-    MultiPolygonM,
-    MultiPolygonZ,
-    MultiPolygonZM,
-    Polygon,
-    PolygonM,
-    PolygonZ,
-    PolygonZM,
-    Point,
-    PointM,
-    PointZ,
-    PointZM
-  ]
+  @type t :: geometry() | {geometry(), srid()}
 
-  @geo_json [
-    Feature,
-    FeatureCollection
-  ]
-
-  @typedoc """
-  A geometry is one of the provided geometries or geometry-collections.
-  """
-  @type t ::
+  @type geometry ::
           GeometryCollection.t()
           | GeometryCollectionM.t()
           | GeometryCollectionZ.t()
@@ -124,52 +91,33 @@ defmodule Geometry do
   @type srid :: non_neg_integer()
 
   @typedoc """
-  [Well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
+  [Well-Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
   (WKT) is a text markup language for representing vector geometry objects.
   """
   @type wkt :: String.t()
 
   @typedoc """
-  [Well-known binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
-  The binary representation of WKT.
+  [Extended Well-Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
+  (EWKT) is a text markup language for representing vector geometry objects.
+  """
+  @type ewkt :: String.t()
+
+  @typedoc """
+  [Well-Known Binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
+  (WKB) is the binary representation of WKT.
   """
   @type wkb :: binary()
 
   @typedoc """
-  Errors that can occur when a geometry is generating from WKT.
+  [Extended Well-Known Binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
+  (EWKB) is the binary representation of EWKT.
   """
-  @type wkt_error ::
-          {:error, %{expected: t(), got: t()}}
-          | {
-              :error,
-              message :: String.t(),
-              rest :: String.t(),
-              {line :: pos_integer(), offset :: non_neg_integer()},
-              offset :: non_neg_integer()
-            }
-
-  @typedoc """
-  Errors that can occur when a geometry is generating from WKT.
-  """
-  @type wkb_error ::
-          {:error, %{expected: t(), got: t()}}
-          | {:error, message :: String.t(), rest :: binary(), offset :: non_neg_integer()}
+  @type ewkb :: binary()
 
   @typedoc """
   A [GeoJson](https://geojson.org) term.
   """
   @type geo_json_term :: map()
-
-  @typedoc """
-  Errors that can occur when a geometry is generating from GeoJson.
-  """
-  @type geo_json_error ::
-          {:error,
-           :coordinates_not_found
-           | :geometries_not_found
-           | :invalid_data
-           | :type_not_found
-           | :unknown_type}
 
   @typedoc """
   Byte order.
@@ -194,113 +142,283 @@ defmodule Geometry do
       true
   """
   @spec empty?(t()) :: boolean
-  def empty?(%module{} = geometry)
-      when module in @geometries or module in @geo_json do
-    module.empty?(geometry)
+  def empty?(geometry), do: Protocol.empty?(geometry)
+
+  @doc """
+  Returns the EWKB representation of a geometry.
+
+  If the `srid` is nil a WKB is returned.
+
+  The optional `:endian` argument indicates whether `:xdr` big endian or `:ndr` little
+  endian is returned. The default is `:ndr`.
+
+  ## Examples
+
+      iex> PointZ.new(1, 2, 3)
+      ...> |> Geometry.to_ewkb(3825)
+      ...> |> Base.encode16()
+      "01010000A0F10E0000000000000000F03F00000000000000400000000000000840"
+
+      iex> PointZ.new(1, 2, 3)
+      ...> |> Geometry.to_ewkb(nil)
+      ...> |> Base.encode16()
+      "0101000080000000000000F03F00000000000000400000000000000840"
+
+      iex> Point.new(1, 2)
+      ...> |> Geometry.to_ewkb(3825, :xdr)
+      ...> |> Base.encode16()
+      "002000000100000EF13FF00000000000004000000000000000"
+  """
+  @spec to_ewkb(t(), srid() | nil, endian()) :: wkb() | ewkb()
+  def to_ewkb(geometry, srid, endian \\ @default_endian)
+
+  def to_ewkb(geometry, nil, endian) when endian in [:xdr, :ndr] do
+    to_wkb(geometry, endian)
+  end
+
+  def to_ewkb(geometry, srid, endian) when endian in [:xdr, :ndr] do
+    Encoder.WKB.to_ewkb(geometry, srid, endian)
   end
 
   @doc """
   Returns the WKB representation of a geometry.
 
-  With option `:srid` an EWKB representation with the SRID is returned.
-
-  The option `:endian` indicates whether `:xdr` big endian or `:ndr` little
-  endian is returned. The default is `:xdr`.
-
-  The `:mode` determines whether a hex-string or binary is returned. The default
-  is `:binary`.
+  The optional `:endian` argument indicates whether `:xdr` big endian or `:ndr` little
+  endian is returned. The default is `:ndr`.
 
   ## Examples
 
-      iex> Geometry.to_wkb(PointZ.new(1, 2, 3), endian: :ndr, mode: :hex)
+      iex> PointZ.new(1, 2, 3)
+      ...> |> Geometry.to_wkb()
+      ...> |> Base.encode16()
       "0101000080000000000000F03F00000000000000400000000000000840"
 
-      iex> Geometry.to_wkb(Point.new(1, 2), srid: 4711) |> Hex.from_binary()
-      "0020000001000012673FF00000000000004000000000000000"
+      iex> PointZ.new(1, 2, 3)
+      ...> |> Geometry.to_wkb(:xdr)
+      ...> |> Base.encode16()
+      "00800000013FF000000000000040000000000000004008000000000000"
   """
-  @spec to_wkb(t(), opts) :: String.t()
-        when opts: [endian: endian(), srid: srid(), mode: mode()]
-  def to_wkb(%module{} = geometry, opts \\ []) when module in @geometries do
-    module.to_wkb(geometry, opts)
+  @spec to_wkb(t(), endian()) :: wkb()
+  def to_wkb(geometry, endian \\ @default_endian) when endian in [:xdr, :ndr] do
+    Encoder.WKB.to_wkb(geometry, endian)
   end
 
   @doc """
-  Returns an `:ok` tuple with the geometry from the given WKT string. Otherwise
-  returns an `:error` tuple.
+  Returns an `:ok` tuple with the geometry from the given EWKB binary.
 
-  If WKB contains an SRID the tuple is extended by the id.
+  Otherwise returns an `:error` tuple.
 
-  The optional second argument determines if a `:hex`-string or a `:binary`
-  input is expected. The default is `:binary`.
+  If the given binary is a `t:wkb/0` a nil for the SRID is returned.
 
   ## Examples
 
-      iex> Geometry.from_wkb("0101000080000000000000F03F00000000000000400000000000000840", :hex)
-      {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
-
-      iex> Geometry.from_wkb("0020000001000012673FF00000000000004000000000000000", :hex)
+      iex> "0020000001000012673FF00000000000004000000000000000"
+      ...> |> Base.decode16!()
+      ...> |> Geometry.from_ewkb()
       {:ok, {%Point{coordinate: [1.0, 2.0]}, 4711}}
-  """
-  @spec from_wkb(wkb(), mode()) :: {:ok, t() | {t(), srid()}} | wkb_error
-  def from_wkb(wkb, mode \\ :binary), do: WKB.Parser.parse(wkb, mode)
 
-  @doc """
-  The same as `from_wkb/2`, but raises a `Geometry.Error` exception if it fails.
+      iex> "0101000080000000000000F03F00000000000000400000000000000840"
+      ...> |> Base.decode16!()
+      ...> |> Geometry.from_ewkb()
+      {:ok, {%PointZ{coordinate: [1.0, 2.0, 3.0]}, nil}}
   """
-  @spec from_wkb!(wkb(), mode()) :: t() | {t(), srid()}
-  def from_wkb!(wkb, mode \\ :binary) do
-    case WKB.Parser.parse(wkb, mode) do
-      {:ok, geometry} -> geometry
-      error -> raise Geometry.Error, error
+  @spec from_ewkb(ewkb() | wkb()) :: {:ok, {t(), srid() | nil}} | {:error, DecodeError.t()}
+  def from_ewkb(wkb) do
+    with {:ok, geometry, srid} <- Decoder.WKB.decode(wkb) do
+      {:ok, {geometry, srid}}
     end
   end
 
   @doc """
-  Returns the WKT representation of a geometry. An optional `:srid` can be set
-  in the options.
-
-  ## Examples
-
-      iex> Geometry.to_wkt(Point.new(1, 2))
-      "Point (1 2)"
-
-      iex> Geometry.to_wkt(PointZ.new(1.1, 2.2, 3.3), srid: 4211)
-      "SRID=4211;Point Z (1.1 2.2 3.3)"
-
-      iex> Geometry.to_wkt(LineString.new([Point.new(1, 2), Point.new(3, 4)]))
-      "LineString (1 2, 3 4)"
+  The same as `from_ewkb/1`, but raises a `Geometry.DecodeError` exception if it fails.
   """
-  @spec to_wkt(t(), opts) :: String.t()
-        when opts: [srid: srid()]
-  def to_wkt(%module{} = geometry, opts \\ []) when module in @geometries do
-    module.to_wkt(geometry, opts)
+  @spec from_ewkb!(ewkb()) :: {t(), srid() | nil}
+  def from_ewkb!(wkb) do
+    case from_ewkb(wkb) do
+      {:ok, geometry} -> geometry
+      {:error, error} -> raise error
+    end
   end
 
   @doc """
-  Returns an `:ok` tuple with the geometry from the given WKT string. Otherwise
-  returns an `:error` tuple.
+  Returns an `:ok` tuple with the geometry from the given WKB binary.
 
-  If the geometry contains a SRID the id is added to the tuple.
+  Otherwise returns an `:error` tuple.
+
+  If the given binary is a `t:ewkb/0` the SRID is ignored.
 
   ## Examples
+
+      iex> "0020000001000012673FF00000000000004000000000000000"
+      ...> |> Base.decode16!()
+      ...> |> Geometry.from_wkb()
+      {:ok, %Point{coordinate: [1.0, 2.0]}}
+
+      iex> "0101000080000000000000F03F00000000000000400000000000000840"
+      ...> |> Base.decode16!()
+      ...> |> Geometry.from_wkb()
+      {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
+
+      iex> "FF"
+      ...> |> Base.decode16!()
+      ...> |> Geometry.from_wkb()
+      {
+        :error,
+        %Geometry.DecodeError{
+          from: :wkb,
+          offset: 0,
+          reason: [expected_endian: :flag],
+          rest: <<255>>
+        }
+      }
+  """
+  @spec from_wkb(wkb()) :: {:ok, t()} | {:error, DecodeError.t()}
+  def from_wkb(wkb) do
+    with {:ok, geometry, _srid} <- Decoder.WKB.decode(wkb) do
+      {:ok, geometry}
+    end
+  end
+
+  @doc """
+  The same as `from_wkb/1`, but raises a `Geometry.DecodeError` exception if it fails.
+  """
+  @spec from_wkb!(wkb()) :: t()
+  def from_wkb!(wkb) do
+    case from_wkb(wkb) do
+      {:ok, geometry} -> geometry
+      {:error, error} -> raise error
+    end
+  end
+
+  @doc """
+  Returns the EWKT representation of the given `geometry`.
+
+  If the `srid` is `nil` a `t:wkt/0` is returned.
+
+  ## Examples
+
+      iex> Geometry.to_ewkt(PointZ.new(1.1, 2.2, 3.3), 4211)
+      "SRID=4211;Point Z (1.1 2.2 3.3)"
+
+      iex> Geometry.to_ewkt(LineString.new([Point.new(1, 2), Point.new(3, 4)]), 3825)
+      "SRID=3825;LineString (1 2, 3 4)"
+
+      iex> Geometry.to_ewkt(Point.new(1, 2), nil)
+      "Point (1 2)"
+  """
+  @spec to_ewkt(Geometry.t(), Geometry.srid() | nil) :: ewkt() | wkt()
+  def to_ewkt(geometry, nil) do
+    Encoder.WKT.to_wkt(geometry)
+  end
+
+  def to_ewkt(geometry, srid) when is_integer(srid) do
+    Encoder.WKT.to_ewkt(geometry, srid)
+  end
+
+  @doc """
+  Returns the WKT representation of the given `geometry`.
+
+  ## Examples
+
+      iex> Geometry.to_wkt(PointZ.new(1.1, 2.2, 3.3))
+      "Point Z (1.1 2.2 3.3)"
+
+      iex> Geometry.to_wkt(LineString.new([Point.new(1, 2), Point.new(3, 4)]))
+      "LineString (1 2, 3 4)"
+
+      iex> Geometry.to_wkt(Point.new(1, 2))
+      "Point (1 2)"
+  """
+  @spec to_wkt(Geometry.t()) :: wkt()
+  def to_wkt(geometry) do
+    Encoder.WKT.to_wkt(geometry)
+  end
+
+  @doc """
+  Returns an `:ok` tuple with the geometry from the given EWKT string.
+
+  Otherwise returns an `:error` tuple.
+
+  If the given string is a `t:wkt/0` a nil for the SRID is returned.
+
+  ## Examples
+
+      iex> Geometry.from_ewkt("SRID=42;Point (1.1 2.2)")
+      {:ok, {%Point{coordinate: [1.1, 2.2]}, 42}}
+
+      iex> Geometry.from_ewkt("Point ZM (1 2 3 4)")
+      {:ok, {%PointZM{coordinate: [1, 2, 3, 4]}, nil}}
+
+      iex> Geometry.from_ewkt("Point XY (1 2 3 4)")
+      {:error, "expected Point data", "XY (1 2 3 4)", {1, 0}, 6}
+      {
+        :error,
+        %Geometry.DecodeError{
+          from: :wkt,
+          line: {1, 0},
+          message: "expected Point data",
+          offset: 6,
+          rest: "XY (1 2 3 4)"
+        }
+      }
+  """
+  @spec from_ewkt(ewkt() | wkt()) :: {:ok, {t(), srid() | nil}} | {:error, DecodeError.t()}
+  def from_ewkt(wkt) do
+    with {:ok, geometry, srid} <- Decoder.WKT.decode(wkt) do
+      {:ok, {geometry, srid}}
+    end
+  end
+
+  @doc """
+  The same as `from_ewkt/1`, but raises a `Geometry.DecodeError` exception if it fails.
+  """
+  @spec from_ewkt!(ewkt() | wkt()) :: {t(), srid() | nil}
+  def from_ewkt!(wkt) do
+    case from_ewkt(wkt) do
+      {:ok, geometry} -> geometry
+      {:error, error} -> raise error
+    end
+  end
+
+  @doc """
+  Returns an `:ok` tuple with the geometry from the given WKT string.
+
+  Otherwise returns an `:error` tuple.
+
+  If the given string is a `t:ewkt/0` the SRID is ignored.
+
+  ## Examples
+
+      iex> Geometry.from_wkt("SRID=42;Point (1.1 2.2)")
+      {:ok, %Point{coordinate: [1.1, 2.2]}}
 
       iex> Geometry.from_wkt("Point ZM (1 2 3 4)")
       {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
 
-      iex> Geometry.from_wkt("SRID=42;Point (1.1 2.2)")
-      {:ok, {%Point{coordinate: [1.1, 2.2]}, 42}}
+      iex> Geometry.from_wkt("Point XY (1 2 3 4)")
+      {:error,  %Geometry.DecodeError{
+        from: :wkt,
+        line: {1, 0},
+        message: "expected Point data",
+        offset: 6,
+        rest: "XY (1 2 3 4)"}
+      }
   """
-  @spec from_wkt(wkt()) :: {:ok, t() | {t(), srid()}} | wkt_error
-  def from_wkt(wkt), do: WKT.Parser.parse(wkt)
+  @spec from_wkt(wkt()) :: {:ok, t()} | {:error, DecodeError.t()}
+  def from_wkt(wkt) do
+    with {:ok, geometry, _srid} <- Decoder.WKT.decode(wkt) do
+      {:ok, geometry}
+    end
+  end
 
   @doc """
-  The same as `from_wkt/1`, but raises a `Geometry.Error` exception if it fails.
+  The same as `from_wkt/1`, but raises a `Geometry.DecodeError` exception if it fails.
   """
-  @spec from_wkt!(wkt()) :: t() | {t(), srid()}
+  @spec from_wkt!(wkt()) :: t()
   def from_wkt!(wkt) do
-    case WKT.Parser.parse(wkt) do
+    case from_wkt(wkt) do
       {:ok, geometry} -> geometry
-      error -> raise Geometry.Error, error
+      {:error, error} -> raise error
     end
   end
 
@@ -315,18 +433,16 @@ defmodule Geometry do
       iex> Geometry.to_geo_json(LineString.new([Point.new(1, 2), Point.new(3, 4)]))
       %{"type" => "LineString", "coordinates" => [[1, 2], [3, 4]]}
   """
-  @spec to_geo_json(t() | Feature.t() | FeatureCollection.t()) :: geo_json_term
-  def to_geo_json(%module{} = geometry)
-      when module in @geometries or module in @geo_json do
-    module.to_geo_json(geometry)
-  end
+  @spec to_geo_json(t()) :: geo_json_term
+  def to_geo_json(geometry), do: Encoder.GeoJson.to_geo_json(geometry)
 
   @doc """
   Returns an `:ok` tuple with the geometry from the given GeoJSON term.
+
   Otherwise returns an `:error` tuple.
 
-  The `:type` option specifies which type is expected. The
-  possible values are `:z`, `:m`, and `:zm`.
+  The optional second argument specifies which type is expected. The
+  possible values are `:xy`, `:xym`, `xyz`, and `:xyzm`. Defaults to `:xy`.
 
   ## Examples
 
@@ -337,32 +453,36 @@ defmodule Geometry do
 
       iex> ~s({"type": "Point", "coordinates": [1, 2, 3, 4]})
       iex> |> Jason.decode!()
-      iex> |> Geometry.from_geo_json(type: :zm)
+      iex> |> Geometry.from_geo_json(:xyzm)
       {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
-  """
-  @spec from_geo_json(geo_json_term(), opts) ::
-          {:ok, t() | Feature.t() | FeatureCollection.t()} | geo_json_error
-        when opts: [type: :z | :m | :zm]
-  def from_geo_json(json, opts \\ []), do: GeoJson.to_geometry(json, opts)
 
-  @doc """
-  The same as `from_geo_josn/1`, but raises a `Geometry.Error` exception if it
-  fails.
+      iex> ~s({"type": "Dot", "coordinates": [1, 2]})
+      iex> |> Jason.decode!()
+      iex> |> Geometry.from_geo_json()
+      {
+        :error,
+        %Geometry.DecodeError{
+          from: :geo_json,
+          reason: [unknown_type: "Dot"]
+        }
+      }
   """
-  @spec from_geo_json!(geo_json_term(), opts) :: t() | Feature.t() | FeatureCollection.t()
-        when opts: [type: :z | :m | :zm]
-  def from_geo_json!(json, opts \\ []) do
-    case GeoJson.to_geometry(json, opts) do
-      {:ok, geometry} -> geometry
-      error -> raise Geometry.Error, error
-    end
+  @spec from_geo_json(geo_json_term(), :xy | :xyz | :xym | :xyzm) ::
+          {:ok, t() | Feature.t() | FeatureCollection.t()} | {:error, DecodeError.t()}
+  def from_geo_json(json, dim \\ :xy) when dim in [:xy, :xyz, :xym, :xyzm] do
+    Decoder.GeoJson.decode(json, dim)
   end
 
-  @doc false
-  @spec default_endian :: endian()
-  def default_endian, do: :xdr
-
-  @doc false
-  @spec default_mode :: mode()
-  def default_mode, do: :binary
+  @doc """
+  The same as `from_geo_josn/1`, but raises a `Geometry.DecodeError` exception if it
+  fails.
+  """
+  @spec from_geo_json!(geo_json_term(), type :: :xy | :xyz | :xym | :xyzm) ::
+          t() | Feature.t() | FeatureCollection.t()
+  def from_geo_json!(json, dim \\ :xy) when dim in [:xy, :xyz, :xym, :xyzm] do
+    case Decoder.GeoJson.decode(json, dim) do
+      {:ok, geometry} -> geometry
+      {:error, error} -> raise error
+    end
+  end
 end

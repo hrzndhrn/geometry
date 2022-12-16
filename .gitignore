@@ -25,3 +25,6 @@ geometry-*.tar
 # dialyzer plt
 /test/support/plts/*.plt
 /test/support/plts/*.plt.hash
+
+# Benchmark store
+/bench/.store/

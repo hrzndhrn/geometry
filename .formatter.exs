@@ -1,7 +1,5 @@
 [
-  inputs: ["{mix,.formatter}.exs", "{config,lib,test,script}/**/*.{ex,exs}"],
-  locals_without_parens: [
-    prove: 1,
-    prove: 2
-  ]
+  inputs: ["{mix,.formatter}.exs", "{config,lib,test,script,bench}/**/*.{ex,exs}"],
+  import_deps: [:prove, :benchee_dsl],
+  locals_without_parens: [assert_fail: 3]
 ]

@@ -51,8 +51,7 @@ defmodule Geometry.MixProject do
 
   defp aliases do
     [
-      carp: ["test --seed 0 --max-failures 1"],
-      "geometry.gen": ["run script/gen_from_zm.exs"]
+      carp: ["test --seed 0 --max-failures 1"]
     ]
   end
 
@@ -114,6 +113,7 @@ defmodule Geometry.MixProject do
     [
       flags: [:unmatched_returns, :error_handling],
       plt_file: {:no_warn, "test/support/plts/dialyzer.plt"},
+      ignore_warnings: ".dialyzer_ignore.exs",
       plt_ignore_apps: [
         :benchee,
         :benchee_dsl,
@@ -130,6 +130,7 @@ defmodule Geometry.MixProject do
     [
       {:nimble_parsec, "~> 0.5 or ~> 1.0"},
       # dev and test
+      {:beam_file, "~>0.4", only: :dev},
       {:benchee_dsl, "~> 0.1", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
@@ -138,7 +139,8 @@ defmodule Geometry.MixProject do
       {:excoveralls, "~> 0.14", only: :test, runtime: false},
       {:geo, "~> 3.4", only: :dev},
       {:jason, "~> 1.3", only: [:dev, :test]},
-      {:prove, "~> 0.1", only: :test},
+      {:mix_test_watch, "~> 1.1", only: :dev, runtime: false},
+      {:prove, "~> 0.1", only: [:dev, :test]},
       {:recode, "~> 0.4", only: :dev},
       {:xema, "~> 0.15", only: :test}
     ]

@@ -5,8 +5,8 @@
   },
   "skip_files": [
     "lib/geometry/guards.ex",
-    "lib/geometry/wkt/parsers.ex",
-    "lib/geometry/wkt/parsers_helper.ex",
+    "lib/geometry/protocols.ex",
+    "lib/geometry/decoder/wkt/parsers_helper.ex",
     "test/support/"
   ]
 }
