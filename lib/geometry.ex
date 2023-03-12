@@ -1,6 +1,37 @@
 defmodule Geometry do
   @moduledoc """
-  A set of geometry types for WKT/WKB and GeoJson.
+  A set of geometry types for
+  [WKT](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)/
+  [WKB](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
+  and [GeoJson](https://geojson.org/).
+
+  `Geometry` provide the decoding and encoding for geometires of type WKT/EWKT,
+  WKB/EWKB and GeoJon.
+
+  The following gemetries are supported:
+  + Point
+    + `Geometry.Point`, `Geometry.PointM`, `Geometry.PointZ`, `Geometry.PointZM`
+  + LineString
+    + `Geometry.LineString`, `Geometry.LineStringM`, `Geometry.LineStringZ`,
+      `Geometry.LineStringZM`
+  + Polygon
+    + `Geometry.Polygon`, `Geometry.PolygonM`, `Geometry.PolygonZ`,
+      `Geometry.PolygonZM`
+  + MultiPoint
+    + `Geometry.MultiPoint`, `Geometry.MultiPointM`, `Geometry.MultiPointZ`,
+      `Geometry.MultiPointZM`
+  + MultiLineString
+    + `Geometry.MultiLineString`, `Geometry.MultiLineStringM`,
+      `Geometry.MultiLineStringZ`, `Geometry.MultiLineStringZM`
+  + MultiPolyogon
+    + `Geometry.MultiPolygon`, `Geometry.MultiPolygonM`,
+      `Geometry.MultiPolygonZ`, `Geometry.MultiPolygonZM`
+  + GeometryCollection
+    + `Geometry.GeometryCollection`, `Geometry.GeometryCollectionM`,
+      `Geometry.GeometryCollectionZ`, `Geometry.GeometryCollectionZM`
+
+  For GeoJson also `Geometry.Feature` and `Geometry.FeatureCollection` are
+  supported.
   """
 
   alias Geometry.Decoder
@@ -195,7 +226,7 @@ defmodule Geometry do
 
   Otherwise returns an `:error` tuple.
 
-  If the given binary is a `t:wkb/0` a nil for the SRID is returned.
+  If the given binary not an extended `t:wkb/0` a nil for the SRID is returned.
 
   ## Examples
 
@@ -232,7 +263,7 @@ defmodule Geometry do
 
   Otherwise returns an `:error` tuple.
 
-  If the given binary is a `t:ewkb/0` the SRID is ignored.
+  If the given binary is an extended `t:wkb/0` the SRID is ignored.
 
   ## Examples
 
@@ -280,7 +311,7 @@ defmodule Geometry do
   @doc """
   Returns the EWKT representation of the given `geometry`.
 
-  If the `srid` is `nil` a `t:wkt/0` is returned.
+  If the `srid` is `nil` a WKT is returned.
 
   ## Examples
 
@@ -326,7 +357,7 @@ defmodule Geometry do
 
   Otherwise returns an `:error` tuple.
 
-  If the given string is a `t:wkt/0` a nil for the SRID is returned.
+  If the given string not an extended `t:wkt/0` a nil for the SRID is returned.
 
   ## Examples
 
@@ -372,7 +403,7 @@ defmodule Geometry do
 
   Otherwise returns an `:error` tuple.
 
-  If the given string is a `t:ewkt/0` the SRID is ignored.
+  If the given string is an extended `t:wkt/0` the SRID is ignored.
 
   ## Examples
 
@@ -461,7 +492,7 @@ defmodule Geometry do
   end
 
   @doc """
-  The same as `from_geo_josn/1`, but raises a `Geometry.DecodeError` exception if it
+  The same as `from_geo_json/1`, but raises a `Geometry.DecodeError` exception if it
   fails.
   """
   @spec from_geo_json!(geo_json_term(), type :: :xy | :xyz | :xym | :xyzm) ::
