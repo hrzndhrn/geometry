@@ -60,6 +60,9 @@ defmodule Geometry.MixProject do
       extras: [
         "CHANGELOG.md"
       ],
+      source_url: @github,
+      main: Geometry,
+      formatters: ["html"],
       groups_for_modules: [
         "Geometry primitives 2D": [
           Geometry.LineString,
