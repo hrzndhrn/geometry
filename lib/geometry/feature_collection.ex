@@ -4,6 +4,7 @@ defmodule Geometry.FeatureCollection do
 
   `GeometryCollectionZM` implements the protocols `Enumerable` and `Collectable`.
 
+
   ## Examples
 
       iex> Enum.filter(
@@ -30,23 +31,19 @@ defmodule Geometry.FeatureCollection do
       ...>   ])
       ...> )
       %FeatureCollection{
-        features:
-          MapSet.new([
-            %Feature{geometry: %Point{coordinate: [4, 2]}, properties: %{"area" => 42}},
-            %Feature{geometry: %Point{coordinate: [5, 1]}, properties: %{"area" => 51}}
-          ])
+        features: [
+            %Feature{geometry: %Point{coordinate: [5, 1]}, properties: %{"area" => 51}},
+            %Feature{geometry: %Point{coordinate: [4, 2]}, properties: %{"area" => 42}}
+          ]
       }
   """
 
   alias Geometry.Feature
   alias Geometry.FeatureCollection
-  alias Geometry.GeoJson
 
-  defstruct features: MapSet.new()
+  defstruct features: []
 
-  @type t :: %FeatureCollection{
-          features: MapSet.t(Feature.t())
-        }
+  @type t :: %FeatureCollection{features: [Feature.t()]}
 
   @doc """
   Creates an empty `FeatureCollection`.
@@ -74,261 +71,59 @@ defmodule Geometry.FeatureCollection do
       ...>     properties: %{facility: :school}
       ...>   )
       ...> ])
-      %FeatureCollection{features: MapSet.new([
+      %FeatureCollection{features: [
         %Feature{
           geometry: %Point{coordinate: [1, 2]},
           properties: %{facility: :hotel}},
         %Feature{
           geometry: %Point{coordinate: [3, 4]},
           properties: %{facility: :school}}
-      ])}
+      ]}
   """
   @spec new([Feature.t()]) :: t()
-  def new(features), do: %FeatureCollection{features: MapSet.new(features)}
+  def new(features), do: %FeatureCollection{features: features}
 
-  @doc """
-  Returns `true` for an empty `FeatureCollection`.
-
-  ## Examples
-
-      iex> FeatureCollection.empty?(FeatureCollection.new())
-      true
-  """
-  @spec empty?(t()) :: boolean()
-  def empty?(%FeatureCollection{features: features}), do: Enum.empty?(features)
-
-  @doc """
-  Returns an `:ok` tuple with the `FeatureCollection` from the given GeoJSON
-  term. Otherwise returns an `:error` tuple.
-
-  The `:type` option specifies which type is expected. The
-  possible values are `:z`, `:m`, and `:zm`.
-
-  ## Examples
-
-      iex> ~s({
-      ...>   "type": "FeatureCollection",
-      ...>   "features": [
-      ...>     {
-      ...>       "type": "Feature",
-      ...>       "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
-      ...>       "properties": {"facility": "Hotel"}
-      ...>     }, {
-      ...>       "type": "Feature",
-      ...>       "geometry": {"type": "Point", "coordinates": [4, 3, 2]},
-      ...>       "properties": {"facility": "School"}
-      ...>     }
-      ...>   ]
-      ...> })
-      iex> |> Jason.decode!()
-      iex> |> FeatureCollection.from_geo_json(type: :z)
-      {
-        :ok,
-        %FeatureCollection{
-          features:
-            MapSet.new([
-              %Feature{
-                geometry: %PointZ{coordinate: [1, 2, 3]},
-                properties: %{"facility" => "Hotel"}
-              },
-              %Feature{
-                geometry: %PointZ{coordinate: [4, 3, 2]},
-                properties: %{"facility" => "School"}
-              }
-            ])
-        }
-      }
-  """
-  @spec from_geo_json(Geometry.geo_json_term(), opts) :: {:ok, t()} | Geometry.geo_json_error()
-        when opts: [type: :z | :m | :zm]
-  def from_geo_json(json, opts \\ []), do: GeoJson.to_feature_collection(json, opts)
-
-  @doc """
-  The same as `from_geo_josn/1`, but raises a `Geometry.Error` exception if it
-  fails.
-
-  ## Examples
-
-      iex> ~s({
-      ...>   "type": "FeatureCollection",
-      ...>   "features": [
-      ...>     {
-      ...>       "type": "Feature",
-      ...>       "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
-      ...>       "properties": {"facility": "Hotel"}
-      ...>     }, {
-      ...>       "type": "Feature",
-      ...>       "geometry": {"type": "Point", "coordinates": [4, 3, 2]},
-      ...>       "properties": {"facility": "School"}
-      ...>     }
-      ...>   ]
-      ...> })
-      iex> |> Jason.decode!()
-      iex> |> FeatureCollection.from_geo_json!(type: :m)
-      %FeatureCollection{
-        features:
-          MapSet.new([
-            %Feature{
-              geometry: %PointM{coordinate: [1, 2, 3]},
-              properties: %{"facility" => "Hotel"}
-            },
-            %Feature{
-              geometry: %PointM{coordinate: [4, 3, 2]},
-              properties: %{"facility" => "School"}
-            }
-          ])
-      }
-  """
-  @spec from_geo_json!(Geometry.geo_json_term(), opts) :: t()
-        when opts: [type: :z | :m | :zm]
-  def from_geo_json!(json, opts \\ []) do
-    case GeoJson.to_feature_collection(json, opts) do
-      {:ok, geometry} -> geometry
-      error -> raise Geometry.Error, error
-    end
+  defimpl Geometry.Protocol do
+    def empty?(%{features: features}), do: Enum.empty?(features)
   end
 
-  @doc """
-  Returns the GeoJSON term of a `FeatureCollection`.
-
-  ## Examples
-
-      iex> FeatureCollection.to_geo_json(FeatureCollection.new([
-      ...>   Feature.new(
-      ...>     geometry: Point.new(1, 2),
-      ...>     properties: %{facility: :hotel}
-      ...>   )
-      ...> ]))
+  defimpl Geometry.Encoder.GeoJson do
+    def to_geo_json(%{features: features}) do
       %{
         "type" => "FeatureCollection",
-        "features" => [
-          %{
-            "type" => "Feature",
-            "geometry" => %{"coordinates" => [1, 2], "type" => "Point"},
-            "properties" => %{facility: :hotel}
-          }
-        ]
+        "features" => Enum.map(features, fn feature -> Geometry.to_geo_json(feature) end)
       }
-  """
-  @spec to_geo_json(t()) :: Geometry.geo_json_term()
-  def to_geo_json(%FeatureCollection{features: features}) do
-    %{
-      "type" => "FeatureCollection",
-      "features" => Enum.map(features, &Feature.to_geo_json/1)
-    }
+    end
   end
 
-  @doc """
-  Returns the number of elements in `FeatureCollection`.
-
-  ## Examples
-
-      iex> FeatureCollection.size(
-      ...>   FeatureCollection.new([
-      ...>     Feature.new(geometry: Point.new(11, 12)),
-      ...>     Feature.new(geometry:
-      ...>       LineString.new([
-      ...>         Point.new(21, 22),
-      ...>         Point.new(31, 32)
-      ...>       ])
-      ...>     )
-      ...>   ])
-      ...> )
-      2
-  """
-  @spec size(t()) :: non_neg_integer()
-  def size(%FeatureCollection{features: features}), do: MapSet.size(features)
-
-  @doc """
-  Checks if `FeatureCollection` contains `geometry`.
-
-  ## Examples
-
-      iex> FeatureCollection.member?(
-      ...>   FeatureCollection.new([
-      ...>     Feature.new(geometry: Point.new(11, 12)),
-      ...>     Feature.new(geometry:
-      ...>       LineString.new([
-      ...>         Point.new(21, 22),
-      ...>         Point.new(31, 32)
-      ...>       ])
-      ...>     )
-      ...>   ]),
-      ...>   Feature.new(geometry: Point.new(11, 12))
-      ...> )
-      true
-
-      iex> FeatureCollection.member?(
-      ...>   FeatureCollection.new([
-      ...>     Feature.new(geometry: Point.new(11, 12)),
-      ...>     Feature.new(geometry:
-      ...>       LineString.new([
-      ...>         Point.new(21, 22),
-      ...>         Point.new(31, 32)
-      ...>       ])
-      ...>     )
-      ...>   ]),
-      ...>   Feature.new(geometry: Point.new(1, 2))
-      ...> )
-      false
-  """
-  @spec member?(t(), Geometry.t()) :: boolean()
-  def member?(%FeatureCollection{features: features}, geometry),
-    do: MapSet.member?(features, geometry)
-
-  @doc """
-  Converts `FeatureCollection` to a list.
-
-  ## Examples
-
-      iex> FeatureCollection.to_list(
-      ...>   FeatureCollection.new([
-      ...>     Feature.new(geometry: Point.new(11, 12))
-      ...>   ])
-      ...> )
-      [%Feature{geometry: %Point{coordinate: [11, 12]}, properties: %{}}]
-  """
-  @spec to_list(t()) :: [Geometry.t()]
-  def to_list(%FeatureCollection{features: features}), do: MapSet.to_list(features)
-
   defimpl Enumerable do
-    def count(geometry_collection) do
-      {:ok, FeatureCollection.size(geometry_collection)}
+    def count(%{features: features}) do
+      {:ok, length(features)}
     end
 
-    def member?(geometry_collection, val) do
-      {:ok, FeatureCollection.member?(geometry_collection, val)}
+    def member?(%{features: features}, feature) do
+      {:ok, Enum.member?(features, feature)}
     end
 
-    if function_exported?(Enumerable.List, :slice, 4) do
-      def slice(geometry_collection) do
-        size = FeatureCollection.size(geometry_collection)
-
-        {:ok, size,
-         &Enumerable.List.slice(FeatureCollection.to_list(geometry_collection), &1, &2, size)}
-      end
-    else
-      def slice(geometry_collection) do
-        size = FeatureCollection.size(geometry_collection)
-
-        {:ok, size, &FeatureCollection.to_list/1}
-      end
+    def reduce(%{features: features}, acc, fun) do
+      Enumerable.List.reduce(features, acc, fun)
     end
 
-    def reduce(geometry_collection, acc, fun) do
-      Enumerable.List.reduce(FeatureCollection.to_list(geometry_collection), acc, fun)
+    def slice(%{features: features}) do
+      {:ok, length(features), fn %{features: features} -> features end}
     end
   end
 
   defimpl Collectable do
-    def into(%FeatureCollection{features: features}) do
+    def into(%{features: features} = collection) do
       fun = fn
-        list, {:cont, x} ->
-          [{x, []} | list]
+        list, {:cont, item} ->
+          [item | list]
 
         list, :done ->
-          %FeatureCollection{
-            features: %{features | map: Map.merge(features.map, Map.new(list))}
+          %{
+            collection
+            | features: Enum.reduce(list, features, fn feature, acc -> [feature | acc] end)
           }
 
         _list, :halt ->

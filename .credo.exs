@@ -104,7 +104,7 @@
         {Credo.Check.Readability.ParenthesesInCondition, []},
         {Credo.Check.Readability.ParenthesesOnZeroArityDefs, []},
         {Credo.Check.Readability.PredicateFunctionNames, []},
-        {Credo.Check.Readability.PreferImplicitTry, []},
+        {Credo.Check.Readability.PreferImplicitTry, false},
         {Credo.Check.Readability.RedundantBlankLines, []},
         {Credo.Check.Readability.Semicolons, []},
         {Credo.Check.Readability.SpaceAfterCommas, []},
@@ -124,7 +124,7 @@
         {Credo.Check.Refactor.MatchInCondition, []},
         {Credo.Check.Refactor.NegatedConditionsInUnless, []},
         {Credo.Check.Refactor.NegatedConditionsWithElse, []},
-        {Credo.Check.Refactor.Nesting, []},
+        {Credo.Check.Refactor.Nesting, [max_nesting: 3]},
         {Credo.Check.Refactor.UnlessWithElse, []},
         {Credo.Check.Refactor.WithClauses, []},
 

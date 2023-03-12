@@ -1,3 +1,3 @@
-BencheeDsl.run(
-  time: 10
-)
+Code.eval_file("bench/support.exs")
+
+BencheeDsl.run(memory_time: 2)
