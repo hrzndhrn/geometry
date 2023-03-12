@@ -158,8 +158,7 @@ defmodule Geometry.MixProject do
         "lib",
         "mix.exs",
         "README*",
-        "LICENSE*",
-        "script"
+        "LICENSE*"
       ]
     ]
   end
