@@ -68,7 +68,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
   @spec post_next(rest(), args(), context(), line(), offset()) :: {args(), context()}
   def post_next(_rest, args, context, _line, _offset) do
     cond do
-      args in ['(', ','] -> {[:next], context}
+      args in [~c"(", ~c","] -> {[:next], context}
       args == [] -> {[:empty], context}
       true -> {[:halt], context}
     end

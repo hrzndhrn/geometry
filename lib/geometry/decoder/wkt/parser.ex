@@ -81,28 +81,30 @@ defmodule Geometry.Decoder.WKT.Parser do
     end
   end
 
-  [
-    :point,
-    :polygon,
-    :line_string,
-    :multi_point,
-    :multi_line_string,
-    :multi_polygon,
-    :geometry_collection
-  ]
-  |> Enum.each(fn parser ->
-    defp geometry_text({unquote(parser), :xy}, rest, opts) do
-      unquote(:"#{parser}_xy")(rest, Keyword.put(opts, :tag, :xy))
-    end
+  Enum.each(
+    [
+      :point,
+      :polygon,
+      :line_string,
+      :multi_point,
+      :multi_line_string,
+      :multi_polygon,
+      :geometry_collection
+    ],
+    fn parser ->
+      defp geometry_text({unquote(parser), :xy}, rest, opts) do
+        unquote(:"#{parser}_xy")(rest, Keyword.put(opts, :tag, :xy))
+      end
 
-    defp geometry_text({unquote(parser), :xyzm}, rest, opts) do
-      unquote(:"#{parser}_xyzm")(rest, Keyword.put(opts, :tag, :xyzm))
-    end
+      defp geometry_text({unquote(parser), :xyzm}, rest, opts) do
+        unquote(:"#{parser}_xyzm")(rest, Keyword.put(opts, :tag, :xyzm))
+      end
 
-    defp geometry_text({unquote(parser), dim}, rest, opts) do
-      unquote(:"#{parser}_xyz")(rest, Keyword.put(opts, :tag, dim))
+      defp geometry_text({unquote(parser), dim}, rest, opts) do
+        unquote(:"#{parser}_xyz")(rest, Keyword.put(opts, :tag, dim))
+      end
     end
-  end)
+  )
 
   Enum.each(
     [:geometry_collection_xy, :geometry_collection_xyz, :geometry_collection_xyzm],

@@ -27,6 +27,7 @@ defmodule Geometry.DecodeError do
 
   @max_rest 9
 
+  @impl true
   def message(%{from: :wkt} = error) do
     {line, offset} = error.line
     col = error.offset - offset
