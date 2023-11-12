@@ -21,7 +21,7 @@
     {Recode.Task.EnforceLineLength, [active: false]},
     {Recode.Task.FilterCount, []},
     {Recode.Task.IOInspect, [autocorrect: false]},
-    # {Recode.Task.Nesting, [max_depth: 3]},
+    {Recode.Task.Nesting, [config: [max_depth: 3]]},
     {Recode.Task.PipeFunOne, []},
     {Recode.Task.SinglePipe, [exclude: "**/parsers_helper.ex"]},
     {Recode.Task.Specs, [exclude: "test/**/*.{ex,exs}", config: [only: :visible]]},
