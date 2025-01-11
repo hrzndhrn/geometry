@@ -4,7 +4,7 @@ defmodule Binary do
   def replace(bin, value, offset) when is_integer(offset) do
     tail_size = byte_size(bin) - offset - byte_size(value)
 
-    unless tail_size >= 0, do: raise("value fits not in binary")
+    if tail_size < 0, do: raise("value fits not in binary")
 
     head = :binary.part(bin, {0, offset})
     tail = :binary.part(bin, {byte_size(bin), -1 * tail_size})

@@ -756,7 +756,9 @@ defmodule Geometry.GeometryCollectionTest do
   defp wkt_parts_regex(dim, data) do
     data
     |> geometries(dim)
-    |> Enum.map(fn geometry -> Geometry.to_wkt(geometry) |> Regex.escape() |> Regex.compile!() end)
+    |> Enum.map(fn geometry ->
+      Geometry.to_wkt(geometry) |> Regex.escape() |> Regex.compile!()
+    end)
   end
 
   defp wkt(name, dim \\ nil, data \\ [], srid \\ "")
