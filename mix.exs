@@ -140,7 +140,7 @@ defmodule Geometry.MixProject do
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.28", only: :dev, runtime: false},
       {:excoveralls, "~> 0.14", only: :test, runtime: false},
-      {:geo, "~> 3.4", only: :dev},
+      {:geo, "~> 4.0", only: :dev},
       {:jason, "~> 1.3", only: [:dev, :test]},
       {:mix_test_watch, "~> 1.1", only: :dev, runtime: false},
       {:prove, "~> 0.1", only: [:dev, :test]},
