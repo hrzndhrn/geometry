@@ -35,13 +35,13 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
   end
 
   @spec post_geometry(rest(), args(), context(), line(), offset()) :: {args(), context()}
-  def post_geometry(_rest, args, context, _line, _offset) do
+  def post_geometry(rest, args, context, _line, _offset) do
     case args do
       [tag, geometry, srid] ->
-        {[%{geometry: geometry, tag: tag, srid: srid}], context}
+        {rest, [%{geometry: geometry, tag: tag, srid: srid}], context}
 
       [tag, geometry] ->
-        {[%{geometry: geometry, tag: tag}], context}
+        {rest, [%{geometry: geometry, tag: tag}], context}
 
       _missing_data ->
         {:error, :no_data_found}
@@ -66,11 +66,11 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
   end
 
   @spec post_next(rest(), args(), context(), line(), offset()) :: {args(), context()}
-  def post_next(_rest, args, context, _line, _offset) do
+  def post_next(rest, args, context, _line, _offset) do
     cond do
-      args in [~c"(", ~c","] -> {[:next], context}
-      args == [] -> {[:empty], context}
-      true -> {[:halt], context}
+      args in [~c"(", ~c","] -> {rest, [:next], context}
+      args == [] -> {rest, [:empty], context}
+      true -> {rest, [:halt], context}
     end
   end
 
@@ -267,11 +267,11 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
   defp empty_tag, do: ignore(any_case_string("EMPTY"))
 
   @spec post_geometry_tag(rest(), args(), context(), line(), offset()) :: {args(), context()}
-  def post_geometry_tag(_rest, args, context, _line, _offset) do
+  def post_geometry_tag(rest, args, context, _line, _offset) do
     # add :xy to geometries whitout Z, M, or ZM tag
     case args do
-      [geometry] -> {[:xy, geometry], context}
-      [_tag, _geometry] -> {args, context}
+      [geometry] -> {rest, [:xy, geometry], context}
+      [_tag, _geometry] -> {rest, args, context}
     end
   end
 
@@ -313,7 +313,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
   end
 
   @spec post_number(rest(), args(), context(), line(), offset()) :: {args(), context()}
-  def post_number(_rest, args, context, _line, _offset) do
+  def post_number(rest, args, context, _line, _offset) do
     number =
       case args do
         [int] -> int
@@ -324,7 +324,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
         [frac, ".", int, "-"] -> -1 * to_number(int, frac)
       end
 
-    {[number], context}
+    {rest, [number], context}
   end
 
   defp to_number(int, frac) do
