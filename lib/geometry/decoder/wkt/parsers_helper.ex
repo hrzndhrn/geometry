@@ -34,7 +34,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
     |> label("geometry name or SRID")
   end
 
-  @spec post_geometry(rest(), args(), context(), line(), offset()) :: {args(), context()}
+  @spec post_geometry(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
   def post_geometry(rest, args, context, _line, _offset) do
     case args do
       [tag, geometry, srid] ->
@@ -65,7 +65,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
     |> label("coordinates or EMPTY")
   end
 
-  @spec post_next(rest(), args(), context(), line(), offset()) :: {args(), context()}
+  @spec post_next(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
   def post_next(rest, args, context, _line, _offset) do
     cond do
       args in [~c"(", ~c","] -> {rest, [:next], context}
@@ -266,7 +266,8 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
 
   defp empty_tag, do: ignore(any_case_string("EMPTY"))
 
-  @spec post_geometry_tag(rest(), args(), context(), line(), offset()) :: {args(), context()}
+  @spec post_geometry_tag(rest(), args(), context(), line(), offset()) ::
+          {rest(), args(), context()}
   def post_geometry_tag(rest, args, context, _line, _offset) do
     # add :xy to geometries whitout Z, M, or ZM tag
     case args do
@@ -312,7 +313,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
     |> integer(min: 1)
   end
 
-  @spec post_number(rest(), args(), context(), line(), offset()) :: {args(), context()}
+  @spec post_number(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
   def post_number(rest, args, context, _line, _offset) do
     number =
       case args do

@@ -35,7 +35,7 @@ defmodule Geometry.Decoder.WKT.Parser do
   defparsec(:next, next())
 
   @spec parse(Geometry.wkt()) ::
-          {tpye :: atom(), dim :: atom(), data :: term(), srid :: non_neg_integer() | nil}
+          {tpye :: atom(), dim :: atom(), data :: term(), srid :: Geometry.srid() | nil}
           | {:error, DecodeError.t()}
   def parse(string) do
     with {:ok, [info], rest, _context, line, byte_offset} <- geometry(string),
@@ -81,16 +81,15 @@ defmodule Geometry.Decoder.WKT.Parser do
     end
   end
 
-  [
-    :point,
-    :polygon,
-    :line_string,
-    :multi_point,
-    :multi_line_string,
-    :multi_polygon,
-    :geometry_collection
-  ]
-  |> Enum.each(fn parser ->
+  for parser <- [
+        :point,
+        :polygon,
+        :line_string,
+        :multi_point,
+        :multi_line_string,
+        :multi_polygon,
+        :geometry_collection
+      ] do
     defp geometry_text({unquote(parser), :xy}, rest, opts) do
       unquote(:"#{parser}_xy")(rest, Keyword.put(opts, :tag, :xy))
     end
@@ -102,36 +101,37 @@ defmodule Geometry.Decoder.WKT.Parser do
     defp geometry_text({unquote(parser), dim}, rest, opts) do
       unquote(:"#{parser}_xyz")(rest, Keyword.put(opts, :tag, dim))
     end
-  end)
+  end
 
-  Enum.each(
-    [:geometry_collection_xy, :geometry_collection_xyz, :geometry_collection_xyzm],
-    fn geometry_collection ->
-      defp unquote(geometry_collection)(string, opts, acc \\ []) do
-        tag = Keyword.get(opts, :tag)
+  for geometry_collection <- [
+        :geometry_collection_xy,
+        :geometry_collection_xyz,
+        :geometry_collection_xyzm
+      ] do
+    defp unquote(geometry_collection)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
 
-        case next(string, opts) do
-          {:ok, [:empty], rest, context, line, byte_offset} ->
-            {:ok, {:geometries, acc}, rest, context, line, byte_offset}
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:geometries, acc}, rest, context, line, byte_offset}
 
-          {:ok, [:next], rest, _context, line, byte_offset} ->
-            with {:ok, geometry, rest, _context, line, byte_offset} <-
-                   geometry_collection_item(rest,
-                     line: line,
-                     byte_offset: byte_offset,
-                     tag: tag
-                   ) do
-              unquote(geometry_collection)(
-                rest,
-                [line: line, byte_offset: byte_offset, tag: tag],
-                [geometry | acc]
-              )
-            end
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 geometry_collection_item(rest,
+                   line: line,
+                   byte_offset: byte_offset,
+                   tag: tag
+                 ) do
+            unquote(geometry_collection)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
 
-          {:ok, [:halt], rest, context, line, byte_offset} ->
-            {:ok, {:geometries, Enum.reverse(acc)}, rest, context, line, byte_offset}
-        end
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:geometries, Enum.reverse(acc)}, rest, context, line, byte_offset}
       end
     end
-  )
+  end
 end

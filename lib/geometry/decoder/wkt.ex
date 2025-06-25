@@ -35,7 +35,7 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.PolygonZM
 
   @spec decode(String.t()) ::
-          {:ok, Geometry.t() | {Geometry.t(), Geometry.srid()}} | {:error, DecodeError.t()}
+          {:ok, Geometry.t() | {Geometry.t(), Geometry.srid() | nil}} | {:error, DecodeError.t()}
   def decode(wkt) do
     with {:ok, type, dim, data, srid} <- Parser.parse(wkt) do
       {:ok, geometry(type, dim, data), srid}
