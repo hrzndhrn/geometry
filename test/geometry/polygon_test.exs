@@ -652,26 +652,26 @@ defmodule Geometry.PolygonTest do
     case dim do
       :xy ->
         Enum.map(data, fn line ->
-          points = Enum.map(line, fn [x, y] -> Point.new(x, y) end)
-          LineString.new(points)
+          coordinates = Enum.map(line, fn [x, y] -> Point.new(x, y) end)
+          LineString.new(coordinates)
         end)
 
       :xym ->
         Enum.map(data, fn line ->
-          points = Enum.map(line, fn [x, y, m] -> PointM.new(x, y, m) end)
-          LineStringM.new(points)
+          coordinates = Enum.map(line, fn [x, y, m] -> PointM.new(x, y, m) end)
+          LineStringM.new(coordinates)
         end)
 
       :xyz ->
         Enum.map(data, fn line ->
-          points = Enum.map(line, fn [x, y, z] -> PointZ.new(x, y, z) end)
-          LineStringZ.new(points)
+          coordinates = Enum.map(line, fn [x, y, z] -> PointZ.new(x, y, z) end)
+          LineStringZ.new(coordinates)
         end)
 
       :xyzm ->
         Enum.map(data, fn line ->
-          points = Enum.map(line, fn [x, y, z, m] -> PointZM.new(x, y, z, m) end)
-          LineStringZM.new(points)
+          coordinates = Enum.map(line, fn [x, y, z, m] -> PointZM.new(x, y, z, m) end)
+          LineStringZM.new(coordinates)
         end)
     end
   end

@@ -38,7 +38,7 @@ defmodule Geometry.MultiLineStringZ do
 
   defstruct line_strings: [], srid: 0
 
-  @type t :: %MultiLineStringZ{line_strings: [Geometry.coordinates()], srid: Geometry.srid()}
+  @type t :: %MultiLineStringZ{line_strings: [Geometry.path()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiLineStringZ`.
@@ -85,7 +85,7 @@ defmodule Geometry.MultiLineStringZ do
 
   def new(line_strings, srid) do
     %MultiLineStringZ{
-      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end),
+      line_strings: Enum.map(line_strings, fn line_string -> line_string.path end),
       srid: srid
     }
   end

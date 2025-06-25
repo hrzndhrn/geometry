@@ -409,7 +409,7 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> LineStringZM
             end
           ){
-          points: data,
+          path: data,
           srid: srid
         }
 

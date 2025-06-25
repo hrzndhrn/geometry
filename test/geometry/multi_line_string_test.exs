@@ -730,7 +730,7 @@ defmodule Geometry.MultiLineStringTest do
   defp wkt(name, [], srid), do: "SRID=#{srid};#{name} EMPTY"
 
   defp wkt(name, data, srid) do
-    points =
+    coordinates =
       data
       |> Enum.map_join(", ", fn line ->
         line
@@ -739,7 +739,7 @@ defmodule Geometry.MultiLineStringTest do
       end)
       |> in_brackets()
 
-    "#{srid(srid)}#{name} #{points}"
+    "#{srid(srid)}#{name} #{coordinates}"
   end
 
   defp srid(""), do: ""
@@ -763,15 +763,15 @@ defmodule Geometry.MultiLineStringTest do
 
   defp line_strings(data, dim, srid \\ 0) do
     case dim do
-      :xy -> Enum.map(data, fn points -> %LineString{points: points, srid: srid} end)
-      :xym -> Enum.map(data, fn points -> %LineStringM{points: points, srid: srid} end)
-      :xyz -> Enum.map(data, fn points -> %LineStringZ{points: points, srid: srid} end)
-      :xyzm -> Enum.map(data, fn points -> %LineStringZM{points: points, srid: srid} end)
+      :xy -> Enum.map(data, fn coordinates -> %LineString{path: coordinates, srid: srid} end)
+      :xym -> Enum.map(data, fn coordinates -> %LineStringM{path: coordinates, srid: srid} end)
+      :xyz -> Enum.map(data, fn coordinates -> %LineStringZ{path: coordinates, srid: srid} end)
+      :xyzm -> Enum.map(data, fn coordinates -> %LineStringZM{path: coordinates, srid: srid} end)
     end
   end
 
-  defp line_string(points, dim, srid \\ 0) do
-    line_strings = Enum.map(points, fn point -> point(point, dim, srid) end)
+  defp line_string(coordinates, dim, srid \\ 0) do
+    line_strings = Enum.map(coordinates, fn point -> point(point, dim, srid) end)
 
     case dim do
       :xy -> LineString.new(line_strings, srid: srid)

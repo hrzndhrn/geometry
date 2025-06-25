@@ -107,14 +107,19 @@ defmodule Geometry do
           | PointZM.t()
 
   @typedoc """
-  An n-dimensional coordinate.
+  An n-dimensional point.
   """
-  @type coordinate :: [number(), ...]
+  @type coordinates :: [number(), ...]
 
   @typedoc """
   A list of n-dimensional coordinates.
   """
-  @type coordinates :: [coordinate()]
+  @type path :: [coordinates()]
+
+  @typedoc """
+  A list of n-dimensional coordinates where the first and last point are equal, creating a ring.
+  """
+  @type ring :: [coordinates()]
 
   @typedoc """
   The Spatial Reference System Identifier to identify projected, unprojected,
@@ -233,12 +238,12 @@ defmodule Geometry do
       iex> "0020000001000012673FF00000000000004000000000000000"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_ewkb()
-      {:ok, %Point{coordinate: [1.0, 2.0], srid: 4711}}
+      {:ok, %Point{coordinates: [1.0, 2.0], srid: 4711}}
 
       iex> "0101000080000000000000F03F00000000000000400000000000000840"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_ewkb()
-      {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0], srid: 0}}
+      {:ok, %PointZ{coordinates: [1.0, 2.0, 3.0], srid: 0}}
   """
   @spec from_ewkb(wkb()) :: {:ok, t()} | {:error, DecodeError.t()}
   def from_ewkb(wkb), do: Decoder.WKB.decode(wkb)
@@ -266,12 +271,12 @@ defmodule Geometry do
       iex> "0020000001000012673FF00000000000004000000000000000"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_wkb()
-      {:ok, %Point{coordinate: [1.0, 2.0], srid: 4711}}
+      {:ok, %Point{coordinates: [1.0, 2.0], srid: 4711}}
 
       iex> "0101000080000000000000F03F00000000000000400000000000000840"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_wkb()
-      {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0]}}
+      {:ok, %PointZ{coordinates: [1.0, 2.0, 3.0]}}
 
       iex> "FF"
       ...> |> Base.decode16!()
@@ -358,10 +363,10 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.from_ewkt("SRID=42;Point (1.1 2.2)")
-      {:ok, %Point{coordinate: [1.1, 2.2], srid: 42}}
+      {:ok, %Point{coordinates: [1.1, 2.2], srid: 42}}
 
       iex> Geometry.from_ewkt("Point ZM (1 2 3 4)")
-      {:ok, %PointZM{coordinate: [1, 2, 3, 4], srid: 0}}
+      {:ok, %PointZM{coordinates: [1, 2, 3, 4], srid: 0}}
 
       iex> Geometry.from_ewkt("Point XY (1 2 3 4)")
       {:error, "expected Point data", "XY (1 2 3 4)", {1, 0}, 6}
@@ -400,10 +405,10 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.from_wkt("SRID=42;Point (1.1 2.2)")
-      {:ok, %Point{coordinate: [1.1, 2.2], srid: 42}}
+      {:ok, %Point{coordinates: [1.1, 2.2], srid: 42}}
 
       iex> Geometry.from_wkt("Point ZM (1 2 3 4)")
-      {:ok, %PointZM{coordinate: [1, 2, 3, 4], srid: 0}}
+      {:ok, %PointZM{coordinates: [1, 2, 3, 4], srid: 0}}
 
       iex> Geometry.from_wkt("Point XY (1 2 3 4)")
       {:error,  %Geometry.DecodeError{
@@ -455,12 +460,12 @@ defmodule Geometry do
       iex> ~s({"type": "Point", "coordinates": [1, 2]})
       iex> |> Jason.decode!()
       iex> |> Geometry.from_geo_json()
-      {:ok, %Point{coordinate: [1, 2], srid: 4326}}
+      {:ok, %Point{coordinates: [1, 2], srid: 4326}}
 
       iex> ~s({"type": "Point", "coordinates": [1, 2, 3, 4]})
       iex> |> Jason.decode!()
       iex> |> Geometry.from_geo_json(:xyzm)
-      {:ok, %PointZM{coordinate: [1, 2, 3, 4], srid: 4326}}
+      {:ok, %PointZM{coordinates: [1, 2, 3, 4], srid: 4326}}
 
       iex> ~s({"type": "Dot", "coordinates": [1, 2]})
       iex> |> Jason.decode!()

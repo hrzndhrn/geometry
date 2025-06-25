@@ -5,7 +5,7 @@ defmodule Geometry.PolygonZ do
   @moduledoc """
   A polygon struct, representing a 3D polygon.
 
-  A none empty line-string requires at least one ring with four points.
+  A none empty line-string requires at least one ring with four coordinates.
   """
 
   use Geometry.Protocols
@@ -15,7 +15,7 @@ defmodule Geometry.PolygonZ do
 
   defstruct rings: [], srid: 0
 
-  @type t :: %PolygonZ{rings: [Geometry.coordinates()], srid: Geometry.srid()}
+  @type t :: %PolygonZ{rings: [Geometry.ring()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `PolygonZ`.
@@ -60,6 +60,6 @@ defmodule Geometry.PolygonZ do
   """
   @spec new([LineStringZ.t()], Geometry.srid()) :: t()
   def new(rings, srid \\ 0) when is_list(rings) do
-    %PolygonZ{rings: Enum.map(rings, fn line_string -> line_string.points end), srid: srid}
+    %PolygonZ{rings: Enum.map(rings, fn line_string -> line_string.path end), srid: srid}
   end
 end

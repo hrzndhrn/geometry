@@ -5,7 +5,7 @@ defmodule Geometry.PolygonM do
   @moduledoc """
   A polygon struct, representing a 2D polygon with a measurement.
 
-  A none empty line-string requires at least one ring with four points.
+  A none empty line-string requires at least one ring with four coordinates.
   """
 
   use Geometry.Protocols
@@ -15,7 +15,7 @@ defmodule Geometry.PolygonM do
 
   defstruct rings: [], srid: 0
 
-  @type t :: %PolygonM{rings: [Geometry.coordinates()], srid: Geometry.srid()}
+  @type t :: %PolygonM{rings: [Geometry.ring()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `PolygonM`.
@@ -60,6 +60,6 @@ defmodule Geometry.PolygonM do
   """
   @spec new([LineStringM.t()], Geometry.srid()) :: t()
   def new(rings, srid \\ 0) when is_list(rings) do
-    %PolygonM{rings: Enum.map(rings, fn line_string -> line_string.points end), srid: srid}
+    %PolygonM{rings: Enum.map(rings, fn line_string -> line_string.path end), srid: srid}
   end
 end

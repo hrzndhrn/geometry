@@ -59,6 +59,6 @@ defmodule Geometry.MultiPoint do
   def new([], srid), do: %MultiPoint{srid: srid}
 
   def new(points, srid) do
-    %MultiPoint{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
+    %MultiPoint{points: Enum.map(points, fn point -> point.coordinates end), srid: srid}
   end
 end

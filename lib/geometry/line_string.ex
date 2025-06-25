@@ -2,7 +2,7 @@ defmodule Geometry.LineString do
   @moduledoc """
   A line-string struct, representing a 2D line.
 
-  A none empty line-string requires at least two points.
+  A non-empty line-string requires at least two path.
   """
 
   use Geometry.Protocols
@@ -10,9 +10,9 @@ defmodule Geometry.LineString do
   alias Geometry.LineString
   alias Geometry.Point
 
-  defstruct points: [], srid: 0
+  defstruct path: [], srid: 0
 
-  @type t :: %LineString{points: Geometry.coordinates(), srid: Geometry.srid()}
+  @type t :: %LineString{path: Geometry.path(), srid: Geometry.srid()}
 
   @doc """
   Creates an empty `LineString`.
@@ -20,7 +20,7 @@ defmodule Geometry.LineString do
   ## Examples
 
       iex> LineString.new()
-      %LineString{points: [], srid: 0}
+      %LineString{path: [], srid: 0}
   """
   @spec new :: t()
   def new, do: %LineString{}
@@ -31,14 +31,14 @@ defmodule Geometry.LineString do
   ## Examples
 
       iex> LineString.new([Point.new(1, 2), Point.new(3, 4)])
-      %LineString{points: [[1, 2], [3, 4]], srid: 0}
+      %LineString{path: [[1, 2], [3, 4]], srid: 0}
   """
   @spec new([Point.t()], Geometry.srid()) :: t()
-  def new(points, srid \\ 0)
+  def new(path, srid \\ 0)
 
   def new([], srid), do: %LineString{srid: srid}
 
-  def new([_, _ | _] = points, srid) do
-    %LineString{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
+  def new([_, _ | _] = path, srid) do
+    %LineString{path: Enum.map(path, fn point -> point.coordinates end), srid: srid}
   end
 end

@@ -3,7 +3,7 @@ defmodule Geometry.MultiPointZ do
   # The ZM version of this file is used as a template.
 
   @moduledoc """
-  A set of points from type `Geometry.PointZ`.
+  A set of coordinates from type `Geometry.PointZ`.
 
   `MultiPointZ` implements the protocols `Enumerable` and `Collectable`.
 
@@ -61,7 +61,7 @@ defmodule Geometry.MultiPointZ do
 
   def new([], srid), do: %MultiPointZ{srid: srid}
 
-  def new(points, srid) do
-    %MultiPointZ{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
+  def new(coordinates, srid) do
+    %MultiPointZ{points: Enum.map(coordinates, fn point -> point.coordinates end), srid: srid}
   end
 end

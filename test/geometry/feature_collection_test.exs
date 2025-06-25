@@ -42,11 +42,11 @@ defmodule Geometry.FeatureCollectionTest do
       collection = %FeatureCollection{
         features: [
           %Feature{
-            geometry: %Point{coordinate: [1, 2]},
+            geometry: %Point{coordinates: [1, 2]},
             properties: %{"foo" => "bar"}
           },
           %Feature{
-            geometry: %LineString{points: [[4, 3], [1, 1]]},
+            geometry: %LineString{path: [[4, 3], [1, 1]]},
             properties: %{"bar" => "foo"}
           }
         ]
@@ -80,11 +80,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %Point{coordinate: [1, 2], srid: 4326},
+                     geometry: %Point{coordinates: [1, 2], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %Point{coordinate: [4, 3], srid: 4326},
+                     geometry: %Point{coordinates: [4, 3], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -114,11 +114,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %PointZ{coordinate: [1, 2, 3], srid: 4326},
+                     geometry: %PointZ{coordinates: [1, 2, 3], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %PointZ{coordinate: [4, 3, 5], srid: 4326},
+                     geometry: %PointZ{coordinates: [4, 3, 5], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -148,11 +148,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %PointM{coordinate: [1, 2, 3], srid: 4326},
+                     geometry: %PointM{coordinates: [1, 2, 3], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %PointM{coordinate: [4, 3, 5], srid: 4326},
+                     geometry: %PointM{coordinates: [4, 3, 5], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -182,11 +182,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %PointZM{coordinate: [1, 2, 3, 1], srid: 4326},
+                     geometry: %PointZM{coordinates: [1, 2, 3, 1], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %PointZM{coordinate: [4, 3, 5, 1], srid: 4326},
+                     geometry: %PointZM{coordinates: [4, 3, 5, 1], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -272,11 +272,11 @@ defmodule Geometry.FeatureCollectionTest do
       collection = %FeatureCollection{
         features: [
           %Feature{
-            geometry: %Point{coordinate: [1, 2]},
+            geometry: %Point{coordinates: [1, 2]},
             properties: %{"foo" => "bar"}
           },
           %Feature{
-            geometry: %LineString{points: [[4, 3], [1, 1]]},
+            geometry: %LineString{path: [[4, 3], [1, 1]]},
             properties: %{"bar" => "foo"}
           }
         ]
@@ -291,11 +291,11 @@ defmodule Geometry.FeatureCollectionTest do
       collection = %FeatureCollection{
         features: [
           bar = %Feature{
-            geometry: %Point{coordinate: [1, 2]},
+            geometry: %Point{coordinates: [1, 2]},
             properties: %{"foo" => "bar"}
           },
           %Feature{
-            geometry: %LineString{points: [[4, 3], [1, 1]]},
+            geometry: %LineString{path: [[4, 3], [1, 1]]},
             properties: %{"bar" => "foo"}
           }
         ]
@@ -308,18 +308,18 @@ defmodule Geometry.FeatureCollectionTest do
       collection = %FeatureCollection{
         features: [
           %Feature{
-            geometry: %Point{coordinate: [1, 2]},
+            geometry: %Point{coordinates: [1, 2]},
             properties: %{"foo" => "bar"}
           },
           %Feature{
-            geometry: %LineString{points: [[4, 3], [1, 1]]},
+            geometry: %LineString{path: [[4, 3], [1, 1]]},
             properties: %{"bar" => "foo"}
           }
         ]
       }
 
       feature = %Feature{
-        geometry: %LineString{points: [[14, 13], [11, 11]]},
+        geometry: %LineString{path: [[14, 13], [11, 11]]},
         properties: %{"bar" => "bar"}
       }
 
@@ -330,14 +330,14 @@ defmodule Geometry.FeatureCollectionTest do
   describe "Enum.into/2/3" do
     test "interrupted" do
       feature = %Feature{
-        geometry: %LineString{points: [[4, 3], [1, 1]]},
+        geometry: %LineString{path: [[4, 3], [1, 1]]},
         properties: %{"bar" => "foo"}
       }
 
       collection = %FeatureCollection{
         features: [
           %Feature{
-            geometry: %LineString{points: [[4, 3], [1, 1]]},
+            geometry: %LineString{path: [[4, 3], [1, 1]]},
             properties: %{"bar" => "foo"}
           }
         ]

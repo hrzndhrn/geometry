@@ -44,30 +44,37 @@ defmodule Geometry.Decoder.WKT do
 
   defp geometry(type, dim, data, nil = _srid), do: geometry(type, dim, data, 0)
 
-  defp geometry(:point, :xy, [coordinate], srid), do: %Point{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xy, [coordinate], srid), do: %Point{coordinates: coordinate, srid: srid}
 
-  defp geometry(:point, :xy, coordinate, srid), do: %Point{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xy, coordinate, srid), do: %Point{coordinates: coordinate, srid: srid}
 
-  defp geometry(:point, :xyz, [coordinate], srid), do: %PointZ{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xyz, [coordinate], srid),
+    do: %PointZ{coordinates: coordinate, srid: srid}
 
-  defp geometry(:point, :xyz, coordinate, srid), do: %PointZ{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xyz, coordinate, srid), do: %PointZ{coordinates: coordinate, srid: srid}
 
-  defp geometry(:point, :xym, [coordinate], srid), do: %PointM{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xym, [coordinate], srid),
+    do: %PointM{coordinates: coordinate, srid: srid}
 
-  defp geometry(:point, :xym, coordinate, srid), do: %PointM{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xym, coordinate, srid), do: %PointM{coordinates: coordinate, srid: srid}
 
   defp geometry(:point, :xyzm, [coordinate], srid),
-    do: %PointZM{coordinate: coordinate, srid: srid}
+    do: %PointZM{coordinates: coordinate, srid: srid}
 
-  defp geometry(:point, :xyzm, coordinate, srid), do: %PointZM{coordinate: coordinate, srid: srid}
+  defp geometry(:point, :xyzm, coordinate, srid),
+    do: %PointZM{coordinates: coordinate, srid: srid}
 
-  defp geometry(:line_string, :xy, points, srid), do: %LineString{points: points, srid: srid}
+  defp geometry(:line_string, :xy, coordinates, srid),
+    do: %LineString{path: coordinates, srid: srid}
 
-  defp geometry(:line_string, :xym, points, srid), do: %LineStringM{points: points, srid: srid}
+  defp geometry(:line_string, :xym, coordinates, srid),
+    do: %LineStringM{path: coordinates, srid: srid}
 
-  defp geometry(:line_string, :xyz, points, srid), do: %LineStringZ{points: points, srid: srid}
+  defp geometry(:line_string, :xyz, coordinates, srid),
+    do: %LineStringZ{path: coordinates, srid: srid}
 
-  defp geometry(:line_string, :xyzm, points, srid), do: %LineStringZM{points: points, srid: srid}
+  defp geometry(:line_string, :xyzm, coordinates, srid),
+    do: %LineStringZM{path: coordinates, srid: srid}
 
   defp geometry(:polygon, :xy, rings, srid), do: %Polygon{rings: rings, srid: srid}
 
@@ -77,13 +84,17 @@ defmodule Geometry.Decoder.WKT do
 
   defp geometry(:polygon, :xyzm, rings, srid), do: %PolygonZM{rings: rings, srid: srid}
 
-  defp geometry(:multi_point, :xy, points, srid), do: %MultiPoint{points: points, srid: srid}
+  defp geometry(:multi_point, :xy, coordinates, srid),
+    do: %MultiPoint{points: coordinates, srid: srid}
 
-  defp geometry(:multi_point, :xym, points, srid), do: %MultiPointM{points: points, srid: srid}
+  defp geometry(:multi_point, :xym, coordinates, srid),
+    do: %MultiPointM{points: coordinates, srid: srid}
 
-  defp geometry(:multi_point, :xyz, points, srid), do: %MultiPointZ{points: points, srid: srid}
+  defp geometry(:multi_point, :xyz, coordinates, srid),
+    do: %MultiPointZ{points: coordinates, srid: srid}
 
-  defp geometry(:multi_point, :xyzm, points, srid), do: %MultiPointZM{points: points, srid: srid}
+  defp geometry(:multi_point, :xyzm, coordinates, srid),
+    do: %MultiPointZM{points: coordinates, srid: srid}
 
   defp geometry(:multi_line_string, :xy, line_strings, srid),
     do: %MultiLineString{line_strings: line_strings, srid: srid}

@@ -25,7 +25,7 @@ defmodule Geometry.GeometryCollectionZ do
       [:line_string, :point]
 
       iex> Enum.into([PointZ.new(1, 2, 3)], GeometryCollectionZ.new())
-      %GeometryCollectionZ{geometries: [%PointZ{coordinate: [1, 2, 3]}], srid: 0}
+      %GeometryCollectionZ{geometries: [%PointZ{coordinates: [1, 2, 3]}], srid: 0}
   """
 
   use Geometry.Protocols
@@ -57,8 +57,8 @@ defmodule Geometry.GeometryCollectionZ do
       ...>   LineStringZ.new([PointZ.new(1, 1, 1), PointZ.new(2, 2, 2)])
       ...> ])
       %GeometryCollectionZ{geometries: [
-        %PointZ{coordinate: [1, 2, 3]},
-        %LineStringZ{points: [[1, 1, 1], [2, 2, 2]]}
+        %PointZ{coordinates: [1, 2, 3]},
+        %LineStringZ{path: [[1, 1, 1], [2, 2, 2]]}
       ],
       srid: 0}
   """
