@@ -241,11 +241,7 @@ defmodule Geometry do
       {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0], srid: 0}}
   """
   @spec from_ewkb(wkb()) :: {:ok, t()} | {:error, DecodeError.t()}
-  def from_ewkb(wkb) do
-    with {:ok, geometry} <- Decoder.WKB.decode(wkb) do
-      {:ok, geometry}
-    end
-  end
+  def from_ewkb(wkb), do: Decoder.WKB.decode(wkb)
 
   @doc """
   The same as `from_ewkb/1`, but raises a `Geometry.DecodeError` exception if it fails.
@@ -381,11 +377,7 @@ defmodule Geometry do
       }
   """
   @spec from_ewkt(wkt()) :: {:ok, t()} | {:error, DecodeError.t()}
-  def from_ewkt(wkt) do
-    with {:ok, geometry} <- Decoder.WKT.decode(wkt) do
-      {:ok, geometry}
-    end
-  end
+  def from_ewkt(wkt), do: Decoder.WKT.decode(wkt)
 
   @doc """
   The same as `from_ewkt/1`, but raises a `Geometry.DecodeError` exception if it fails.
@@ -423,11 +415,7 @@ defmodule Geometry do
       }
   """
   @spec from_wkt(wkt()) :: {:ok, t()} | {:error, DecodeError.t()}
-  def from_wkt(wkt) do
-    with {:ok, geometry} <- Decoder.WKT.decode(wkt) do
-      {:ok, geometry}
-    end
-  end
+  def from_wkt(wkt), do: Decoder.WKT.decode(wkt)
 
   @doc """
   The same as `from_wkt/1`, but raises a `Geometry.DecodeError` exception if it fails.
