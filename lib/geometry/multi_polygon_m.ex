@@ -57,7 +57,8 @@ defmodule Geometry.MultiPolygonM do
                 [11, 12, 14]
               ]
             ]
-          ]
+          ],
+          srid: 0
       }
   """
 
@@ -66,9 +67,9 @@ defmodule Geometry.MultiPolygonM do
   alias Geometry.MultiPolygonM
   alias Geometry.PolygonM
 
-  defstruct polygons: []
+  defstruct polygons: [], srid: 0
 
-  @type t :: %MultiPolygonM{polygons: [Geometry.coordinates()]}
+  @type t :: %MultiPolygonM{polygons: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPolygonM`.
@@ -123,10 +124,12 @@ defmodule Geometry.MultiPolygonM do
       iex> MultiPolygonM.new([])
       %MultiPolygonM{}
   """
-  @spec new([PolygonM.t()]) :: t()
-  def new([]), do: %MultiPolygonM{}
+  @spec new([PolygonM.t()], Geometry.srid()) :: t()
+  def new(polygons, srid \\ 0)
 
-  def new(polygons) do
-    %MultiPolygonM{polygons: Enum.map(polygons, fn polygon -> polygon.rings end)}
+  def new([], srid), do: %MultiPolygonM{srid: srid}
+
+  def new(polygons, srid) do
+    %MultiPolygonM{polygons: Enum.map(polygons, fn polygon -> polygon.rings end), srid: srid}
   end
 end

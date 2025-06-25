@@ -24,9 +24,9 @@ defmodule Geometry.MultiPointZM do
   alias Geometry.MultiPointZM
   alias Geometry.PointZM
 
-  defstruct points: []
+  defstruct points: [], srid: 0
 
-  @type t :: %MultiPointZM{points: [Geometry.coordinate()]}
+  @type t :: %MultiPointZM{points: [Geometry.coordinate()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPointZM`.
@@ -48,15 +48,17 @@ defmodule Geometry.MultiPointZM do
       ...>   PointZM.new(1, 2, 3, 4),
       ...>   PointZM.new(3, 4, 5, 6)
       ...> ])
-      %MultiPointZM{points: [[1, 2, 3, 4], [3, 4, 5, 6]]}
+      %MultiPointZM{points: [[1, 2, 3, 4], [3, 4, 5, 6]], srid: 0}
 
       iex> MultiPointZM.new([])
       %MultiPointZM{}
   """
-  @spec new([PointZM.t()]) :: t()
-  def new([]), do: %MultiPointZM{}
+  @spec new([PointZM.t()], Geometry.srid()) :: t()
+  def new(points, srid \\ 0)
 
-  def new(points) do
-    %MultiPointZM{points: Enum.map(points, fn point -> point.coordinate end)}
+  def new([], srid), do: %MultiPointZM{srid: srid}
+
+  def new(points, srid) do
+    %MultiPointZM{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
   end
 end

@@ -13,9 +13,9 @@ defmodule Geometry.PolygonM do
   alias Geometry.LineStringM
   alias Geometry.PolygonM
 
-  defstruct rings: []
+  defstruct rings: [], srid: 0
 
-  @type t :: %PolygonM{rings: [Geometry.coordinates()]}
+  @type t :: %PolygonM{rings: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `PolygonM`.
@@ -51,14 +51,15 @@ defmodule Geometry.PolygonM do
         rings: [
           [[35, 10, 14], [45, 45, 24], [10, 20, 34], [35, 10, 14]],
           [[20, 30, 14], [35, 35, 24], [30, 20, 34], [20, 30, 14]]
-        ]
+        ],
+        srid: 0
       }
 
       iex> PolygonM.new()
       %PolygonM{}
   """
-  @spec new([LineStringM.t()]) :: t()
-  def new(rings) when is_list(rings) do
-    %PolygonM{rings: Enum.map(rings, fn line_string -> line_string.points end)}
+  @spec new([LineStringM.t()], Geometry.srid()) :: t()
+  def new(rings, srid \\ 0) when is_list(rings) do
+    %PolygonM{rings: Enum.map(rings, fn line_string -> line_string.points end), srid: srid}
   end
 end

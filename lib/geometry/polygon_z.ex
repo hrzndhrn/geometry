@@ -13,9 +13,9 @@ defmodule Geometry.PolygonZ do
   alias Geometry.LineStringZ
   alias Geometry.PolygonZ
 
-  defstruct rings: []
+  defstruct rings: [], srid: 0
 
-  @type t :: %PolygonZ{rings: [Geometry.coordinates()]}
+  @type t :: %PolygonZ{rings: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `PolygonZ`.
@@ -51,14 +51,15 @@ defmodule Geometry.PolygonZ do
         rings: [
           [[35, 10, 13], [45, 45, 23], [10, 20, 33], [35, 10, 13]],
           [[20, 30, 13], [35, 35, 23], [30, 20, 33], [20, 30, 13]]
-        ]
+        ],
+        srid: 0
       }
 
       iex> PolygonZ.new()
       %PolygonZ{}
   """
-  @spec new([LineStringZ.t()]) :: t()
-  def new(rings) when is_list(rings) do
-    %PolygonZ{rings: Enum.map(rings, fn line_string -> line_string.points end)}
+  @spec new([LineStringZ.t()], Geometry.srid()) :: t()
+  def new(rings, srid \\ 0) when is_list(rings) do
+    %PolygonZ{rings: Enum.map(rings, fn line_string -> line_string.points end), srid: srid}
   end
 end

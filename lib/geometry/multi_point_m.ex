@@ -27,9 +27,9 @@ defmodule Geometry.MultiPointM do
   alias Geometry.MultiPointM
   alias Geometry.PointM
 
-  defstruct points: []
+  defstruct points: [], srid: 0
 
-  @type t :: %MultiPointM{points: [Geometry.coordinate()]}
+  @type t :: %MultiPointM{points: [Geometry.coordinate()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPointM`.
@@ -37,7 +37,7 @@ defmodule Geometry.MultiPointM do
   ## Examples
 
       iex> MultiPointM.new()
-      %MultiPointM{points: []}
+      %MultiPointM{points: [], srid: 0}
   """
   @spec new :: t()
   def new, do: %MultiPointM{}
@@ -51,15 +51,17 @@ defmodule Geometry.MultiPointM do
       ...>   PointM.new(1, 2, 4),
       ...>   PointM.new(3, 4, 6)
       ...> ])
-      %MultiPointM{points: [[1, 2, 4], [3, 4, 6]]}
+      %MultiPointM{points: [[1, 2, 4], [3, 4, 6]], srid: 0}
 
       iex> MultiPointM.new([])
-      %MultiPointM{points: []}
+      %MultiPointM{points: [], srid: 0}
   """
-  @spec new([PointM.t()]) :: t()
-  def new([]), do: %MultiPointM{}
+  @spec new([PointM.t()], Geometry.srid()) :: t()
+  def new(points, srid \\ 0)
 
-  def new(points) do
-    %MultiPointM{points: Enum.map(points, fn point -> point.coordinate end)}
+  def new([], srid), do: %MultiPointM{srid: srid}
+
+  def new(points, srid) do
+    %MultiPointM{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
   end
 end

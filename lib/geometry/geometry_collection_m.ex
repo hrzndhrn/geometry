@@ -25,16 +25,16 @@ defmodule Geometry.GeometryCollectionM do
       [:line_string, :point]
 
       iex> Enum.into([PointM.new(1, 2, 4)], GeometryCollectionM.new())
-      %GeometryCollectionM{geometries: [%PointM{coordinate: [1, 2, 4]}]}
+      %GeometryCollectionM{geometries: [%PointM{coordinate: [1, 2, 4]}], srid: 0}
   """
 
   use Geometry.Protocols
 
   alias Geometry.GeometryCollectionM
 
-  defstruct geometries: []
+  defstruct geometries: [], srid: 0
 
-  @type t :: %GeometryCollectionM{geometries: [Geometry.t()]}
+  @type t :: %GeometryCollectionM{geometries: [Geometry.t()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `GeometryCollectionM`.
@@ -59,8 +59,9 @@ defmodule Geometry.GeometryCollectionM do
       %GeometryCollectionM{geometries: [
         %PointM{coordinate: [1, 2, 4]},
         %LineStringM{points: [[1, 1, 1], [2, 2, 2]]}
-      ]}
+      ],
+      srid: 0}
   """
-  @spec new([Geometry.t()]) :: t()
-  def new(geometries), do: %GeometryCollectionM{geometries: geometries}
+  @spec new([Geometry.t()], Geometry.srid()) :: t()
+  def new(geometries, srid \\ 0), do: %GeometryCollectionM{geometries: geometries, srid: srid}
 end

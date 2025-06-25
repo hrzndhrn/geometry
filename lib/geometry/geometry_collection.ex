@@ -32,9 +32,9 @@ defmodule Geometry.GeometryCollection do
 
   alias Geometry.GeometryCollection
 
-  defstruct geometries: []
+  defstruct geometries: [], srid: 0
 
-  @type t :: %GeometryCollection{geometries: []}
+  @type t :: %GeometryCollection{geometries: [], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `GeometryCollection`.
@@ -42,7 +42,7 @@ defmodule Geometry.GeometryCollection do
   ## Examples
 
       iex> GeometryCollection.new()
-      %GeometryCollection{geometries: []}
+      %GeometryCollection{geometries: [], srid: 0}
   """
   @spec new :: t()
   def new, do: %GeometryCollection{}
@@ -59,8 +59,9 @@ defmodule Geometry.GeometryCollection do
       %GeometryCollection{geometries: [
         %Point{coordinate: [1, 2]},
         %LineString{points: [[1, 1], [2, 2]]}
-      ]}
+      ],
+      srid: 0}
   """
-  @spec new([Geometry.t()]) :: t()
-  def new(geometries), do: %GeometryCollection{geometries: geometries}
+  @spec new([Geometry.t()], Geometry.srid()) :: t()
+  def new(geometries, srid \\ 0), do: %GeometryCollection{geometries: geometries, srid: srid}
 end
