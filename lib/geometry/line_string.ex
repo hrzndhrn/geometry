@@ -34,7 +34,7 @@ defmodule Geometry.LineString do
       %LineString{points: [[1, 2], [3, 4]], srid: 0}
   """
   @spec new([Point.t()], Geometry.srid()) :: t()
-  def new(poing, srid \\ 0)
+  def new(points, srid \\ 0)
 
   def new([], srid), do: %LineString{srid: srid}
 
