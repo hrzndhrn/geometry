@@ -80,11 +80,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %Point{coordinate: [1, 2]},
+                     geometry: %Point{coordinate: [1, 2], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %Point{coordinate: [4, 3]},
+                     geometry: %Point{coordinate: [4, 3], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -114,11 +114,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %PointZ{coordinate: [1, 2, 3]},
+                     geometry: %PointZ{coordinate: [1, 2, 3], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %PointZ{coordinate: [4, 3, 5]},
+                     geometry: %PointZ{coordinate: [4, 3, 5], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -148,11 +148,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %PointM{coordinate: [1, 2, 3]},
+                     geometry: %PointM{coordinate: [1, 2, 3], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %PointM{coordinate: [4, 3, 5]},
+                     geometry: %PointM{coordinate: [4, 3, 5], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]
@@ -182,11 +182,11 @@ defmodule Geometry.FeatureCollectionTest do
                %FeatureCollection{
                  features: [
                    %Feature{
-                     geometry: %PointZM{coordinate: [1, 2, 3, 1]},
+                     geometry: %PointZM{coordinate: [1, 2, 3, 1], srid: 4326},
                      properties: %{"facility" => "Hotel"}
                    },
                    %Feature{
-                     geometry: %PointZM{coordinate: [4, 3, 5, 1]},
+                     geometry: %PointZM{coordinate: [4, 3, 5, 1], srid: 4326},
                      properties: %{"facility" => "School"}
                    }
                  ]

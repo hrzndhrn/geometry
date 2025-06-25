@@ -242,7 +242,7 @@ defmodule Geometry.GeometryCollectionTest do
 
       describe "[#{inspect(module)}] new/1" do
         test "returns a geometry-collection" do
-          geometries = geometries(unquote(data[:term]), unquote(dim))
+          geometries = geometries(unquote(data[:term]), unquote(dim), unquote(srid))
           geometry_collection = unquote(module).new(geometries)
 
           assert length(geometry_collection.geometries) == 4
@@ -265,7 +265,12 @@ defmodule Geometry.GeometryCollectionTest do
 
         test "returns false if geometry-collection is not empty" do
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           assert Geometry.empty?(geometry_collection) == false
         end
@@ -338,7 +343,7 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, geometry_collection}
         end
@@ -347,7 +352,7 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, geometry_collection}
         end
@@ -370,7 +375,13 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, geometry_collection}
         end
@@ -379,7 +390,13 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, geometry_collection}
         end
@@ -492,36 +509,60 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              0,
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {geometry_collection, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, geometry_collection}
         end
 
         test "returns geometry-collection from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              0,
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {geometry_collection, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, geometry_collection}
         end
 
         test "returns geometry-collection from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {geometry_collection, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, geometry_collection}
         end
 
         test "returns geometry-collection from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim), true)
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {geometry_collection, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, geometry_collection}
         end
       end
 
@@ -532,7 +573,12 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           assert Geometry.to_wkb(geometry_collection, :xdr) == wkb
         end
@@ -541,7 +587,12 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           assert Geometry.to_wkb(geometry_collection) == wkb
           assert Geometry.to_wkb(geometry_collection, :ndr) == wkb
@@ -569,18 +620,28 @@ defmodule Geometry.GeometryCollectionTest do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          assert Geometry.to_ewkb(geometry_collection, unquote(srid), :xdr) == wkb
+          assert Geometry.to_ewkb(geometry_collection, :xdr) == wkb
         end
 
         test "returns geometry-collection from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          assert Geometry.to_ewkb(geometry_collection, unquote(srid)) == wkb
+          assert Geometry.to_ewkb(geometry_collection) == wkb
         end
       end
 
@@ -591,7 +652,12 @@ defmodule Geometry.GeometryCollectionTest do
           wkt = wkt(unquote(text), unquote(dim), unquote(data[:term]))
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              0
+            )
 
           assert Geometry.from_wkt(wkt) == {:ok, geometry_collection}
         end
@@ -607,7 +673,12 @@ defmodule Geometry.GeometryCollectionTest do
           wkt = wkt(unquote(text), unquote(dim), unquote(data[:term]), unquote(srid))
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           assert Geometry.from_wkt(wkt) == {:ok, geometry_collection}
         end
@@ -617,28 +688,39 @@ defmodule Geometry.GeometryCollectionTest do
         @describetag :wkt
 
         test "returns geometry-collection" do
-          wkt = wkt(unquote(text), unquote(dim), unquote(data[:term]))
+          wkt =
+            wkt(unquote(text), unquote(dim), unquote(data[:term]), unquote(srid))
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {geometry_collection, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, geometry_collection}
         end
 
         test "returns an empty geometry-collection" do
           wkt = wkt(unquote(text))
           geometry_collection = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {geometry_collection, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, geometry_collection}
         end
 
         test "returns geometry-collection from WKT with srid" do
           wkt = wkt(unquote(text), unquote(dim), unquote(data[:term]), unquote(srid))
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {geometry_collection, unquote(srid)}}
+          assert Geometry.from_ewkt(wkt) == {:ok, geometry_collection}
         end
       end
 
@@ -649,7 +731,12 @@ defmodule Geometry.GeometryCollectionTest do
           wkt_parts = wkt_parts(unquote(text), unquote(dim), unquote(data[:term]))
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           wkt = Geometry.to_wkt(geometry_collection)
 
@@ -673,9 +760,14 @@ defmodule Geometry.GeometryCollectionTest do
           wkt_parts = wkt_parts(unquote(text), unquote(dim), unquote(data[:term]))
 
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          wkt = Geometry.to_ewkt(geometry_collection, unquote(srid))
+          wkt = Geometry.to_ewkt(geometry_collection)
 
           Enum.each(wkt_parts, fn regex ->
             assert Regex.match?(regex, wkt)
@@ -684,16 +776,21 @@ defmodule Geometry.GeometryCollectionTest do
 
         test "returns ewkt from an empty geometry-collection" do
           [regex] = wkt_parts(unquote(text), nil, [], unquote(srid))
-          geometry_collection = unquote(module).new()
+          geometry_collection = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Regex.match?(regex, Geometry.to_ewkt(geometry_collection, unquote(srid)))
+          assert Regex.match?(regex, Geometry.to_ewkt(geometry_collection))
         end
       end
 
       describe "[#{inspect(module)}] slice/2" do
         test "returns slice" do
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           assert Enum.slice(geometry_collection, 1..2) |> length() == 2
         end
@@ -702,27 +799,43 @@ defmodule Geometry.GeometryCollectionTest do
       describe "[#{inspect(module)}] into/2" do
         test "returns geometry-collection" do
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          geometries = geometries(unquote(data[:term]), unquote(dim))
+          geometries = geometries(unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Enum.into(geometries, unquote(module).new()) == geometry_collection
+          assert Enum.into(geometries, unquote(module).new([], unquote(srid))) ==
+                   geometry_collection
         end
       end
 
       describe "[#{inspect(module)}] member?/2" do
         test "returns true" do
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          geometries = geometries(unquote(data[:term]), unquote(dim))
+          geometries = geometries(unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Enum.member?(geometry_collection, hd(geometries)) == true
         end
 
         test "returns false" do
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
           polygon = empty_polygon(unquote(dim))
 
@@ -733,9 +846,15 @@ defmodule Geometry.GeometryCollectionTest do
       describe "[#{inspect(module)}] map/2" do
         test "returns geometries" do
           geometry_collection =
-            geometry_collection(unquote(module), unquote(data[:term]), unquote(dim))
+            geometry_collection(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid)
+            )
 
-          geometries = unquote(data[:term]) |> geometries(unquote(dim)) |> Enum.sort()
+          geometries =
+            unquote(data[:term]) |> geometries(unquote(dim), unquote(srid)) |> Enum.sort()
 
           assert geometry_collection |> Enum.map(fn x -> x end) |> Enum.sort() == geometries
         end
@@ -750,12 +869,12 @@ defmodule Geometry.GeometryCollectionTest do
   defp wkt_parts(name, _dim, [], srid), do: [~r/SRID=#{srid};#{name}\sEMPTY/]
 
   defp wkt_parts(name, dim, data, srid) do
-    [~r/#{srid(srid)}#{name}\s\(.*\)/ | wkt_parts_regex(dim, data)]
+    [~r/#{srid(srid)}#{name}\s\(.*\)/ | wkt_parts_regex(dim, data, srid)]
   end
 
-  defp wkt_parts_regex(dim, data) do
+  defp wkt_parts_regex(dim, data, srid) do
     data
-    |> geometries(dim)
+    |> geometries(dim, srid)
     |> Enum.map(fn geometry ->
       Geometry.to_wkt(geometry) |> Regex.escape() |> Regex.compile!()
     end)
@@ -768,12 +887,12 @@ defmodule Geometry.GeometryCollectionTest do
   defp wkt(name, _dim, [], srid), do: "SRID=#{srid};#{name} EMPTY"
 
   defp wkt(name, dim, data, srid) do
-    "#{srid(srid)}#{name} (#{dim |> wkt_parts_text(data) |> Enum.join(", ")})"
+    "#{srid(srid)}#{name} (#{dim |> wkt_parts_text(data, srid) |> Enum.join(", ")})"
   end
 
-  defp wkt_parts_text(dim, data) do
+  defp wkt_parts_text(dim, data, srid) do
     data
-    |> geometries(dim)
+    |> geometries(dim, srid)
     |> Enum.map(fn geometry -> Geometry.to_wkt(geometry) end)
   end
 
@@ -781,12 +900,12 @@ defmodule Geometry.GeometryCollectionTest do
 
   defp srid(srid), do: "SRID=#{srid};"
 
-  defp geometry_collection(module, data, dim, float \\ false) do
-    module.new(geometries(to_float(data, float), dim))
+  defp geometry_collection(module, data, dim, srid, float \\ false) do
+    module.new(geometries(to_float(data, float), dim, srid), srid)
   end
 
   defp geometry_collection_geo_json(module, data, dim) do
-    module.new(geometries(data, dim, false))
+    module.new(geometries(data, dim, 4326, false), 4326)
   end
 
   defp to_float(data, false), do: data
@@ -830,52 +949,52 @@ defmodule Geometry.GeometryCollectionTest do
 
   defp add_empty(list, _item, false), do: list
 
-  defp geometries(data, dim, empty? \\ true)
+  defp geometries(data, dim, srid, empty? \\ true)
 
-  defp geometries(data, :xy, empty?) do
+  defp geometries(data, :xy, srid, empty?) do
     add_empty(
       [
-        %Point{coordinate: data[:point]},
-        %LineString{points: data[:line_string]},
-        %Polygon{rings: data[:polygon]}
+        %Point{coordinate: data[:point], srid: srid},
+        %LineString{points: data[:line_string], srid: srid},
+        %Polygon{rings: data[:polygon], srid: srid}
       ],
-      %Point{coordinate: []},
+      %Point{coordinate: [], srid: srid},
       empty?
     )
   end
 
-  defp geometries(data, :xym, empty?) do
+  defp geometries(data, :xym, srid, empty?) do
     add_empty(
       [
-        %PointM{coordinate: data[:point]},
-        %LineStringM{points: data[:line_string]},
-        %PolygonM{rings: data[:polygon]}
+        %PointM{coordinate: data[:point], srid: srid},
+        %LineStringM{points: data[:line_string], srid: srid},
+        %PolygonM{rings: data[:polygon], srid: srid}
       ],
-      %PointM{coordinate: []},
+      %PointM{coordinate: [], srid: srid},
       empty?
     )
   end
 
-  defp geometries(data, :xyz, empty?) do
+  defp geometries(data, :xyz, srid, empty?) do
     add_empty(
       [
-        %PointZ{coordinate: data[:point]},
-        %LineStringZ{points: data[:line_string]},
-        %PolygonZ{rings: data[:polygon]}
+        %PointZ{coordinate: data[:point], srid: srid},
+        %LineStringZ{points: data[:line_string], srid: srid},
+        %PolygonZ{rings: data[:polygon], srid: srid}
       ],
-      %PointZ{coordinate: []},
+      %PointZ{coordinate: [], srid: srid},
       empty?
     )
   end
 
-  defp geometries(data, :xyzm, empty?) do
+  defp geometries(data, :xyzm, srid, empty?) do
     add_empty(
       [
-        %PointZM{coordinate: data[:point]},
-        %LineStringZM{points: data[:line_string]},
-        %PolygonZM{rings: data[:polygon]}
+        %PointZM{coordinate: data[:point], srid: srid},
+        %LineStringZM{points: data[:line_string], srid: srid},
+        %PolygonZM{rings: data[:polygon], srid: srid}
       ],
-      %PointZM{coordinate: []},
+      %PointZM{coordinate: [], srid: srid},
       empty?
     )
   end

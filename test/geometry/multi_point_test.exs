@@ -192,11 +192,11 @@ defmodule Geometry.MultiPointTest do
           assert GeoJsonValidator.valid?(geo_json)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) ==
-                   {:ok, %unquote(module){points: unquote(data[:term])}}
+                   {:ok, %unquote(module){points: unquote(data[:term]), srid: 4326}}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json(geo_json) ==
-                     {:ok, %unquote(module){points: unquote(data[:term])}}
+                     {:ok, %unquote(module){points: unquote(data[:term]), srid: 4326}}
           end
         end
 
@@ -244,14 +244,14 @@ defmodule Geometry.MultiPointTest do
 
         test "returns multi-point from xdr binary" do
           wkb = unquote(code[:xdr] <> data[:xdr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_point}
         end
 
         test "returns multi-point from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_point}
         end
@@ -272,14 +272,18 @@ defmodule Geometry.MultiPointTest do
 
         test "returns multi-point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
+
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid), true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_point}
         end
 
         test "returns multi-point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
+
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid), true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_point}
         end
@@ -419,30 +423,34 @@ defmodule Geometry.MultiPointTest do
 
         test "returns multi-point from xdr binary" do
           wkb = unquote(code[:xdr] <> data[:xdr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_point, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_point}
         end
 
         test "returns multi-point from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_point, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_point}
         end
 
         test "returns multi-point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_point, unquote(srid)}}
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid), true)
+
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_point}
         end
 
         test "returns multi-point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim), true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_point, unquote(srid)}}
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid), true)
+
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_point}
         end
       end
 
@@ -484,16 +492,20 @@ defmodule Geometry.MultiPointTest do
 
         test "returns multi-point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.to_ewkb(multi_point, unquote(srid), :xdr) == wkb
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.to_ewkb(multi_point, :xdr) == wkb
         end
 
         test "returns multi-point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.to_ewkb(multi_point, unquote(srid)) == wkb
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.to_ewkb(multi_point) == wkb
         end
       end
 
@@ -516,7 +528,9 @@ defmodule Geometry.MultiPointTest do
 
         test "returns multi-point from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
+
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, multi_point}
         end
@@ -529,21 +543,23 @@ defmodule Geometry.MultiPointTest do
           wkt = wkt(unquote(text), unquote(data[:term]))
           multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_point, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_point}
         end
 
         test "returns an empty multi-point" do
           wkt = wkt(unquote(text))
           multi_point = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_point, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_point}
         end
 
         test "returns multi-point from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_point, unquote(srid)}}
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_point}
         end
       end
 
@@ -570,16 +586,18 @@ defmodule Geometry.MultiPointTest do
 
         test "returns ewkt" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.to_ewkt(multi_point, unquote(srid)) == wkt
+          multi_point =
+            multi_point(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.to_ewkt(multi_point) == wkt
         end
 
         test "returns ewkt from an empty multi-point" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          multi_point = unquote(module).new()
+          multi_point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.to_ewkt(multi_point, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(multi_point) == wkt
         end
       end
 
@@ -647,24 +665,24 @@ defmodule Geometry.MultiPointTest do
     "#{srid}#{name} (#{points})"
   end
 
-  defp multi_point(module, data, dim, to_float \\ false) do
-    module.new(points(data, dim, to_float))
+  defp multi_point(module, data, dim, srid \\ 0, to_float \\ false) do
+    module.new(points(data, dim, srid, to_float), srid)
   end
 
-  defp points(data, dim, to_float \\ false) do
+  defp points(data, dim, srid \\ 0, to_float \\ false) do
     Enum.map(data, fn point ->
       point = if to_float, do: Enum.map(point, fn value -> value * 1.0 end), else: point
 
-      point(point, dim)
+      point(point, dim, srid)
     end)
   end
 
-  defp point(data, dim) do
+  defp point(data, dim, srid \\ 0) do
     case dim do
-      :xy -> data |> Enum.take(2) |> Point.new()
-      :xym -> data |> Enum.take(3) |> PointM.new()
-      :xyz -> data |> Enum.take(3) |> PointZ.new()
-      :xyzm -> data |> Enum.take(4) |> PointZM.new()
+      :xy -> data |> Enum.take(2) |> Point.new(srid)
+      :xym -> data |> Enum.take(3) |> PointM.new(srid)
+      :xyz -> data |> Enum.take(3) |> PointZ.new(srid)
+      :xyzm -> data |> Enum.take(4) |> PointZM.new(srid)
     end
   end
 end
