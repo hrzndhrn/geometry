@@ -1,6 +1,6 @@
 Decode WKB (XDR/bin)
 
-Benchmark run from 2023-06-29 07:31:09.117742Z UTC
+Benchmark run from 2025-06-25 05:14:57.997379Z UTC
 
 ## System
 
@@ -21,10 +21,10 @@ Benchmark suite executing on the following system:
     <td style="white-space: nowrap">16 GB</td>
   </tr><tr>
     <th style="white-space: nowrap">Elixir Version</th>
-    <td style="white-space: nowrap">1.15.0</td>
+    <td style="white-space: nowrap">1.18.4</td>
   </tr><tr>
     <th style="white-space: nowrap">Erlang Version</th>
-    <td style="white-space: nowrap">26.0.1</td>
+    <td style="white-space: nowrap">28.0</td>
   </tr>
 </table>
 
@@ -65,20 +65,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">21.93 K</td>
-    <td style="white-space: nowrap; text-align: right">45.61 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;29.09%</td>
-    <td style="white-space: nowrap; text-align: right">39.58 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">96.18 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">15.81 K</td>
+    <td style="white-space: nowrap; text-align: right">63.23 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;31.19%</td>
+    <td style="white-space: nowrap; text-align: right">55.25 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">130.79 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">7.82 K</td>
-    <td style="white-space: nowrap; text-align: right">127.89 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;21.36%</td>
-    <td style="white-space: nowrap; text-align: right">121.62 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">242.07 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">6.54 K</td>
+    <td style="white-space: nowrap; text-align: right">152.99 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;19.64%</td>
+    <td style="white-space: nowrap; text-align: right">140.20 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">249.60 &micro;s</td>
   </tr>
 
 </table>
@@ -93,14 +93,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">21.93 K</td>
+    <td style="white-space: nowrap;text-align: right">15.81 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">7.82 K</td>
-    <td style="white-space: nowrap; text-align: right">2.8x</td>
+    <td style="white-space: nowrap; text-align: right">6.54 K</td>
+    <td style="white-space: nowrap; text-align: right">2.42x</td>
   </tr>
 
 </table>
@@ -145,20 +145,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">3.13 K</td>
-    <td style="white-space: nowrap; text-align: right">319.49 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;17.23%</td>
-    <td style="white-space: nowrap; text-align: right">302.78 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">450.94 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">2.63 K</td>
+    <td style="white-space: nowrap; text-align: right">379.97 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;13.26%</td>
+    <td style="white-space: nowrap; text-align: right">370.90 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">474.97 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">1.21 K</td>
-    <td style="white-space: nowrap; text-align: right">825.13 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;6.84%</td>
-    <td style="white-space: nowrap; text-align: right">824.89 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">1016.13 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.15 K</td>
+    <td style="white-space: nowrap; text-align: right">872.42 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;6.61%</td>
+    <td style="white-space: nowrap; text-align: right">877.24 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1059.75 &micro;s</td>
   </tr>
 
 </table>
@@ -173,14 +173,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">3.13 K</td>
+    <td style="white-space: nowrap;text-align: right">2.63 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">1.21 K</td>
-    <td style="white-space: nowrap; text-align: right">2.58x</td>
+    <td style="white-space: nowrap; text-align: right">1.15 K</td>
+    <td style="white-space: nowrap; text-align: right">2.3x</td>
   </tr>
 
 </table>
@@ -197,13 +197,13 @@ Memory Usage
   </tr>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap">0.97 MB</td>
+    <td style="white-space: nowrap">1.05 MB</td>
     <td>&nbsp;</td>
   </tr>
     <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap">2.30 MB</td>
-    <td>2.38x</td>
+    <td style="white-space: nowrap">2.28 MB</td>
+    <td>2.18x</td>
   </tr>
 </table>
 
@@ -225,20 +225,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">119.63</td>
-    <td style="white-space: nowrap; text-align: right">8.36 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;11.42%</td>
-    <td style="white-space: nowrap; text-align: right">8.22 ms</td>
-    <td style="white-space: nowrap; text-align: right">10.69 ms</td>
+    <td style="white-space: nowrap; text-align: right">102.07</td>
+    <td style="white-space: nowrap; text-align: right">9.80 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;8.18%</td>
+    <td style="white-space: nowrap; text-align: right">9.57 ms</td>
+    <td style="white-space: nowrap; text-align: right">11.80 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">54.40</td>
-    <td style="white-space: nowrap; text-align: right">18.38 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;9.65%</td>
-    <td style="white-space: nowrap; text-align: right">18.68 ms</td>
-    <td style="white-space: nowrap; text-align: right">20.87 ms</td>
+    <td style="white-space: nowrap; text-align: right">49.62</td>
+    <td style="white-space: nowrap; text-align: right">20.15 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;11.42%</td>
+    <td style="white-space: nowrap; text-align: right">20.01 ms</td>
+    <td style="white-space: nowrap; text-align: right">23.28 ms</td>
   </tr>
 
 </table>
@@ -253,14 +253,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">119.63</td>
+    <td style="white-space: nowrap;text-align: right">102.07</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">54.40</td>
-    <td style="white-space: nowrap; text-align: right">2.2x</td>
+    <td style="white-space: nowrap; text-align: right">49.62</td>
+    <td style="white-space: nowrap; text-align: right">2.06x</td>
   </tr>
 
 </table>
@@ -277,13 +277,13 @@ Memory Usage
   </tr>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap">24.69 MB</td>
+    <td style="white-space: nowrap">24.73 MB</td>
     <td>&nbsp;</td>
   </tr>
     <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap">48.11 MB</td>
-    <td>1.95x</td>
+    <td style="white-space: nowrap">48.09 MB</td>
+    <td>1.94x</td>
   </tr>
 </table>
 
@@ -305,20 +305,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">1.10 K</td>
-    <td style="white-space: nowrap; text-align: right">0.91 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;11.00%</td>
-    <td style="white-space: nowrap; text-align: right">0.92 ms</td>
-    <td style="white-space: nowrap; text-align: right">1.11 ms</td>
+    <td style="white-space: nowrap; text-align: right">927.14</td>
+    <td style="white-space: nowrap; text-align: right">1.08 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;10.26%</td>
+    <td style="white-space: nowrap; text-align: right">1.07 ms</td>
+    <td style="white-space: nowrap; text-align: right">1.37 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">0.42 K</td>
-    <td style="white-space: nowrap; text-align: right">2.40 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;2.47%</td>
-    <td style="white-space: nowrap; text-align: right">2.38 ms</td>
-    <td style="white-space: nowrap; text-align: right">2.50 ms</td>
+    <td style="white-space: nowrap; text-align: right">351.70</td>
+    <td style="white-space: nowrap; text-align: right">2.84 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;0.74%</td>
+    <td style="white-space: nowrap; text-align: right">2.84 ms</td>
+    <td style="white-space: nowrap; text-align: right">2.90 ms</td>
   </tr>
 
 </table>
@@ -333,13 +333,13 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">1.10 K</td>
+    <td style="white-space: nowrap;text-align: right">927.14</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">0.42 K</td>
+    <td style="white-space: nowrap; text-align: right">351.70</td>
     <td style="white-space: nowrap; text-align: right">2.64x</td>
   </tr>
 
@@ -357,13 +357,13 @@ Memory Usage
   </tr>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap">2.88 MB</td>
+    <td style="white-space: nowrap">2.92 MB</td>
     <td>&nbsp;</td>
   </tr>
     <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap">6.65 MB</td>
-    <td>2.31x</td>
+    <td style="white-space: nowrap">6.61 MB</td>
+    <td>2.26x</td>
   </tr>
 </table>
 
@@ -385,20 +385,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">990.01</td>
-    <td style="white-space: nowrap; text-align: right">1.01 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;17.66%</td>
-    <td style="white-space: nowrap; text-align: right">0.99 ms</td>
-    <td style="white-space: nowrap; text-align: right">1.09 ms</td>
+    <td style="white-space: nowrap; text-align: right">856.25</td>
+    <td style="white-space: nowrap; text-align: right">1.17 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1.06%</td>
+    <td style="white-space: nowrap; text-align: right">1.17 ms</td>
+    <td style="white-space: nowrap; text-align: right">1.20 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">579.47</td>
-    <td style="white-space: nowrap; text-align: right">1.73 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;4.65%</td>
-    <td style="white-space: nowrap; text-align: right">1.72 ms</td>
-    <td style="white-space: nowrap; text-align: right">1.92 ms</td>
+    <td style="white-space: nowrap; text-align: right">508.02</td>
+    <td style="white-space: nowrap; text-align: right">1.97 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.72%</td>
+    <td style="white-space: nowrap; text-align: right">2.04 ms</td>
+    <td style="white-space: nowrap; text-align: right">2.12 ms</td>
   </tr>
 
 </table>
@@ -413,14 +413,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">990.01</td>
+    <td style="white-space: nowrap;text-align: right">856.25</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">579.47</td>
-    <td style="white-space: nowrap; text-align: right">1.71x</td>
+    <td style="white-space: nowrap; text-align: right">508.02</td>
+    <td style="white-space: nowrap; text-align: right">1.69x</td>
   </tr>
 
 </table>
@@ -465,20 +465,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">93.83</td>
-    <td style="white-space: nowrap; text-align: right">10.66 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;16.96%</td>
-    <td style="white-space: nowrap; text-align: right">9.29 ms</td>
-    <td style="white-space: nowrap; text-align: right">13.02 ms</td>
+    <td style="white-space: nowrap; text-align: right">79.79</td>
+    <td style="white-space: nowrap; text-align: right">12.53 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;16.78%</td>
+    <td style="white-space: nowrap; text-align: right">10.72 ms</td>
+    <td style="white-space: nowrap; text-align: right">15.18 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">47.85</td>
-    <td style="white-space: nowrap; text-align: right">20.90 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;4.83%</td>
-    <td style="white-space: nowrap; text-align: right">20.87 ms</td>
-    <td style="white-space: nowrap; text-align: right">22.17 ms</td>
+    <td style="white-space: nowrap; text-align: right">44.46</td>
+    <td style="white-space: nowrap; text-align: right">22.49 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;2.79%</td>
+    <td style="white-space: nowrap; text-align: right">22.52 ms</td>
+    <td style="white-space: nowrap; text-align: right">24.75 ms</td>
   </tr>
 
 </table>
@@ -493,14 +493,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">93.83</td>
+    <td style="white-space: nowrap;text-align: right">79.79</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">47.85</td>
-    <td style="white-space: nowrap; text-align: right">1.96x</td>
+    <td style="white-space: nowrap; text-align: right">44.46</td>
+    <td style="white-space: nowrap; text-align: right">1.79x</td>
   </tr>
 
 </table>
@@ -522,8 +522,8 @@ Memory Usage
   </tr>
     <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap">55.00 MB</td>
-    <td>2.08x</td>
+    <td style="white-space: nowrap">54.77 MB</td>
+    <td>2.07x</td>
   </tr>
 </table>
 
@@ -545,20 +545,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">94.74</td>
-    <td style="white-space: nowrap; text-align: right">10.55 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;4.05%</td>
-    <td style="white-space: nowrap; text-align: right">10.53 ms</td>
-    <td style="white-space: nowrap; text-align: right">11.16 ms</td>
+    <td style="white-space: nowrap; text-align: right">81.40</td>
+    <td style="white-space: nowrap; text-align: right">12.29 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;3.42%</td>
+    <td style="white-space: nowrap; text-align: right">12.28 ms</td>
+    <td style="white-space: nowrap; text-align: right">12.86 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">44.19</td>
-    <td style="white-space: nowrap; text-align: right">22.63 ms</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;6.21%</td>
-    <td style="white-space: nowrap; text-align: right">23.13 ms</td>
-    <td style="white-space: nowrap; text-align: right">24.70 ms</td>
+    <td style="white-space: nowrap; text-align: right">41.06</td>
+    <td style="white-space: nowrap; text-align: right">24.35 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.23%</td>
+    <td style="white-space: nowrap; text-align: right">24.49 ms</td>
+    <td style="white-space: nowrap; text-align: right">27.11 ms</td>
   </tr>
 
 </table>
@@ -573,14 +573,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">94.74</td>
+    <td style="white-space: nowrap;text-align: right">81.40</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">44.19</td>
-    <td style="white-space: nowrap; text-align: right">2.14x</td>
+    <td style="white-space: nowrap; text-align: right">41.06</td>
+    <td style="white-space: nowrap; text-align: right">1.98x</td>
   </tr>
 
 </table>
@@ -602,8 +602,8 @@ Memory Usage
   </tr>
     <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap">64.33 MB</td>
-    <td>2.28x</td>
+    <td style="white-space: nowrap">63.87 MB</td>
+    <td>2.27x</td>
   </tr>
 </table>
 
@@ -625,20 +625,20 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap; text-align: right">25.23 K</td>
-    <td style="white-space: nowrap; text-align: right">39.64 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;17.75%</td>
-    <td style="white-space: nowrap; text-align: right">39.87 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">59.83 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">20.57 K</td>
+    <td style="white-space: nowrap; text-align: right">48.62 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;18.82%</td>
+    <td style="white-space: nowrap; text-align: right">50.54 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">84.54 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">7.53 K</td>
-    <td style="white-space: nowrap; text-align: right">132.72 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">&plusmn;16.35%</td>
-    <td style="white-space: nowrap; text-align: right">129.16 &micro;s</td>
-    <td style="white-space: nowrap; text-align: right">228.78 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">8.22 K</td>
+    <td style="white-space: nowrap; text-align: right">121.69 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;16.75%</td>
+    <td style="white-space: nowrap; text-align: right">117.00 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">208.03 &micro;s</td>
   </tr>
 
 </table>
@@ -653,14 +653,14 @@ Run Time Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap;text-align: right">25.23 K</td>
+    <td style="white-space: nowrap;text-align: right">20.57 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap; text-align: right">7.53 K</td>
-    <td style="white-space: nowrap; text-align: right">3.35x</td>
+    <td style="white-space: nowrap; text-align: right">8.22 K</td>
+    <td style="white-space: nowrap; text-align: right">2.5x</td>
   </tr>
 
 </table>
@@ -677,12 +677,12 @@ Memory Usage
   </tr>
   <tr>
     <td style="white-space: nowrap">geometry</td>
-    <td style="white-space: nowrap">182.03 KB</td>
+    <td style="white-space: nowrap">185.94 KB</td>
     <td>&nbsp;</td>
   </tr>
     <tr>
     <td style="white-space: nowrap">geo</td>
-    <td style="white-space: nowrap">378.91 KB</td>
-    <td>2.08x</td>
+    <td style="white-space: nowrap">374.22 KB</td>
+    <td>2.01x</td>
   </tr>
 </table>
