@@ -44,7 +44,7 @@ defmodule Geometry.Point do
       iex> Point.new(-1.1, 2.2)
       %Point{coordinate: [-1.1, 2.2], srid: 0}
   """
-  @spec new(Geometry.coordinate(), Geometry.srid()) :: t()
+  @spec new(Geometry.coordinate() | [], Geometry.srid()) :: t()
   def new([], srid) do
     %Point{coordinate: [], srid: srid}
   end
