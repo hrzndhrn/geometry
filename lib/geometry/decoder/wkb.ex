@@ -33,7 +33,7 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.PolygonZM
 
   @spec decode(Geometry.wkb()) ::
-          {:ok, Geometry.t(), Geometry.srid() | nil} | {:error, DecodeError.t()}
+          {:ok, Geometry.t()} | {:error, DecodeError.t()}
   geos =
     [
       :point,
@@ -83,7 +83,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, x::unquote(geo.mod)-float-size(64),
                   y::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, Point.new(x, y), srid}
+            {:ok, Point.new(x, y, srid)}
           end
 
           def decode(
@@ -91,7 +91,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, unquote(geo.empty),
                   unquote(geo.empty)>>
               ) do
-            {:ok, Point.new(), srid}
+            {:ok, Map.put(Point.new(), :srid, srid)}
           end
 
         geo.type == :point && geo.dim == :xym ->
@@ -100,7 +100,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, x::unquote(geo.mod)-float-size(64),
                   y::unquote(geo.mod)-float-size(64), m::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, PointM.new(x, y, m), srid}
+            {:ok, PointM.new(x, y, m, srid)}
           end
 
           def decode(
@@ -108,7 +108,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, unquote(geo.empty),
                   unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, PointM.new(), srid}
+            {:ok, Map.put(PointM.new(), :srid, srid)}
           end
 
         geo.type == :point && geo.dim == :xyz ->
@@ -117,7 +117,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, x::unquote(geo.mod)-float-size(64),
                   y::unquote(geo.mod)-float-size(64), z::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, PointZ.new(x, y, z), srid}
+            {:ok, PointZ.new(x, y, z, srid)}
           end
 
           def decode(
@@ -125,7 +125,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, unquote(geo.empty),
                   unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, PointZ.new(), srid}
+            {:ok, Map.put(PointZ.new(), :srid, srid)}
           end
 
         geo.type == :point && geo.dim == :xyzm ->
@@ -135,7 +135,7 @@ defmodule Geometry.Decoder.WKB do
                   y::unquote(geo.mod)-float-size(64), z::unquote(geo.mod)-float-size(64),
                   m::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, PointZM.new(x, y, z, m), srid}
+            {:ok, PointZM.new(x, y, z, m, srid)}
           end
 
           def decode(
@@ -143,7 +143,7 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, unquote(geo.empty),
                   unquote(geo.empty), unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, PointZM.new(), srid}
+            {:ok, Map.put(PointZM.new(), :srid, srid)}
           end
 
         true ->
@@ -152,9 +152,9 @@ defmodule Geometry.Decoder.WKB do
                   <<srid::unquote(geo.mod)-integer-size(32)>>, rest::bits>> = bin
               ) do
             with {:ok, geometry, rest} <-
-                   unquote(geo.type)(unquote(geo.dim), unquote(geo.endian), rest),
+                   unquote(geo.type)(unquote(geo.dim), unquote(geo.endian), srid, rest),
                  <<>> <- rest do
-              {:ok, geometry, srid}
+              {:ok, geometry}
             else
               error -> handle_error(error, bin)
             end
@@ -167,14 +167,14 @@ defmodule Geometry.Decoder.WKB do
                 <<unquote(geo.flag), unquote(geo.code)::unquote(geo.mod)-integer-size(32),
                   x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, Point.new(x, y), nil}
+            {:ok, Point.new(x, y)}
           end
 
           def decode(
                 <<unquote(geo.flag), unquote(geo.code)::unquote(geo.mod)-integer-size(32),
                   unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, Point.new(), nil}
+            {:ok, Point.new()}
           end
 
         geo.type == :point && geo.dim == :xym ->
@@ -183,14 +183,14 @@ defmodule Geometry.Decoder.WKB do
                   x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64),
                   m::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, PointM.new(x, y, m), nil}
+            {:ok, PointM.new(x, y, m)}
           end
 
           def decode(
                 <<unquote(geo.flag), unquote(geo.code)::unquote(geo.mod)-integer-size(32),
                   unquote(geo.empty), unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, PointM.new(), nil}
+            {:ok, PointM.new()}
           end
 
         geo.type == :point && geo.dim == :xyz ->
@@ -199,14 +199,14 @@ defmodule Geometry.Decoder.WKB do
                   x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64),
                   z::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, PointZ.new(x, y, z), nil}
+            {:ok, PointZ.new(x, y, z)}
           end
 
           def decode(
                 <<unquote(geo.flag), unquote(geo.code)::unquote(geo.mod)-integer-size(32),
                   unquote(geo.empty), unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, PointZ.new(), nil}
+            {:ok, PointZ.new()}
           end
 
         geo.type == :point && geo.dim == :xyzm ->
@@ -215,14 +215,14 @@ defmodule Geometry.Decoder.WKB do
                   x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64),
                   z::unquote(geo.mod)-float-size(64), m::unquote(geo.mod)-float-size(64)>>
               ) do
-            {:ok, PointZM.new(x, y, z, m), nil}
+            {:ok, PointZM.new(x, y, z, m)}
           end
 
           def decode(
                 <<unquote(geo.flag), unquote(geo.code)::unquote(geo.mod)-integer-size(32),
                   unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), unquote(geo.empty)>>
               ) do
-            {:ok, PointZM.new(), nil}
+            {:ok, PointZM.new()}
           end
 
         true ->
@@ -231,9 +231,9 @@ defmodule Geometry.Decoder.WKB do
                   rest::bits>> = bin
               ) do
             with {:ok, geometry, rest} <-
-                   unquote(geo.type)(unquote(geo.dim), unquote(geo.endian), rest),
+                   unquote(geo.type)(unquote(geo.dim), unquote(geo.endian), 0, rest),
                  <<>> <- rest do
-              {:ok, geometry, nil}
+              {:ok, geometry}
             else
               error -> handle_error(error, bin)
             end
@@ -386,6 +386,7 @@ defmodule Geometry.Decoder.WKB do
     defp line_string(
            unquote(geo.dim),
            unquote(geo.endian),
+           srid,
            <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
          ) do
       try do
@@ -408,7 +409,8 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> LineStringZM
             end
           ){
-          points: data
+          points: data,
+          srid: srid
         }
 
         {:ok, line_string, rest}
@@ -417,13 +419,14 @@ defmodule Geometry.Decoder.WKB do
       end
     end
 
-    defp line_string(unquote(geo.dim), unquote(geo.endian), bin) do
+    defp line_string(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 
     defp polygon(
            unquote(geo.dim),
            unquote(geo.endian),
+           srid,
            <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
          ) do
       try do
@@ -446,7 +449,8 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> PolygonZM
             end
           ){
-          rings: data
+          rings: data,
+          srid: srid
         }
 
         {:ok, polygon, rest}
@@ -455,13 +459,14 @@ defmodule Geometry.Decoder.WKB do
       end
     end
 
-    defp polygon(unquote(geo.dim), unquote(geo.endian), bin) do
+    defp polygon(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 
     defp multi_point(
            unquote(geo.dim),
            unquote(geo.endian),
+           srid,
            <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
          ) do
       try do
@@ -494,7 +499,8 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> MultiPointZM
             end
           ){
-          points: data
+          points: data,
+          srid: srid
         }
 
         {:ok, multi_point, rest}
@@ -503,13 +509,14 @@ defmodule Geometry.Decoder.WKB do
       end
     end
 
-    defp multi_point(unquote(geo.dim), unquote(geo.endian), bin) do
+    defp multi_point(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 
     defp multi_line_string(
            unquote(geo.dim),
            unquote(geo.endian),
+           srid,
            <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
          ) do
       try do
@@ -543,7 +550,8 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> MultiLineStringZM
             end
           ){
-          line_strings: data
+          line_strings: data,
+          srid: srid
         }
 
         {:ok, multi_line_string, rest}
@@ -552,13 +560,14 @@ defmodule Geometry.Decoder.WKB do
       end
     end
 
-    defp multi_line_string(unquote(geo.dim), unquote(geo.endian), bin) do
+    defp multi_line_string(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 
     defp multi_polygon(
            unquote(geo.dim),
            unquote(geo.endian),
+           srid,
            <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
          ) do
       try do
@@ -591,7 +600,8 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> MultiPolygonZM
             end
           ){
-          polygons: data
+          polygons: data,
+          srid: srid
         }
 
         {:ok, multi_polygon, rest}
@@ -600,13 +610,14 @@ defmodule Geometry.Decoder.WKB do
       end
     end
 
-    defp multi_polygon(unquote(geo.dim), unquote(geo.endian), bin) do
+    defp multi_polygon(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 
     defp geometry_collection(
            unquote(geo.dim),
            unquote(geo.endian),
+           srid,
            <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
          ) do
       try do
@@ -614,19 +625,19 @@ defmodule Geometry.Decoder.WKB do
           Enum.map_reduce(List.duplicate(0, length), bin, fn _ignore, bin ->
             case collection(unquote(geo.dim), unquote(geo.endian), bin) do
               {:ok, :point, bin} ->
-                case point(unquote(geo.dim), unquote(geo.endian), bin) do
+                case point(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, point, bin} -> {point, bin}
                   error -> throw(error)
                 end
 
               {:ok, :line_string, bin} ->
-                case line_string(unquote(geo.dim), unquote(geo.endian), bin) do
+                case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, point, bin} -> {point, bin}
                   error -> throw(error)
                 end
 
               {:ok, :polygon, bin} ->
-                case polygon(unquote(geo.dim), unquote(geo.endian), bin) do
+                case polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, point, bin} -> {point, bin}
                   error -> throw(error)
                 end
@@ -644,7 +655,8 @@ defmodule Geometry.Decoder.WKB do
               :xyzm -> GeometryCollectionZM
             end
           ){
-          geometries: data
+          geometries: data,
+          srid: srid
         }
 
         {:ok, geometry_collection, rest}
@@ -653,7 +665,7 @@ defmodule Geometry.Decoder.WKB do
       end
     end
 
-    defp geometry_collection(unquote(geo.dim), unquote(geo.endian), bin) do
+    defp geometry_collection(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
   end
@@ -693,56 +705,56 @@ defmodule Geometry.Decoder.WKB do
 
     # The point functions are just used for geometry collections. A geometry
     # point is detected in the decode function.
-    defp point(:xy, unquote(geo.endian), bin) do
+    defp point(:xy, unquote(geo.endian), srid, bin) do
       case bin do
         <<x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64), bin::bits>> ->
-          {:ok, Point.new(x, y), bin}
+          {:ok, Point.new(x, y, srid), bin}
 
         <<unquote(geo.empty), unquote(geo.empty), bin::bits>> ->
-          {:ok, Point.new(), bin}
+          {:ok, Point.new([], srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}
       end
     end
 
-    defp point(:xym, unquote(geo.endian), bin) do
+    defp point(:xym, unquote(geo.endian), srid, bin) do
       case bin do
         <<x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64),
           m::unquote(geo.mod)-float-size(64), bin::bits>> ->
-          {:ok, PointM.new(x, y, m), bin}
+          {:ok, PointM.new(x, y, m, srid), bin}
 
         <<unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), bin::bits>> ->
-          {:ok, PointM.new(), bin}
+          {:ok, PointM.new() |> Map.put(:srid, srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}
       end
     end
 
-    defp point(:xyz, unquote(geo.endian), bin) do
+    defp point(:xyz, unquote(geo.endian), srid, bin) do
       case bin do
         <<x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64),
           z::unquote(geo.mod)-float-size(64), bin::bits>> ->
-          {:ok, PointZ.new(x, y, z), bin}
+          {:ok, PointZ.new(x, y, z, srid), bin}
 
         <<unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), bin::bits>> ->
-          {:ok, PointZ.new(), bin}
+          {:ok, PointZ.new() |> Map.put(:srid, srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}
       end
     end
 
-    defp point(:xyzm, unquote(geo.endian), bin) do
+    defp point(:xyzm, unquote(geo.endian), srid, bin) do
       case bin do
         <<x::unquote(geo.mod)-float-size(64), y::unquote(geo.mod)-float-size(64),
           z::unquote(geo.mod)-float-size(64), m::unquote(geo.mod)-float-size(64), bin::bits>> ->
-          {:ok, PointZM.new(x, y, z, m), bin}
+          {:ok, PointZM.new(x, y, z, m, srid), bin}
 
         <<unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), unquote(geo.empty),
           bin::bits>> ->
-          {:ok, PointZM.new(), bin}
+          {:ok, PointZM.new() |> Map.put(:srid, srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}

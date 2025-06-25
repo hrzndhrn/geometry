@@ -38,98 +38,106 @@ defmodule Geometry.Decoder.WKT do
           {:ok, Geometry.t() | {Geometry.t(), Geometry.srid() | nil}} | {:error, DecodeError.t()}
   def decode(wkt) do
     with {:ok, type, dim, data, srid} <- Parser.parse(wkt) do
-      {:ok, geometry(type, dim, data), srid}
+      {:ok, geometry(type, dim, data, srid)}
     end
   end
 
-  defp geometry(:point, :xy, [coordinate]), do: %Point{coordinate: coordinate}
+  defp geometry(type, dim, data, nil = _srid), do: geometry(type, dim, data, 0)
 
-  defp geometry(:point, :xy, coordinate), do: %Point{coordinate: coordinate}
+  defp geometry(:point, :xy, [coordinate], srid), do: %Point{coordinate: coordinate, srid: srid}
 
-  defp geometry(:point, :xyz, [coordinate]), do: %PointZ{coordinate: coordinate}
+  defp geometry(:point, :xy, coordinate, srid), do: %Point{coordinate: coordinate, srid: srid}
 
-  defp geometry(:point, :xyz, coordinate), do: %PointZ{coordinate: coordinate}
+  defp geometry(:point, :xyz, [coordinate], srid), do: %PointZ{coordinate: coordinate, srid: srid}
 
-  defp geometry(:point, :xym, [coordinate]), do: %PointM{coordinate: coordinate}
+  defp geometry(:point, :xyz, coordinate, srid), do: %PointZ{coordinate: coordinate, srid: srid}
 
-  defp geometry(:point, :xym, coordinate), do: %PointM{coordinate: coordinate}
+  defp geometry(:point, :xym, [coordinate], srid), do: %PointM{coordinate: coordinate, srid: srid}
 
-  defp geometry(:point, :xyzm, [coordinate]), do: %PointZM{coordinate: coordinate}
+  defp geometry(:point, :xym, coordinate, srid), do: %PointM{coordinate: coordinate, srid: srid}
 
-  defp geometry(:point, :xyzm, coordinate), do: %PointZM{coordinate: coordinate}
+  defp geometry(:point, :xyzm, [coordinate], srid),
+    do: %PointZM{coordinate: coordinate, srid: srid}
 
-  defp geometry(:line_string, :xy, points), do: %LineString{points: points}
+  defp geometry(:point, :xyzm, coordinate, srid), do: %PointZM{coordinate: coordinate, srid: srid}
 
-  defp geometry(:line_string, :xym, points), do: %LineStringM{points: points}
+  defp geometry(:line_string, :xy, points, srid), do: %LineString{points: points, srid: srid}
 
-  defp geometry(:line_string, :xyz, points), do: %LineStringZ{points: points}
+  defp geometry(:line_string, :xym, points, srid), do: %LineStringM{points: points, srid: srid}
 
-  defp geometry(:line_string, :xyzm, points), do: %LineStringZM{points: points}
+  defp geometry(:line_string, :xyz, points, srid), do: %LineStringZ{points: points, srid: srid}
 
-  defp geometry(:polygon, :xy, rings), do: %Polygon{rings: rings}
+  defp geometry(:line_string, :xyzm, points, srid), do: %LineStringZM{points: points, srid: srid}
 
-  defp geometry(:polygon, :xym, rings), do: %PolygonM{rings: rings}
+  defp geometry(:polygon, :xy, rings, srid), do: %Polygon{rings: rings, srid: srid}
 
-  defp geometry(:polygon, :xyz, rings), do: %PolygonZ{rings: rings}
+  defp geometry(:polygon, :xym, rings, srid), do: %PolygonM{rings: rings, srid: srid}
 
-  defp geometry(:polygon, :xyzm, rings), do: %PolygonZM{rings: rings}
+  defp geometry(:polygon, :xyz, rings, srid), do: %PolygonZ{rings: rings, srid: srid}
 
-  defp geometry(:multi_point, :xy, points), do: %MultiPoint{points: points}
+  defp geometry(:polygon, :xyzm, rings, srid), do: %PolygonZM{rings: rings, srid: srid}
 
-  defp geometry(:multi_point, :xym, points), do: %MultiPointM{points: points}
+  defp geometry(:multi_point, :xy, points, srid), do: %MultiPoint{points: points, srid: srid}
 
-  defp geometry(:multi_point, :xyz, points), do: %MultiPointZ{points: points}
+  defp geometry(:multi_point, :xym, points, srid), do: %MultiPointM{points: points, srid: srid}
 
-  defp geometry(:multi_point, :xyzm, points), do: %MultiPointZM{points: points}
+  defp geometry(:multi_point, :xyz, points, srid), do: %MultiPointZ{points: points, srid: srid}
 
-  defp geometry(:multi_line_string, :xy, line_strings),
-    do: %MultiLineString{line_strings: line_strings}
+  defp geometry(:multi_point, :xyzm, points, srid), do: %MultiPointZM{points: points, srid: srid}
 
-  defp geometry(:multi_line_string, :xym, line_strings),
-    do: %MultiLineStringM{line_strings: line_strings}
+  defp geometry(:multi_line_string, :xy, line_strings, srid),
+    do: %MultiLineString{line_strings: line_strings, srid: srid}
 
-  defp geometry(:multi_line_string, :xyz, line_strings),
-    do: %MultiLineStringZ{line_strings: line_strings}
+  defp geometry(:multi_line_string, :xym, line_strings, srid),
+    do: %MultiLineStringM{line_strings: line_strings, srid: srid}
 
-  defp geometry(:multi_line_string, :xyzm, line_strings),
-    do: %MultiLineStringZM{line_strings: line_strings}
+  defp geometry(:multi_line_string, :xyz, line_strings, srid),
+    do: %MultiLineStringZ{line_strings: line_strings, srid: srid}
 
-  defp geometry(:multi_polygon, :xy, polygons), do: %MultiPolygon{polygons: polygons}
+  defp geometry(:multi_line_string, :xyzm, line_strings, srid),
+    do: %MultiLineStringZM{line_strings: line_strings, srid: srid}
 
-  defp geometry(:multi_polygon, :xym, polygons),
-    do: %MultiPolygonM{polygons: polygons}
+  defp geometry(:multi_polygon, :xy, polygons, srid),
+    do: %MultiPolygon{polygons: polygons, srid: srid}
 
-  defp geometry(:multi_polygon, :xyz, polygons),
-    do: %MultiPolygonZ{polygons: polygons}
+  defp geometry(:multi_polygon, :xym, polygons, srid),
+    do: %MultiPolygonM{polygons: polygons, srid: srid}
 
-  defp geometry(:multi_polygon, :xyzm, polygons),
-    do: %MultiPolygonZM{polygons: polygons}
+  defp geometry(:multi_polygon, :xyz, polygons, srid),
+    do: %MultiPolygonZ{polygons: polygons, srid: srid}
 
-  defp geometry(:geometry_collection, dim, {:geometries, geometries}) do
-    geometry(:geometry_collection, dim, geometries)
+  defp geometry(:multi_polygon, :xyzm, polygons, srid),
+    do: %MultiPolygonZM{polygons: polygons, srid: srid}
+
+  defp geometry(:geometry_collection, dim, {:geometries, geometries}, srid) do
+    geometry(:geometry_collection, dim, geometries, srid)
   end
 
-  defp geometry(:geometry_collection, :xy, geometries) do
-    geometries = Enum.map(geometries, fn {type, geometry} -> geometry(type, :xy, geometry) end)
+  defp geometry(:geometry_collection, :xy, geometries, srid) do
+    geometries =
+      Enum.map(geometries, fn {type, geometry} -> geometry(type, :xy, geometry, srid) end)
 
-    %GeometryCollection{geometries: geometries}
+    %GeometryCollection{geometries: geometries, srid: srid}
   end
 
-  defp geometry(:geometry_collection, :xym, geometries) do
-    geometries = Enum.map(geometries, fn {type, geometry} -> geometry(type, :xym, geometry) end)
+  defp geometry(:geometry_collection, :xym, geometries, srid) do
+    geometries =
+      Enum.map(geometries, fn {type, geometry} -> geometry(type, :xym, geometry, srid) end)
 
-    %GeometryCollectionM{geometries: geometries}
+    %GeometryCollectionM{geometries: geometries, srid: srid}
   end
 
-  defp geometry(:geometry_collection, :xyz, geometries) do
-    geometries = Enum.map(geometries, fn {type, geometry} -> geometry(type, :xyz, geometry) end)
+  defp geometry(:geometry_collection, :xyz, geometries, srid) do
+    geometries =
+      Enum.map(geometries, fn {type, geometry} -> geometry(type, :xyz, geometry, srid) end)
 
-    %GeometryCollectionZ{geometries: geometries}
+    %GeometryCollectionZ{geometries: geometries, srid: srid}
   end
 
-  defp geometry(:geometry_collection, :xyzm, geometries) do
-    geometries = Enum.map(geometries, fn {type, geometry} -> geometry(type, :xyzm, geometry) end)
+  defp geometry(:geometry_collection, :xyzm, geometries, srid) do
+    geometries =
+      Enum.map(geometries, fn {type, geometry} -> geometry(type, :xyzm, geometry, srid) end)
 
-    %GeometryCollectionZM{geometries: geometries}
+    %GeometryCollectionZM{geometries: geometries, srid: srid}
   end
 end
