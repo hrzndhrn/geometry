@@ -5,7 +5,7 @@ defmodule Geometry.MultiLineStringZ do
   @moduledoc """
   A set of line-strings from type `Geometry.LineStringZ`
 
-  `MultiLineStringMZ` implements the protocols `Enumerable` and `Collectable`.
+  `MultiLineStringZ` implements the protocols `Enumerable` and `Collectable`.
 
   ## Examples
 
