@@ -32,8 +32,7 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.PolygonZ
   alias Geometry.PolygonZM
 
-  @spec decode(Geometry.wkb()) ::
-          {:ok, Geometry.t()} | {:error, DecodeError.t()}
+  @spec decode(Geometry.wkb()) :: {:ok, Geometry.t()} | {:error, DecodeError.t()}
   geos =
     [
       :point,
