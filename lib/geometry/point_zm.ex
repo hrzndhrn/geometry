@@ -10,7 +10,7 @@ defmodule Geometry.PointZM do
 
   defstruct coordinates: [], srid: 0
 
-  @type t :: %PointZM{coordinates: Geometry.coordinate() | [], srid: Geometry.srid()}
+  @type t :: %PointZM{coordinates: Geometry.coordinates() | [], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `PointZM`.
@@ -31,7 +31,7 @@ defmodule Geometry.PointZM do
       iex> PointZM.new([1.5, -2.1, 3, 4])
       %PointZM{coordinates: [1.5, -2.1, 3, 4]}
   """
-  @spec new(Geometry.coordinate(), Geometry.srid()) :: t()
+  @spec new(Geometry.coordinates(), Geometry.srid()) :: t()
   def new([x, y, z, m] = coordinate, srid \\ 0) when is_coordinate(x, y, z, m) do
     %PointZM{coordinates: coordinate, srid: srid}
   end

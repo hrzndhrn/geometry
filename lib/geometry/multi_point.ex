@@ -26,7 +26,7 @@ defmodule Geometry.MultiPoint do
 
   defstruct points: [], srid: 0
 
-  @type t :: %MultiPoint{points: [Geometry.coordinate()], srid: Geometry.srid()}
+  @type t :: %MultiPoint{points: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPoint`.
