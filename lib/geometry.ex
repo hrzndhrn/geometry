@@ -287,11 +287,7 @@ defmodule Geometry do
       }
   """
   @spec from_wkb(wkb()) :: {:ok, t()} | {:error, DecodeError.t()}
-  def from_wkb(wkb) do
-    with {:ok, geometry, _srid} <- Decoder.WKB.decode(wkb) do
-      {:ok, geometry}
-    end
-  end
+  def from_wkb(wkb), do: Decoder.WKB.decode(wkb)
 
   @doc """
   The same as `from_wkb/1`, but raises a `Geometry.DecodeError` exception if it fails.
@@ -321,13 +317,9 @@ defmodule Geometry do
       "Point (1 2)"
   """
   @spec to_ewkt(Geometry.t()) :: wkt()
-  def to_ewkt(%{srid: 0} = geometry) do
-    to_wkt(geometry)
-  end
+  def to_ewkt(%{srid: 0} = geometry), do: to_wkt(geometry)
 
-  def to_ewkt(geometry) do
-    Encoder.WKT.to_ewkt(geometry)
-  end
+  def to_ewkt(geometry), do: Encoder.WKT.to_ewkt(geometry)
 
   @doc """
   Returns the WKT representation of the given `geometry`.
@@ -344,9 +336,7 @@ defmodule Geometry do
       "Point (1 2)"
   """
   @spec to_wkt(Geometry.t()) :: wkt()
-  def to_wkt(geometry) do
-    Encoder.WKT.to_wkt(geometry)
-  end
+  def to_wkt(geometry), do: Encoder.WKT.to_wkt(geometry)
 
   @doc """
   Returns an `:ok` tuple with the geometry from the given EWKT string.
