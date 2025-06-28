@@ -287,11 +287,11 @@ defmodule Geometry.PolygonTest do
           assert GeoJsonValidator.valid?(geo_json)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) ==
-                   {:ok, %unquote(module){rings: unquote(data[:term])}}
+                   {:ok, %unquote(module){rings: unquote(data[:term]), srid: 4326}}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json(geo_json) ==
-                     {:ok, %unquote(module){rings: unquote(data[:term])}}
+                     {:ok, %unquote(module){rings: unquote(data[:term]), srid: 4326}}
           end
         end
 
@@ -365,14 +365,14 @@ defmodule Geometry.PolygonTest do
 
         test "returns polygon from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, polygon}
         end
 
         test "returns polygon from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, polygon}
         end
@@ -462,28 +462,28 @@ defmodule Geometry.PolygonTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
           polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {polygon, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, polygon}
         end
 
         test "returns polygon from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
           polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {polygon, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, polygon}
         end
 
         test "returns polygon from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {polygon, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, polygon}
         end
 
         test "returns polygon from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {polygon, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, polygon}
         end
       end
 
@@ -525,16 +525,16 @@ defmodule Geometry.PolygonTest do
 
         test "returns polygon from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkb(polygon, unquote(srid), :xdr) == wkb
+          assert Geometry.to_ewkb(polygon, :xdr) == wkb
         end
 
         test "returns polygon from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkb(polygon, unquote(srid)) == wkb
+          assert Geometry.to_ewkb(polygon) == wkb
         end
       end
 
@@ -557,7 +557,7 @@ defmodule Geometry.PolygonTest do
 
         test "returns polygon from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, polygon}
         end
@@ -570,21 +570,21 @@ defmodule Geometry.PolygonTest do
           wkt = wkt(unquote(text), unquote(data[:term]))
           polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {polygon, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, polygon}
         end
 
         test "returns an empty polygon" do
           wkt = wkt(unquote(text))
           polygon = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {polygon, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, polygon}
         end
 
         test "returns polygon from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {polygon, unquote(srid)}}
+          assert Geometry.from_ewkt(wkt) == {:ok, polygon}
         end
       end
 
@@ -611,16 +611,16 @@ defmodule Geometry.PolygonTest do
 
         test "returns ewkt" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          polygon = polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkt(polygon, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(polygon) == wkt
         end
 
         test "returns ewkt from an empty polygon" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          polygon = unquote(module).new()
+          polygon = unquote(module).new([], unquote(srid))
 
-          assert Geometry.to_ewkt(polygon, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(polygon) == wkt
         end
       end
     end
@@ -644,8 +644,8 @@ defmodule Geometry.PolygonTest do
     "#{srid}#{name} (#{rings})"
   end
 
-  defp polygon(module, data, dim) do
-    module.new(rings(data, dim))
+  defp polygon(module, data, dim, srid \\ 0) do
+    module.new(rings(data, dim), srid)
   end
 
   defp rings(data, dim) do

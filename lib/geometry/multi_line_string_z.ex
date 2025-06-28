@@ -28,7 +28,7 @@ defmodule Geometry.MultiLineStringZ do
       iex> Enum.into(
       ...>   [LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(5, 6, 7)])],
       ...>   MultiLineStringZ.new())
-      %MultiLineStringZ{line_strings: [[[1, 2, 3], [5, 6, 7]]]}
+      %MultiLineStringZ{line_strings: [[[1, 2, 3], [5, 6, 7]]], srid: 0}
   """
 
   use Geometry.Protocols
@@ -36,9 +36,9 @@ defmodule Geometry.MultiLineStringZ do
   alias Geometry.LineStringZ
   alias Geometry.MultiLineStringZ
 
-  defstruct line_strings: []
+  defstruct line_strings: [], srid: 0
 
-  @type t :: %MultiLineStringZ{line_strings: [Geometry.coordinates()]}
+  @type t :: %MultiLineStringZ{line_strings: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiLineStringZ`.
@@ -71,18 +71,22 @@ defmodule Geometry.MultiLineStringZ do
         line_strings: [
             [[1, 2, 3], [2, 3, 4], [3, 4, 5]],
             [[10, 20, 30], [30, 40, 50]]
-          ]
+          ],
+        srid: 0
       }
 
       iex> MultiLineStringZ.new([])
       %MultiLineStringZ{}
   """
-  @spec new([LineStringZ.t()]) :: t()
-  def new([]), do: %MultiLineStringZ{}
+  @spec new([LineStringZ.t()], Geometry.srid()) :: t()
+  def new(line_strings, srid \\ 0)
 
-  def new(line_strings) do
+  def new([], srid), do: %MultiLineStringZ{srid: srid}
+
+  def new(line_strings, srid) do
     %MultiLineStringZ{
-      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end)
+      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end),
+      srid: srid
     }
   end
 end

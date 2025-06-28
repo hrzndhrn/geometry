@@ -10,9 +10,9 @@ defmodule Geometry.LineStringM do
   alias Geometry.LineStringM
   alias Geometry.PointM
 
-  defstruct points: []
+  defstruct points: [], srid: 0
 
-  @type t :: %LineStringM{points: Geometry.coordinates()}
+  @type t :: %LineStringM{points: Geometry.coordinates(), srid: Geometry.srid()}
 
   @doc """
   Creates an empty `LineStringM`.
@@ -20,7 +20,7 @@ defmodule Geometry.LineStringM do
   ## Examples
 
       iex> LineStringM.new()
-      %LineStringM{points: []}
+      %LineStringM{points: [], srid: 0}
   """
   @spec new :: t()
   def new, do: %LineStringM{}
@@ -31,12 +31,14 @@ defmodule Geometry.LineStringM do
   ## Examples
 
       iex> LineStringM.new([PointM.new(1, 2, 4), PointM.new(3, 4, 6)])
-      %LineStringM{points: [[1, 2, 4], [3, 4, 6]]}
+      %LineStringM{points: [[1, 2, 4], [3, 4, 6]], srid: 0}
   """
-  @spec new([PointM.t()]) :: t()
-  def new([]), do: %LineStringM{}
+  @spec new([PointM.t()], Geometry.srid()) :: t()
+  def new(points, srid \\ 0)
 
-  def new([_, _ | _] = points) do
-    %LineStringM{points: Enum.map(points, fn point -> point.coordinate end)}
+  def new([], srid), do: %LineStringM{srid: srid}
+
+  def new([_, _ | _] = points, srid) do
+    %LineStringM{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
   end
 end

@@ -28,7 +28,7 @@ defmodule Geometry.MultiLineStringM do
       iex> Enum.into(
       ...>   [LineStringM.new([PointM.new(1, 2, 4), PointM.new(5, 6, 8)])],
       ...>   MultiLineStringM.new())
-      %MultiLineStringM{line_strings: [[[1, 2, 4], [5, 6, 8]]]}
+      %MultiLineStringM{line_strings: [[[1, 2, 4], [5, 6, 8]]], srid: 0}
   """
 
   use Geometry.Protocols
@@ -36,9 +36,9 @@ defmodule Geometry.MultiLineStringM do
   alias Geometry.LineStringM
   alias Geometry.MultiLineStringM
 
-  defstruct line_strings: []
+  defstruct line_strings: [], srid: 0
 
-  @type t :: %MultiLineStringM{line_strings: [Geometry.coordinates()]}
+  @type t :: %MultiLineStringM{line_strings: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiLineStringM`.
@@ -72,18 +72,21 @@ defmodule Geometry.MultiLineStringM do
           [
             [[1, 2, 4], [2, 3, 5], [3, 4, 6]],
             [[10, 20, 40], [30, 40, 60]]
-          ]
+          ],
+          srid: 0
       }
 
       iex> MultiLineStringM.new([])
       %MultiLineStringM{}
   """
-  @spec new([LineStringM.t()]) :: t()
-  def new([]), do: %MultiLineStringM{}
+  @spec new([LineStringM.t()], Geometry.srid()) :: t()
+  def new(line_strings, srid \\ 0)
+  def new([], srid), do: %MultiLineStringM{srid: srid}
 
-  def new(line_strings) do
+  def new(line_strings, srid) do
     %MultiLineStringM{
-      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end)
+      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end),
+      srid: srid
     }
   end
 end

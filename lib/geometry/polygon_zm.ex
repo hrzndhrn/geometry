@@ -10,9 +10,9 @@ defmodule Geometry.PolygonZM do
   alias Geometry.LineStringZM
   alias Geometry.PolygonZM
 
-  defstruct rings: []
+  defstruct rings: [], srid: 0
 
-  @type t :: %PolygonZM{rings: [Geometry.coordinates()]}
+  @type t :: %PolygonZM{rings: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `PolygonZM`.
@@ -48,14 +48,15 @@ defmodule Geometry.PolygonZM do
         rings: [
           [[35, 10, 13, 14], [45, 45, 23, 24], [10, 20, 33, 34], [35, 10, 13, 14]],
           [[20, 30, 13, 14], [35, 35, 23, 24], [30, 20, 33, 34], [20, 30, 13, 14]]
-        ]
+        ],
+        srid: 0
       }
 
       iex> PolygonZM.new()
       %PolygonZM{}
   """
-  @spec new([LineStringZM.t()]) :: t()
-  def new(rings) when is_list(rings) do
-    %PolygonZM{rings: Enum.map(rings, fn line_string -> line_string.points end)}
+  @spec new([LineStringZM.t()], Geometry.srid()) :: t()
+  def new(rings, srid \\ 0) when is_list(rings) do
+    %PolygonZM{rings: Enum.map(rings, fn line_string -> line_string.points end), srid: srid}
   end
 end

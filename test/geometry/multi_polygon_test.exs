@@ -303,7 +303,7 @@ defmodule Geometry.MultiPolygonTest do
             }
             """)
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
+          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), 4326)
 
           assert GeoJsonValidator.valid?(geo_json)
 
@@ -361,7 +361,8 @@ defmodule Geometry.MultiPolygonTest do
         test "returns multi-polygon from xdr binary" do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_polygon}
         end
@@ -369,7 +370,14 @@ defmodule Geometry.MultiPolygonTest do
         test "returns multi-polygon from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              0,
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_polygon}
         end
@@ -391,7 +399,14 @@ defmodule Geometry.MultiPolygonTest do
         test "returns multi-polygon from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_polygon}
         end
@@ -399,7 +414,14 @@ defmodule Geometry.MultiPolygonTest do
         test "returns multi-polygon from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_polygon}
         end
@@ -493,33 +515,49 @@ defmodule Geometry.MultiPolygonTest do
         test "returns multi-polygon from xdr binary" do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_polygon, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_polygon}
         end
 
         test "returns multi-polygon from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_polygon, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_polygon}
         end
 
         test "returns multi-polygon from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_polygon, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_polygon}
         end
 
         test "returns multi-polygon from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), true)
+          multi_polygon =
+            multi_polygon(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_polygon, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_polygon}
         end
       end
 
@@ -561,16 +599,20 @@ defmodule Geometry.MultiPolygonTest do
 
         test "returns multi-polygon from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.to_ewkb(multi_polygon, unquote(srid), :xdr) == wkb
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.to_ewkb(multi_polygon, :xdr) == wkb
         end
 
         test "returns multi-polygon from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.to_ewkb(multi_polygon, unquote(srid)) == wkb
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.to_ewkb(multi_polygon) == wkb
         end
       end
 
@@ -593,7 +635,9 @@ defmodule Geometry.MultiPolygonTest do
 
         test "returns multi-polygon from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
+
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, multi_polygon}
         end
@@ -606,21 +650,23 @@ defmodule Geometry.MultiPolygonTest do
           wkt = wkt(unquote(text), unquote(data[:term]))
           multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_polygon, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_polygon}
         end
 
         test "returns an empty multi-polygon" do
           wkt = wkt(unquote(text))
           multi_polygon = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_polygon, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_polygon}
         end
 
         test "returns multi-polygon from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_polygon, unquote(srid)}}
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_polygon}
         end
       end
 
@@ -647,16 +693,18 @@ defmodule Geometry.MultiPolygonTest do
 
         test "returns ewkt" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          multi_polygon = multi_polygon(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.to_ewkt(multi_polygon, unquote(srid)) == wkt
+          multi_polygon =
+            multi_polygon(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
+
+          assert Geometry.to_ewkt(multi_polygon) == wkt
         end
 
         test "returns ewkt from an empty multi-polygon" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          multi_polygon = unquote(module).new()
+          multi_polygon = unquote(module).new([], unquote(srid))
 
-          assert Geometry.to_ewkt(multi_polygon, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(multi_polygon) == wkt
         end
       end
 
@@ -723,8 +771,8 @@ defmodule Geometry.MultiPolygonTest do
 
   defp in_brackets(str), do: "(#{str})"
 
-  defp multi_polygon(module, data, dim, to_float \\ false) do
-    module.new(polygons(to_float(data, to_float), dim))
+  defp multi_polygon(module, data, dim, srid \\ 0, to_float \\ false) do
+    module.new(polygons(to_float(data, to_float), dim, srid), srid)
   end
 
   defp to_float(data, false), do: data
@@ -736,21 +784,21 @@ defmodule Geometry.MultiPolygonTest do
     end)
   end
 
-  defp polygons(data, dim) do
+  defp polygons(data, dim, srid \\ 0) do
     case dim do
-      :xy -> Enum.map(data, fn rings -> %Polygon{rings: rings} end)
-      :xym -> Enum.map(data, fn rings -> %PolygonM{rings: rings} end)
-      :xyz -> Enum.map(data, fn rings -> %PolygonZ{rings: rings} end)
-      :xyzm -> Enum.map(data, fn rings -> %PolygonZM{rings: rings} end)
+      :xy -> Enum.map(data, fn rings -> %Polygon{rings: rings, srid: srid} end)
+      :xym -> Enum.map(data, fn rings -> %PolygonM{rings: rings, srid: srid} end)
+      :xyz -> Enum.map(data, fn rings -> %PolygonZ{rings: rings, srid: srid} end)
+      :xyzm -> Enum.map(data, fn rings -> %PolygonZM{rings: rings, srid: srid} end)
     end
   end
 
-  defp empty_polygon(dim) do
+  defp empty_polygon(dim, srid \\ 0) do
     case dim do
-      :xy -> Polygon.new()
-      :xym -> PolygonM.new()
-      :xyz -> PolygonZ.new()
-      :xyzm -> PolygonZM.new()
+      :xy -> Polygon.new([], srid: srid)
+      :xym -> PolygonM.new([], srid: srid)
+      :xyz -> PolygonZ.new([], srid: srid)
+      :xyzm -> PolygonZM.new([], srid: srid)
     end
   end
 end

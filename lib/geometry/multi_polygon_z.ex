@@ -57,7 +57,8 @@ defmodule Geometry.MultiPolygonZ do
                 [11, 12, 13]
               ]
             ]
-          ]
+          ],
+        srid: 0
       }
   """
 
@@ -66,9 +67,9 @@ defmodule Geometry.MultiPolygonZ do
   alias Geometry.MultiPolygonZ
   alias Geometry.PolygonZ
 
-  defstruct polygons: []
+  defstruct polygons: [], srid: 0
 
-  @type t :: %MultiPolygonZ{polygons: [Geometry.coordinates()]}
+  @type t :: %MultiPolygonZ{polygons: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPolygonZ`.
@@ -117,16 +118,19 @@ defmodule Geometry.MultiPolygonZ do
               [[1, 1, 3], [9, 1, 4], [9, 8, 5], [1, 1, 3]],
               [[6, 2, 3], [7, 2, 4], [7, 3, 5], [6, 2, 3]]
             ]
-          ]
+          ],
+          srid: 0
       }
 
       iex> MultiPolygonZ.new([])
       %MultiPolygonZ{}
   """
-  @spec new([PolygonZ.t()]) :: t()
-  def new([]), do: %MultiPolygonZ{}
+  @spec new([PolygonZ.t()], Geometry.srid()) :: t()
+  def new(polygons, srid \\ 0)
 
-  def new(polygons) do
-    %MultiPolygonZ{polygons: Enum.map(polygons, fn polygon -> polygon.rings end)}
+  def new([], srid), do: %MultiPolygonZ{srid: srid}
+
+  def new(polygons, srid) do
+    %MultiPolygonZ{polygons: Enum.map(polygons, fn polygon -> polygon.rings end), srid: srid}
   end
 end

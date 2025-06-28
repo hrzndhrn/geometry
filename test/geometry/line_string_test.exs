@@ -207,11 +207,11 @@ defmodule Geometry.LineStringTest do
           assert GeoJsonValidator.valid?(geo_json)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) ==
-                   {:ok, %unquote(module){points: unquote(data[:term])}}
+                   {:ok, %unquote(module){points: unquote(data[:term]), srid: 4326}}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json(geo_json) ==
-                     {:ok, %unquote(module){points: unquote(data[:term])}}
+                     {:ok, %unquote(module){points: unquote(data[:term]), srid: 4326}}
           end
         end
 
@@ -287,14 +287,14 @@ defmodule Geometry.LineStringTest do
 
         test "returns line from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, line}
         end
 
         test "returns line from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, line}
         end
@@ -420,28 +420,28 @@ defmodule Geometry.LineStringTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
           line = line(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {line, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, line}
         end
 
         test "returns line from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
           line = line(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {line, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, line}
         end
 
         test "returns line from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {line, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, line}
         end
 
         test "returns line from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {line, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, line}
         end
       end
 
@@ -483,16 +483,16 @@ defmodule Geometry.LineStringTest do
 
         test "returns line from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkb(line, unquote(srid), :xdr) == wkb
+          assert Geometry.to_ewkb(line, :xdr) == wkb
         end
 
         test "returns line from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkb(line, unquote(srid)) == wkb
+          assert Geometry.to_ewkb(line) == wkb
         end
       end
 
@@ -515,7 +515,7 @@ defmodule Geometry.LineStringTest do
 
         test "returns line from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, line}
         end
@@ -528,21 +528,21 @@ defmodule Geometry.LineStringTest do
           wkt = wkt(unquote(text), unquote(data[:term]))
           line = line(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {line, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, line}
         end
 
         test "returns an empty line" do
           wkt = wkt(unquote(text))
           line = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {line, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, line}
         end
 
         test "returns line from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {line, unquote(srid)}}
+          assert Geometry.from_ewkt(wkt) == {:ok, line}
         end
       end
 
@@ -569,16 +569,16 @@ defmodule Geometry.LineStringTest do
 
         test "returns ewkt" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
-          line = line(unquote(module), unquote(data[:term]), unquote(dim))
+          line = line(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkt(line, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(line) == wkt
         end
 
         test "returns ewkt from an empty line" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          line = unquote(module).new()
+          line = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.to_ewkt(line, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(line) == wkt
         end
       end
     end
@@ -598,8 +598,8 @@ defmodule Geometry.LineStringTest do
     "#{srid}#{name} (#{points})"
   end
 
-  defp line(module, data, dim) do
-    module.new(points(data, dim))
+  defp line(module, data, dim, srid \\ 0) do
+    module.new(points(data, dim), srid)
   end
 
   defp points(data, dim) do

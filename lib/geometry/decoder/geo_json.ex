@@ -34,6 +34,8 @@ defmodule Geometry.Decoder.GeoJson do
   alias Geometry.PolygonZ
   alias Geometry.PolygonZM
 
+  @geojson_srid 4326
+
   @spec decode(term(), :xy | :xyz | :xym | :xyzm) ::
           {:ok, Geometry.t() | Feature.t() | FeatureCollection.t()}
           | {:error, DecodeError.t()}
@@ -42,19 +44,19 @@ defmodule Geometry.Decoder.GeoJson do
   def decode(_json, _dim), do: {:error, %DecodeError{from: :geo_json, reason: :type_not_found}}
 
   defp decode("Point", %{"coordinates" => [_x, _y] = coordinate}, :xy) do
-    {:ok, %Point{coordinate: coordinate}}
+    {:ok, %Point{coordinate: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => [_x, _y, _z] = coordinate}, :xyz) do
-    {:ok, %PointZ{coordinate: coordinate}}
+    {:ok, %PointZ{coordinate: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => [_x, _y, _m] = coordinate}, :xym) do
-    {:ok, %PointM{coordinate: coordinate}}
+    {:ok, %PointM{coordinate: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => [_x, _y, _z, _m] = coordinate}, :xyzm) do
-    {:ok, %PointZM{coordinate: coordinate}}
+    {:ok, %PointZM{coordinate: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => _coordinates}, _dim) do
@@ -66,19 +68,19 @@ defmodule Geometry.Decoder.GeoJson do
   end
 
   defp decode("LineString", %{"coordinates" => points}, :xy) do
-    {:ok, %LineString{points: points}}
+    {:ok, %LineString{points: points, srid: @geojson_srid}}
   end
 
   defp decode("LineString", %{"coordinates" => points}, :xym) do
-    {:ok, %LineStringM{points: points}}
+    {:ok, %LineStringM{points: points, srid: @geojson_srid}}
   end
 
   defp decode("LineString", %{"coordinates" => points}, :xyz) do
-    {:ok, %LineStringZ{points: points}}
+    {:ok, %LineStringZ{points: points, srid: @geojson_srid}}
   end
 
   defp decode("LineString", %{"coordinates" => points}, :xyzm) do
-    {:ok, %LineStringZM{points: points}}
+    {:ok, %LineStringZM{points: points, srid: @geojson_srid}}
   end
 
   defp decode("LineString", _json, _dim) do
@@ -86,19 +88,19 @@ defmodule Geometry.Decoder.GeoJson do
   end
 
   defp decode("Polygon", %{"coordinates" => rings}, :xy) do
-    {:ok, %Polygon{rings: rings}}
+    {:ok, %Polygon{rings: rings, srid: @geojson_srid}}
   end
 
   defp decode("Polygon", %{"coordinates" => rings}, :xym) do
-    {:ok, %PolygonM{rings: rings}}
+    {:ok, %PolygonM{rings: rings, srid: @geojson_srid}}
   end
 
   defp decode("Polygon", %{"coordinates" => rings}, :xyz) do
-    {:ok, %PolygonZ{rings: rings}}
+    {:ok, %PolygonZ{rings: rings, srid: @geojson_srid}}
   end
 
   defp decode("Polygon", %{"coordinates" => rings}, :xyzm) do
-    {:ok, %PolygonZM{rings: rings}}
+    {:ok, %PolygonZM{rings: rings, srid: @geojson_srid}}
   end
 
   defp decode("Polygon", _json, _dim) do
@@ -106,19 +108,19 @@ defmodule Geometry.Decoder.GeoJson do
   end
 
   defp decode("MultiPoint", %{"coordinates" => points}, :xy) do
-    {:ok, %MultiPoint{points: points}}
+    {:ok, %MultiPoint{points: points, srid: @geojson_srid}}
   end
 
   defp decode("MultiPoint", %{"coordinates" => points}, :xym) do
-    {:ok, %MultiPointM{points: points}}
+    {:ok, %MultiPointM{points: points, srid: @geojson_srid}}
   end
 
   defp decode("MultiPoint", %{"coordinates" => points}, :xyz) do
-    {:ok, %MultiPointZ{points: points}}
+    {:ok, %MultiPointZ{points: points, srid: @geojson_srid}}
   end
 
   defp decode("MultiPoint", %{"coordinates" => points}, :xyzm) do
-    {:ok, %MultiPointZM{points: points}}
+    {:ok, %MultiPointZM{points: points, srid: @geojson_srid}}
   end
 
   defp decode("MultiPoint", _json, _dim) do
@@ -126,19 +128,19 @@ defmodule Geometry.Decoder.GeoJson do
   end
 
   defp decode("MultiLineString", %{"coordinates" => line_strings}, :xy) do
-    {:ok, %MultiLineString{line_strings: line_strings}}
+    {:ok, %MultiLineString{line_strings: line_strings, srid: @geojson_srid}}
   end
 
   defp decode("MultiLineString", %{"coordinates" => line_strings}, :xym) do
-    {:ok, %MultiLineStringM{line_strings: line_strings}}
+    {:ok, %MultiLineStringM{line_strings: line_strings, srid: @geojson_srid}}
   end
 
   defp decode("MultiLineString", %{"coordinates" => line_strings}, :xyz) do
-    {:ok, %MultiLineStringZ{line_strings: line_strings}}
+    {:ok, %MultiLineStringZ{line_strings: line_strings, srid: @geojson_srid}}
   end
 
   defp decode("MultiLineString", %{"coordinates" => line_strings}, :xyzm) do
-    {:ok, %MultiLineStringZM{line_strings: line_strings}}
+    {:ok, %MultiLineStringZM{line_strings: line_strings, srid: @geojson_srid}}
   end
 
   defp decode("MultiLineString", _json, _dim) do
@@ -146,19 +148,19 @@ defmodule Geometry.Decoder.GeoJson do
   end
 
   defp decode("MultiPolygon", %{"coordinates" => polygons}, :xy) do
-    {:ok, %MultiPolygon{polygons: polygons}}
+    {:ok, %MultiPolygon{polygons: polygons, srid: @geojson_srid}}
   end
 
   defp decode("MultiPolygon", %{"coordinates" => polygons}, :xym) do
-    {:ok, %MultiPolygonM{polygons: polygons}}
+    {:ok, %MultiPolygonM{polygons: polygons, srid: @geojson_srid}}
   end
 
   defp decode("MultiPolygon", %{"coordinates" => polygons}, :xyz) do
-    {:ok, %MultiPolygonZ{polygons: polygons}}
+    {:ok, %MultiPolygonZ{polygons: polygons, srid: @geojson_srid}}
   end
 
   defp decode("MultiPolygon", %{"coordinates" => polygons}, :xyzm) do
-    {:ok, %MultiPolygonZM{polygons: polygons}}
+    {:ok, %MultiPolygonZM{polygons: polygons, srid: @geojson_srid}}
   end
 
   defp decode("MultiPolygon", _json, _dim) do
@@ -167,25 +169,25 @@ defmodule Geometry.Decoder.GeoJson do
 
   defp decode("GeometryCollection", %{"geometries" => geometries}, :xy) do
     with [_ | _] = geometries <- decode_geometries(geometries, :xy) do
-      {:ok, %GeometryCollection{geometries: Enum.reverse(geometries)}}
+      {:ok, %GeometryCollection{geometries: Enum.reverse(geometries), srid: @geojson_srid}}
     end
   end
 
   defp decode("GeometryCollection", %{"geometries" => geometries}, :xym) do
     with [_ | _] = geometries <- decode_geometries(geometries, :xym) do
-      {:ok, %GeometryCollectionM{geometries: Enum.reverse(geometries)}}
+      {:ok, %GeometryCollectionM{geometries: Enum.reverse(geometries), srid: @geojson_srid}}
     end
   end
 
   defp decode("GeometryCollection", %{"geometries" => geometries}, :xyz) do
     with [_ | _] = geometries <- decode_geometries(geometries, :xyz) do
-      {:ok, %GeometryCollectionZ{geometries: Enum.reverse(geometries)}}
+      {:ok, %GeometryCollectionZ{geometries: Enum.reverse(geometries), srid: @geojson_srid}}
     end
   end
 
   defp decode("GeometryCollection", %{"geometries" => geometries}, :xyzm) do
     with [_ | _] = geometries <- decode_geometries(geometries, :xyzm) do
-      {:ok, %GeometryCollectionZM{geometries: Enum.reverse(geometries)}}
+      {:ok, %GeometryCollectionZM{geometries: Enum.reverse(geometries), srid: @geojson_srid}}
     end
   end
 

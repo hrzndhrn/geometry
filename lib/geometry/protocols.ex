@@ -157,7 +157,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(%{coordinate: []}, srid, :xdr) do
+        def to_ewkb(%{coordinate: [], srid: srid}, :xdr) do
           unquote(
             binary([
               code(:point, dim, true, :xdr),
@@ -167,7 +167,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(%{coordinate: []}, srid, :ndr) do
+        def to_ewkb(%{coordinate: [], srid: srid}, :ndr) do
           unquote(
             binary([
               code(:point, dim, true, :ndr),
@@ -177,7 +177,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(unquote(match(:coordinate, dim)), srid, :xdr) do
+        def to_ewkb(unquote(match_with_srid(:coordinate, dim)), :xdr) do
           unquote(
             binary([
               code(:point, dim, true, :xdr),
@@ -187,7 +187,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(unquote(match(:coordinate, dim)), srid, :ndr) do
+        def to_ewkb(unquote(match_with_srid(:coordinate, dim)), :ndr) do
           unquote(
             binary([
               code(:point, dim, true, :ndr),
@@ -227,7 +227,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{points: points}, srid, :xdr) do
+        def to_ewkb(%{points: points, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -240,7 +240,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{points: points}, srid, :ndr) do
+        def to_ewkb(%{points: points, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -283,7 +283,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{rings: rings}, srid, :xdr) do
+        def to_ewkb(%{rings: rings, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -296,7 +296,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{rings: rings}, srid, :ndr) do
+        def to_ewkb(%{rings: rings, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -339,7 +339,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{points: points}, srid, :xdr) do
+        def to_ewkb(%{points: points, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -352,7 +352,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{points: points}, srid, :ndr) do
+        def to_ewkb(%{points: points, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -395,7 +395,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{line_strings: line_strings}, srid, :xdr) do
+        def to_ewkb(%{line_strings: line_strings, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -408,7 +408,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{line_strings: line_strings}, srid, :ndr) do
+        def to_ewkb(%{line_strings: line_strings, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -451,7 +451,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{polygons: polygons}, srid, :xdr) do
+        def to_ewkb(%{polygons: polygons, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -464,7 +464,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{polygons: polygons}, srid, :ndr) do
+        def to_ewkb(%{polygons: polygons, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -507,7 +507,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{geometries: geometries}, srid, :xdr) do
+        def to_ewkb(%{geometries: geometries, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -520,7 +520,7 @@ defmodule Geometry.Protocols do
           ])
         end
 
-        def to_ewkb(%{geometries: geometries}, srid, :ndr) do
+        def to_ewkb(%{geometries: geometries, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
@@ -561,7 +561,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{coordinate: []}, srid) do
+        def to_ewkt(%{coordinate: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -572,7 +572,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(unquote(match(:coordinate, dim)), srid) do
+        def to_ewkt(unquote(match_with_srid(:coordinate, dim))) do
           unquote(
             binary([
               srid_to_string(),
@@ -615,7 +615,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: []}, srid) do
+        def to_ewkt(%{points: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -626,7 +626,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: points}, srid) do
+        def to_ewkt(%{points: points, srid: srid}) do
           data = unquote(points_to_string(dim))
 
           unquote(
@@ -671,7 +671,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{rings: []}, srid) do
+        def to_ewkt(%{rings: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -682,7 +682,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{rings: rings}, srid) do
+        def to_ewkt(%{rings: rings, srid: srid}) do
           data = unquote(rings_to_string(dim))
 
           unquote(
@@ -727,7 +727,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: []}, srid) do
+        def to_ewkt(%{points: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -738,7 +738,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: points}, srid) do
+        def to_ewkt(%{points: points, srid: srid}) do
           data = unquote(points_to_string(dim))
 
           unquote(
@@ -783,7 +783,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{line_strings: []}, srid) do
+        def to_ewkt(%{line_strings: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -794,7 +794,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{line_strings: line_strings}, srid) do
+        def to_ewkt(%{line_strings: line_strings, srid: srid}) do
           data = unquote(line_strings_to_string(dim))
 
           unquote(
@@ -839,7 +839,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{polygons: []}, srid) do
+        def to_ewkt(%{polygons: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -850,7 +850,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{polygons: polygons}, srid) do
+        def to_ewkt(%{polygons: polygons, srid: srid}) do
           data = unquote(polygons_to_string(dim))
 
           unquote(
@@ -895,7 +895,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{geometries: []}, srid) do
+        def to_ewkt(%{geometries: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -906,7 +906,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{geometries: geometries}, srid) do
+        def to_ewkt(%{geometries: geometries, srid: srid}) do
           data = Enum.map_join(geometries, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
 
           unquote(
@@ -1096,6 +1096,30 @@ defmodule Geometry.Protocols do
   defp match(key, var) do
     quote do
       %{unquote(key) => unquote(var)}
+    end
+  end
+
+  defp match_with_srid(key, :xy) do
+    quote do
+      %{unquote(key) => [x, y], :srid => srid}
+    end
+  end
+
+  defp match_with_srid(key, :xyzm) do
+    quote do
+      %{unquote(key) => [x, y, z, m], :srid => srid}
+    end
+  end
+
+  defp match_with_srid(key, dim) when dim in [:xyz, :xym] do
+    quote do
+      %{unquote(key) => [x, y, z], :srid => srid}
+    end
+  end
+
+  defp match_with_srid(key, var) do
+    quote do
+      %{unquote(key) => unquote(var), :srid => srid}
     end
   end
 

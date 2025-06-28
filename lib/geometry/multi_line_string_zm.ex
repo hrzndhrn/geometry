@@ -33,9 +33,9 @@ defmodule Geometry.MultiLineStringZM do
   alias Geometry.LineStringZM
   alias Geometry.MultiLineStringZM
 
-  defstruct line_strings: []
+  defstruct line_strings: [], srid: 0
 
-  @type t :: %MultiLineStringZM{line_strings: [Geometry.coordinates()]}
+  @type t :: %MultiLineStringZM{line_strings: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiLineStringZM`.
@@ -68,18 +68,22 @@ defmodule Geometry.MultiLineStringZM do
         line_strings: [
             [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]],
             [[10, 20, 30, 40], [30, 40, 50, 60]]
-          ]
+          ],
+        srid: 0
       }
 
       iex> MultiLineStringZM.new([])
       %MultiLineStringZM{}
   """
-  @spec new([LineStringZM.t()]) :: t()
-  def new([]), do: %MultiLineStringZM{}
+  @spec new([LineStringZM.t()], Geometry.srid()) :: t()
+  def new(line_strings, srid \\ 0)
 
-  def new(line_strings) do
+  def new([], srid), do: %MultiLineStringZM{srid: srid}
+
+  def new(line_strings, srid) do
     %MultiLineStringZM{
-      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end)
+      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end),
+      srid: srid
     }
   end
 end

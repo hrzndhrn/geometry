@@ -4,6 +4,6 @@ defprotocol Geometry.Encoder.WKT do
   @spec to_wkt(Geometry.t()) :: String.t()
   def to_wkt(geometry)
 
-  @spec to_ewkt(Geometry.t(), Geometry.srid()) :: String.t()
-  def to_ewkt(geometry, srid)
+  @spec to_ewkt(Geometry.t()) :: String.t()
+  def to_ewkt(geometry)
 end

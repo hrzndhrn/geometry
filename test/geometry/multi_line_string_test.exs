@@ -4,7 +4,6 @@ defmodule Geometry.MultiLineStringTest do
   import Assertions
 
   alias Geometry.DecodeError
-
   alias Geometry.LineString
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
@@ -218,7 +217,7 @@ defmodule Geometry.MultiLineStringTest do
             """)
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), 4326)
 
           assert GeoJsonValidator.valid?(geo_json)
 
@@ -279,7 +278,7 @@ defmodule Geometry.MultiLineStringTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_line_string}
         end
@@ -288,7 +287,7 @@ defmodule Geometry.MultiLineStringTest do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_line_string}
         end
@@ -311,7 +310,13 @@ defmodule Geometry.MultiLineStringTest do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_line_string}
         end
@@ -320,7 +325,13 @@ defmodule Geometry.MultiLineStringTest do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
           assert Geometry.from_wkb(wkb) == {:ok, multi_line_string}
         end
@@ -459,36 +470,48 @@ defmodule Geometry.MultiLineStringTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_line_string, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_line_string}
         end
 
         test "returns multi-line-string from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), 0, true)
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_line_string, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_line_string}
         end
 
         test "returns multi-line-string from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_line_string, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_line_string}
         end
 
         test "returns multi-line-string from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), true)
+            multi_line_string(
+              unquote(module),
+              unquote(data[:term]),
+              unquote(dim),
+              unquote(srid),
+              true
+            )
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {multi_line_string, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, multi_line_string}
         end
       end
 
@@ -536,18 +559,18 @@ defmodule Geometry.MultiLineStringTest do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkb(multi_line_string, unquote(srid), :xdr) == wkb
+          assert Geometry.to_ewkb(multi_line_string, :xdr) == wkb
         end
 
         test "returns multi-line-string from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkb(multi_line_string, unquote(srid)) == wkb
+          assert Geometry.to_ewkb(multi_line_string) == wkb
         end
       end
 
@@ -574,7 +597,7 @@ defmodule Geometry.MultiLineStringTest do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, multi_line_string}
         end
@@ -589,23 +612,23 @@ defmodule Geometry.MultiLineStringTest do
           multi_line_string =
             multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_line_string, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_line_string}
         end
 
         test "returns an empty multi-line-string" do
           wkt = wkt(unquote(text))
           multi_line_string = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_line_string, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_line_string}
         end
 
         test "returns multi-line-string from WKT with srid" do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {multi_line_string, unquote(srid)}}
+          assert Geometry.from_ewkt(wkt) == {:ok, multi_line_string}
         end
       end
 
@@ -636,16 +659,16 @@ defmodule Geometry.MultiLineStringTest do
           wkt = wkt(unquote(text), unquote(data[:term]), unquote(srid))
 
           multi_line_string =
-            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim))
+            multi_line_string(unquote(module), unquote(data[:term]), unquote(dim), unquote(srid))
 
-          assert Geometry.to_ewkt(multi_line_string, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(multi_line_string) == wkt
         end
 
         test "returns ewkt from an empty multi-line-string" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          multi_line_string = unquote(module).new()
+          multi_line_string = unquote(module).new([], unquote(srid))
 
-          assert Geometry.to_ewkt(multi_line_string, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(multi_line_string) == wkt
         end
       end
 
@@ -725,8 +748,8 @@ defmodule Geometry.MultiLineStringTest do
 
   defp in_brackets(str), do: "(#{str})"
 
-  defp multi_line_string(module, data, dim, to_float \\ false) do
-    module.new(line_strings(to_float(data, to_float), dim))
+  defp multi_line_string(module, data, dim, srid \\ 0, to_float \\ false) do
+    module.new(line_strings(to_float(data, to_float), dim, srid), srid)
   end
 
   defp to_float(data, false), do: data
@@ -738,32 +761,32 @@ defmodule Geometry.MultiLineStringTest do
     end)
   end
 
-  defp line_strings(data, dim) do
+  defp line_strings(data, dim, srid \\ 0) do
     case dim do
-      :xy -> Enum.map(data, fn points -> %LineString{points: points} end)
-      :xym -> Enum.map(data, fn points -> %LineStringM{points: points} end)
-      :xyz -> Enum.map(data, fn points -> %LineStringZ{points: points} end)
-      :xyzm -> Enum.map(data, fn points -> %LineStringZM{points: points} end)
+      :xy -> Enum.map(data, fn points -> %LineString{points: points, srid: srid} end)
+      :xym -> Enum.map(data, fn points -> %LineStringM{points: points, srid: srid} end)
+      :xyz -> Enum.map(data, fn points -> %LineStringZ{points: points, srid: srid} end)
+      :xyzm -> Enum.map(data, fn points -> %LineStringZM{points: points, srid: srid} end)
     end
   end
 
-  defp line_string(points, dim) do
-    line_strings = Enum.map(points, fn point -> point(point, dim) end)
+  defp line_string(points, dim, srid \\ 0) do
+    line_strings = Enum.map(points, fn point -> point(point, dim, srid) end)
 
     case dim do
-      :xy -> LineString.new(line_strings)
-      :xym -> LineStringM.new(line_strings)
-      :xyz -> LineStringZ.new(line_strings)
-      :xyzm -> LineStringZM.new(line_strings)
+      :xy -> LineString.new(line_strings, srid: srid)
+      :xym -> LineStringM.new(line_strings, srid: srid)
+      :xyz -> LineStringZ.new(line_strings, srid: srid)
+      :xyzm -> LineStringZM.new(line_strings, srid: srid)
     end
   end
 
-  defp point(data, dim) do
+  defp point(data, dim, srid) do
     case dim do
-      :xy -> data |> Enum.take(2) |> Point.new()
-      :xym -> data |> Enum.take(3) |> PointM.new()
-      :xyz -> data |> Enum.take(3) |> PointZ.new()
-      :xyzm -> data |> Enum.take(4) |> PointZM.new()
+      :xy -> data |> Enum.take(2) |> Point.new(srid)
+      :xym -> data |> Enum.take(3) |> PointM.new(srid)
+      :xyz -> data |> Enum.take(3) |> PointZ.new(srid)
+      :xyzm -> data |> Enum.take(4) |> PointZM.new(srid)
     end
   end
 end

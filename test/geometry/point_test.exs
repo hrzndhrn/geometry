@@ -195,11 +195,11 @@ defmodule Geometry.PointNewTest do
           assert GeoJsonValidator.valid?(geo_json)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) ==
-                   {:ok, %unquote(module){coordinate: unquote(data[:term])}}
+                   {:ok, %unquote(module){coordinate: unquote(data[:term]), srid: 4326}}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json(geo_json) ==
-                     {:ok, %unquote(module){coordinate: unquote(data[:term])}}
+                     {:ok, %unquote(module){coordinate: unquote(data[:term]), srid: 4326}}
           end
         end
 
@@ -242,11 +242,11 @@ defmodule Geometry.PointNewTest do
             """)
 
           assert Geometry.from_geo_json!(geo_json, unquote(dim)) ==
-                   %unquote(module){coordinate: unquote(data[:term])}
+                   %unquote(module){coordinate: unquote(data[:term]), srid: 4326}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json!(geo_json) ==
-                     %unquote(module){coordinate: unquote(data[:term])}
+                     %unquote(module){coordinate: unquote(data[:term]), srid: 4326}
           end
         end
 
@@ -312,14 +312,14 @@ defmodule Geometry.PointNewTest do
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from xdr binary" do
+        test "returns an empty point from xdr binary" do
           wkb = unquote(code[:xdr] <> empty[:xdr])
           point = unquote(module).new()
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from ndr binary" do
+        test "returns an empty point from ndr binary" do
           wkb = unquote(code[:ndr] <> empty[:ndr])
           point = unquote(module).new()
 
@@ -328,28 +328,28 @@ defmodule Geometry.PointNewTest do
 
         test "returns point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
 
         test "returns point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from xdr binary with srid" do
+        test "returns an empty point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from ndr binary with srid" do
+        test "returns an empty point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
@@ -400,14 +400,14 @@ defmodule Geometry.PointNewTest do
           assert Geometry.from_wkb!(wkb) == point
         end
 
-        test "returns an emppty point from xdr binary" do
+        test "returns an empty point from xdr binary" do
           wkb = unquote(code[:xdr] <> empty[:xdr])
           point = unquote(module).new()
 
           assert Geometry.from_wkb!(wkb) == point
         end
 
-        test "returns an emppty point from ndr binary" do
+        test "returns an empty point from ndr binary" do
           wkb = unquote(code[:ndr] <> empty[:ndr])
           point = unquote(module).new()
 
@@ -416,28 +416,28 @@ defmodule Geometry.PointNewTest do
 
         test "returns point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
           assert Geometry.from_wkb!(wkb) == point
         end
 
         test "returns point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
           assert Geometry.from_wkb!(wkb) == point
         end
 
-        test "returns an emppty point from xdr binary with srid" do
+        test "returns an empty point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.from_wkb!(wkb) == point
         end
 
-        test "returns an emppty point from ndr binary with srid" do
+        test "returns an empty point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.from_wkb!(wkb) == point
         end
@@ -467,14 +467,14 @@ defmodule Geometry.PointNewTest do
           assert Geometry.to_wkb(point, :ndr) == wkb
         end
 
-        test "returns xdr binary for an emppty point" do
+        test "returns xdr binary for an empty point" do
           wkb = unquote(code[:xdr] <> empty[:xdr])
           point = unquote(module).new()
 
           assert Geometry.to_wkb(point, :xdr) == wkb
         end
 
-        test "returns ndr binary for an emppty point" do
+        test "returns ndr binary for an empty point" do
           wkb = unquote(code[:ndr] <> empty[:ndr])
           point = unquote(module).new()
 
@@ -489,56 +489,56 @@ defmodule Geometry.PointNewTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
           point = unquote(module).new(unquote(data[:term]))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
         test "returns point from ndr binary" do
           wkb = unquote(code[:ndr] <> data[:ndr])
           point = unquote(module).new(unquote(data[:term]))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from xdr binary" do
+        test "returns an empty point from xdr binary" do
           wkb = unquote(code[:xdr] <> empty[:xdr])
           point = unquote(module).new()
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from ndr binary" do
+        test "returns an empty point from ndr binary" do
           wkb = unquote(code[:ndr] <> empty[:ndr])
           point = unquote(module).new()
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, nil}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
         test "returns point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
         test "returns point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from xdr binary with srid" do
+        test "returns an empty point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
-        test "returns an emppty point from ndr binary with srid" do
+        test "returns an empty point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.from_ewkb(wkb) == {:ok, {point, unquote(srid)}}
+          assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
       end
 
@@ -549,7 +549,7 @@ defmodule Geometry.PointNewTest do
           wkb = unquote(code[:xdr] <> data[:xdr])
           point = unquote(module).new(unquote(data[:term]))
 
-          assert Geometry.from_ewkb!(wkb) == {point, nil}
+          assert Geometry.from_ewkb!(wkb) == point
         end
       end
 
@@ -558,31 +558,31 @@ defmodule Geometry.PointNewTest do
 
         test "returns xdr binary for point" do
           wkb = unquote(code_srid[:xdr] <> data[:xdr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
-          assert Geometry.to_ewkb(point, unquote(srid), :xdr) == wkb
+          assert Geometry.to_ewkb(point, :xdr) == wkb
         end
 
         test "returns ndr binary for point" do
           wkb = unquote(code_srid[:ndr] <> data[:ndr])
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
-          assert Geometry.to_ewkb(point, unquote(srid)) == wkb
-          assert Geometry.to_ewkb(point, unquote(srid), :ndr) == wkb
+          assert Geometry.to_ewkb(point) == wkb
+          assert Geometry.to_ewkb(point, :ndr) == wkb
         end
 
-        test "returns xdr binary for an emppty point" do
+        test "returns xdr binary for an empty point" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.to_ewkb(point, unquote(srid), :xdr) == wkb
+          assert Geometry.to_ewkb(point, :xdr) == wkb
         end
 
-        test "returns ndr binary for an emppty point" do
+        test "returns ndr binary for an empty point" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.to_ewkb(point, unquote(srid)) == wkb
+          assert Geometry.to_ewkb(point) == wkb
         end
       end
 
@@ -607,14 +607,14 @@ defmodule Geometry.PointNewTest do
           wkt =
             "SRID=#{unquote(srid)};#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
 
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, point}
         end
 
         test "returns an empty point from WKT with srid" do
           wkt = "SRID=#{unquote(srid)};#{unquote(text)} empty"
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, point}
         end
@@ -656,30 +656,30 @@ defmodule Geometry.PointNewTest do
           wkt = "#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
           point = unquote(module).new(unquote(data[:term]))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {point, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, point}
         end
 
         test "returns an empty point from WKT" do
           wkt = "#{unquote(text)} empty"
           point = unquote(module).new()
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {point, nil}}
+          assert Geometry.from_ewkt(wkt) == {:ok, point}
         end
 
         test "returns a point from WKT with srid" do
           wkt =
             "SRID=#{unquote(srid)};#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
 
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {point, unquote(srid)}}
+          assert Geometry.from_ewkt(wkt) == {:ok, point}
         end
 
         test "returns an empty point from WKT with srid" do
           wkt = "SRID=#{unquote(srid)};#{unquote(text)} empty"
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.from_ewkt(wkt) == {:ok, {point, unquote(srid)}}
+          assert Geometry.from_ewkt(wkt) == {:ok, point}
         end
       end
 
@@ -690,7 +690,7 @@ defmodule Geometry.PointNewTest do
           wkt = "#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
           point = unquote(module).new(unquote(data[:term]))
 
-          assert Geometry.from_ewkt!(wkt) == {point, nil}
+          assert Geometry.from_ewkt!(wkt) == point
         end
       end
 
@@ -701,16 +701,16 @@ defmodule Geometry.PointNewTest do
           wkt =
             "SRID=#{unquote(srid)};#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
 
-          point = unquote(module).new(unquote(data[:term]))
+          point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
-          assert Geometry.to_ewkt(point, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(point) == wkt
         end
 
         test "returns WKT for an empty point" do
           wkt = "SRID=#{unquote(srid)};#{unquote(text)} EMPTY"
-          point = unquote(module).new()
+          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
-          assert Geometry.to_ewkt(point, unquote(srid)) == wkt
+          assert Geometry.to_ewkt(point) == wkt
         end
       end
     end

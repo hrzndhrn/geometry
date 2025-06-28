@@ -165,37 +165,37 @@ defmodule Geometry do
   @doc """
   Returns the EWKB representation of a geometry.
 
-  If the `srid` is nil a WKB is returned.
+  If the `srid` of the geometry is 0, a WKB is returned.
 
   The optional `:endian` argument indicates whether `:xdr` big endian or `:ndr` little
   endian is returned. The default is `:ndr`.
 
   ## Examples
 
-      iex> PointZ.new(1, 2, 3)
-      ...> |> Geometry.to_ewkb(3825)
+      iex> PointZ.new(1, 2, 3, 3825)
+      ...> |> Geometry.to_ewkb()
       ...> |> Base.encode16()
       "01010000A0F10E0000000000000000F03F00000000000000400000000000000840"
 
-      iex> PointZ.new(1, 2, 3)
-      ...> |> Geometry.to_ewkb(nil)
+      iex> PointZ.new(1, 2, 3, 0)
+      ...> |> Geometry.to_ewkb()
       ...> |> Base.encode16()
       "0101000080000000000000F03F00000000000000400000000000000840"
 
-      iex> Point.new(1, 2)
-      ...> |> Geometry.to_ewkb(3825, :xdr)
+      iex> Point.new(1, 2, 3825)
+      ...> |> Geometry.to_ewkb(:xdr)
       ...> |> Base.encode16()
       "002000000100000EF13FF00000000000004000000000000000"
   """
-  @spec to_ewkb(t(), srid() | nil, endian()) :: wkb()
-  def to_ewkb(geometry, srid, endian \\ @default_endian)
+  @spec to_ewkb(t(), endian()) :: wkb()
+  def to_ewkb(geometry, endian \\ @default_endian)
 
-  def to_ewkb(geometry, nil, endian) when endian in [:xdr, :ndr] do
+  def to_ewkb(%{srid: 0} = geometry, endian) when endian in [:xdr, :ndr] do
     to_wkb(geometry, endian)
   end
 
-  def to_ewkb(geometry, srid, endian) when endian in [:xdr, :ndr] do
-    Encoder.WKB.to_ewkb(geometry, srid, endian)
+  def to_ewkb(geometry, endian) when endian in [:xdr, :ndr] do
+    Encoder.WKB.to_ewkb(geometry, endian)
   end
 
   @doc """
@@ -233,24 +233,20 @@ defmodule Geometry do
       iex> "0020000001000012673FF00000000000004000000000000000"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_ewkb()
-      {:ok, {%Point{coordinate: [1.0, 2.0]}, 4711}}
+      {:ok, %Point{coordinate: [1.0, 2.0], srid: 4711}}
 
       iex> "0101000080000000000000F03F00000000000000400000000000000840"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_ewkb()
-      {:ok, {%PointZ{coordinate: [1.0, 2.0, 3.0]}, nil}}
+      {:ok, %PointZ{coordinate: [1.0, 2.0, 3.0], srid: 0}}
   """
-  @spec from_ewkb(wkb()) :: {:ok, {t(), srid() | nil}} | {:error, DecodeError.t()}
-  def from_ewkb(wkb) do
-    with {:ok, geometry, srid} <- Decoder.WKB.decode(wkb) do
-      {:ok, {geometry, srid}}
-    end
-  end
+  @spec from_ewkb(wkb()) :: {:ok, t()} | {:error, DecodeError.t()}
+  def from_ewkb(wkb), do: Decoder.WKB.decode(wkb)
 
   @doc """
   The same as `from_ewkb/1`, but raises a `Geometry.DecodeError` exception if it fails.
   """
-  @spec from_ewkb!(wkb()) :: {t(), srid() | nil}
+  @spec from_ewkb!(wkb()) :: t()
   def from_ewkb!(wkb) do
     case from_ewkb(wkb) do
       {:ok, geometry} -> geometry
@@ -270,7 +266,7 @@ defmodule Geometry do
       iex> "0020000001000012673FF00000000000004000000000000000"
       ...> |> Base.decode16!()
       ...> |> Geometry.from_wkb()
-      {:ok, %Point{coordinate: [1.0, 2.0]}}
+      {:ok, %Point{coordinate: [1.0, 2.0], srid: 4711}}
 
       iex> "0101000080000000000000F03F00000000000000400000000000000840"
       ...> |> Base.decode16!()
@@ -311,26 +307,26 @@ defmodule Geometry do
   @doc """
   Returns the EWKT representation of the given `geometry`.
 
-  If the `srid` is `nil` a WKT is returned.
+  If the `srid` of the geometry is `0`, a WKT is returned.
 
   ## Examples
 
-      iex> Geometry.to_ewkt(PointZ.new(1.1, 2.2, 3.3), 4211)
+      iex> Geometry.to_ewkt(PointZ.new(1.1, 2.2, 3.3, 4211))
       "SRID=4211;Point Z (1.1 2.2 3.3)"
 
-      iex> Geometry.to_ewkt(LineString.new([Point.new(1, 2), Point.new(3, 4)]), 3825)
+      iex> Geometry.to_ewkt(LineString.new([Point.new(1, 2), Point.new(3, 4)], 3825))
       "SRID=3825;LineString (1 2, 3 4)"
 
-      iex> Geometry.to_ewkt(Point.new(1, 2), nil)
+      iex> Geometry.to_ewkt(Point.new(1, 2))
       "Point (1 2)"
   """
-  @spec to_ewkt(Geometry.t(), Geometry.srid() | nil) :: wkt()
-  def to_ewkt(geometry, nil) do
-    Encoder.WKT.to_wkt(geometry)
+  @spec to_ewkt(Geometry.t()) :: wkt()
+  def to_ewkt(%{srid: 0} = geometry) do
+    to_wkt(geometry)
   end
 
-  def to_ewkt(geometry, srid) when is_integer(srid) do
-    Encoder.WKT.to_ewkt(geometry, srid)
+  def to_ewkt(geometry) do
+    Encoder.WKT.to_ewkt(geometry)
   end
 
   @doc """
@@ -362,10 +358,10 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.from_ewkt("SRID=42;Point (1.1 2.2)")
-      {:ok, {%Point{coordinate: [1.1, 2.2]}, 42}}
+      {:ok, %Point{coordinate: [1.1, 2.2], srid: 42}}
 
       iex> Geometry.from_ewkt("Point ZM (1 2 3 4)")
-      {:ok, {%PointZM{coordinate: [1, 2, 3, 4]}, nil}}
+      {:ok, %PointZM{coordinate: [1, 2, 3, 4], srid: 0}}
 
       iex> Geometry.from_ewkt("Point XY (1 2 3 4)")
       {:error, "expected Point data", "XY (1 2 3 4)", {1, 0}, 6}
@@ -380,17 +376,13 @@ defmodule Geometry do
         }
       }
   """
-  @spec from_ewkt(wkt()) :: {:ok, {t(), srid() | nil}} | {:error, DecodeError.t()}
-  def from_ewkt(wkt) do
-    with {:ok, geometry, srid} <- Decoder.WKT.decode(wkt) do
-      {:ok, {geometry, srid}}
-    end
-  end
+  @spec from_ewkt(wkt()) :: {:ok, t()} | {:error, DecodeError.t()}
+  def from_ewkt(wkt), do: Decoder.WKT.decode(wkt)
 
   @doc """
   The same as `from_ewkt/1`, but raises a `Geometry.DecodeError` exception if it fails.
   """
-  @spec from_ewkt!(wkt()) :: {t(), srid() | nil}
+  @spec from_ewkt!(wkt()) :: t()
   def from_ewkt!(wkt) do
     case from_ewkt(wkt) do
       {:ok, geometry} -> geometry
@@ -408,10 +400,10 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.from_wkt("SRID=42;Point (1.1 2.2)")
-      {:ok, %Point{coordinate: [1.1, 2.2]}}
+      {:ok, %Point{coordinate: [1.1, 2.2], srid: 42}}
 
       iex> Geometry.from_wkt("Point ZM (1 2 3 4)")
-      {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
+      {:ok, %PointZM{coordinate: [1, 2, 3, 4], srid: 0}}
 
       iex> Geometry.from_wkt("Point XY (1 2 3 4)")
       {:error,  %Geometry.DecodeError{
@@ -423,11 +415,7 @@ defmodule Geometry do
       }
   """
   @spec from_wkt(wkt()) :: {:ok, t()} | {:error, DecodeError.t()}
-  def from_wkt(wkt) do
-    with {:ok, geometry, _srid} <- Decoder.WKT.decode(wkt) do
-      {:ok, geometry}
-    end
-  end
+  def from_wkt(wkt), do: Decoder.WKT.decode(wkt)
 
   @doc """
   The same as `from_wkt/1`, but raises a `Geometry.DecodeError` exception if it fails.
@@ -467,12 +455,12 @@ defmodule Geometry do
       iex> ~s({"type": "Point", "coordinates": [1, 2]})
       iex> |> Jason.decode!()
       iex> |> Geometry.from_geo_json()
-      {:ok, %Point{coordinate: [1, 2]}}
+      {:ok, %Point{coordinate: [1, 2], srid: 4326}}
 
       iex> ~s({"type": "Point", "coordinates": [1, 2, 3, 4]})
       iex> |> Jason.decode!()
       iex> |> Geometry.from_geo_json(:xyzm)
-      {:ok, %PointZM{coordinate: [1, 2, 3, 4]}}
+      {:ok, %PointZM{coordinate: [1, 2, 3, 4], srid: 4326}}
 
       iex> ~s({"type": "Dot", "coordinates": [1, 2]})
       iex> |> Jason.decode!()
