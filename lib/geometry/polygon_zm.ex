@@ -2,7 +2,7 @@ defmodule Geometry.PolygonZM do
   @moduledoc """
   A polygon struct, representing a 3D polygon with a measurement.
 
-  A none empty line-string requires at least one ring with four coordinates.
+  A non-empty line-string requires at least one ring with four coordinates.
   """
 
   use Geometry.Protocols
