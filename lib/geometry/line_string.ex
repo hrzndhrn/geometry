@@ -2,7 +2,7 @@ defmodule Geometry.LineString do
   @moduledoc """
   A line-string struct, representing a 2D line.
 
-  A non-empty line-string requires at least two path.
+  A non-empty line-string requires at least two points.
   """
 
   use Geometry.Protocols
