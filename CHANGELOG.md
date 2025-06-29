@@ -10,7 +10,7 @@
   ```Elixir
   iex> wkb = "00000000013FF0000000000000400199999999999A"
   iex> wkb |> Base.decode16!() |> Geometry.from_wkb()
-  {:ok, %Geometry.Point{coordinate: [1.0, 2.2]}}
+  {:ok, %Geometry.Point{coordinates: [1.0, 2.2]}}
   ```
 + The functions `Geometry.from_ewkb/` and `Geometry.from_ekwt` are added to work
   with `EWKT`/`EWKB`.

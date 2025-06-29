@@ -22,17 +22,17 @@ defmodule Geometry.Protocols do
     {:xyzm, false} => 192,
     {:xyzm, true} => 224
   }
-  @geometry_keys point: :coordinate,
-                 line_string: :points,
+  @geometry_keys point: :coordinates,
+                 line_string: :path,
                  polygon: :rings,
                  multi_point: :points,
                  multi_line_string: :line_strings,
                  multi_polygon: :polygons,
                  geometry_collection: :geometries
 
-  @multi_sub_keys multi_line_string: :points,
+  @multi_sub_keys multi_line_string: :path,
                   multi_polygon: :rings,
-                  multi_point: :coordinate
+                  multi_point: :coordinates
 
   @multi [:multi_point, :multi_line_string, :multi_polygon, :geometry_collection]
 
@@ -121,7 +121,7 @@ defmodule Geometry.Protocols do
   defmacro wkb(:point, dim) do
     quote do
       defimpl Geometry.Encoder.WKB do
-        def to_wkb(%{coordinate: []}, :xdr) do
+        def to_wkb(%{coordinates: []}, :xdr) do
           unquote(
             binary([
               code(:point, dim, false, :xdr),
@@ -130,7 +130,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_wkb(%{coordinate: []}, :ndr) do
+        def to_wkb(%{coordinates: []}, :ndr) do
           unquote(
             binary([
               code(:point, dim, false, :ndr),
@@ -139,7 +139,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_wkb(unquote(match(:coordinate, dim)), :xdr) do
+        def to_wkb(unquote(match(:coordinates, dim)), :xdr) do
           unquote(
             binary([
               code(:point, dim, false, :xdr),
@@ -148,7 +148,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_wkb(unquote(match(:coordinate, dim)), :ndr) do
+        def to_wkb(unquote(match(:coordinates, dim)), :ndr) do
           unquote(
             binary([
               code(:point, dim, false, :ndr),
@@ -157,7 +157,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(%{coordinate: [], srid: srid}, :xdr) do
+        def to_ewkb(%{coordinates: [], srid: srid}, :xdr) do
           unquote(
             binary([
               code(:point, dim, true, :xdr),
@@ -167,7 +167,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(%{coordinate: [], srid: srid}, :ndr) do
+        def to_ewkb(%{coordinates: [], srid: srid}, :ndr) do
           unquote(
             binary([
               code(:point, dim, true, :ndr),
@@ -177,7 +177,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(unquote(match_with_srid(:coordinate, dim)), :xdr) do
+        def to_ewkb(unquote(match_with_srid(:coordinates, dim)), :xdr) do
           unquote(
             binary([
               code(:point, dim, true, :xdr),
@@ -187,7 +187,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkb(unquote(match_with_srid(:coordinate, dim)), :ndr) do
+        def to_ewkb(unquote(match_with_srid(:coordinates, dim)), :ndr) do
           unquote(
             binary([
               code(:point, dim, true, :ndr),
@@ -203,53 +203,53 @@ defmodule Geometry.Protocols do
   defmacro wkb(:line_string, dim) do
     quote do
       defimpl Geometry.Encoder.WKB do
-        def to_wkb(%{points: points}, :xdr) do
+        def to_wkb(%{path: coordinates}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:line_string, dim, false, :xdr),
-                count(quote(do: points), :xdr)
+                count(quote(do: coordinates), :xdr)
               ])
             ),
-            unquote(points_to_binary(dim, :xdr))
+            unquote(coordinates_to_binary(dim, :xdr))
           ])
         end
 
-        def to_wkb(%{points: points}, :ndr) do
+        def to_wkb(%{path: coordinates}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:line_string, dim, false, :ndr),
-                count(quote(do: points), :ndr)
+                count(quote(do: coordinates), :ndr)
               ])
             ),
-            unquote(points_to_binary(dim, :ndr))
+            unquote(coordinates_to_binary(dim, :ndr))
           ])
         end
 
-        def to_ewkb(%{points: points, srid: srid}, :xdr) do
+        def to_ewkb(%{path: coordinates, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:line_string, dim, true, :xdr),
                 srid_to_binary(:xdr),
-                count(quote(do: points), :xdr)
+                count(quote(do: coordinates), :xdr)
               ])
             ),
-            unquote(points_to_binary(dim, :xdr))
+            unquote(coordinates_to_binary(dim, :xdr))
           ])
         end
 
-        def to_ewkb(%{points: points, srid: srid}, :ndr) do
+        def to_ewkb(%{path: coordinates, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:line_string, dim, true, :ndr),
                 srid_to_binary(:ndr),
-                count(quote(do: points), :ndr)
+                count(quote(do: coordinates), :ndr)
               ])
             ),
-            unquote(points_to_binary(dim, :ndr))
+            unquote(coordinates_to_binary(dim, :ndr))
           ])
         end
       end
@@ -315,53 +315,53 @@ defmodule Geometry.Protocols do
   defmacro wkb(:multi_point, dim) do
     quote do
       defimpl Geometry.Encoder.WKB do
-        def to_wkb(%{points: points}, :xdr) do
+        def to_wkb(%{points: coordinates}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:multi_point, dim, false, :xdr),
-                count(quote(do: points), :xdr)
+                count(quote(do: coordinates), :xdr)
               ])
             ),
-            unquote(points_to_binary(dim, :xdr, code(:point, dim, false, :xdr)))
+            unquote(coordinates_to_binary(dim, :xdr, code(:point, dim, false, :xdr)))
           ])
         end
 
-        def to_wkb(%{points: points}, :ndr) do
+        def to_wkb(%{points: coordinates}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:multi_point, dim, false, :ndr),
-                count(quote(do: points), :ndr)
+                count(quote(do: coordinates), :ndr)
               ])
             ),
-            unquote(points_to_binary(dim, :ndr, code(:point, dim, false, :ndr)))
+            unquote(coordinates_to_binary(dim, :ndr, code(:point, dim, false, :ndr)))
           ])
         end
 
-        def to_ewkb(%{points: points, srid: srid}, :xdr) do
+        def to_ewkb(%{points: coordinates, srid: srid}, :xdr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:multi_point, dim, true, :xdr),
                 srid_to_binary(:xdr),
-                count(quote(do: points), :xdr)
+                count(quote(do: coordinates), :xdr)
               ])
             ),
-            unquote(points_to_binary(dim, :xdr, code(:point, dim, false, :xdr)))
+            unquote(coordinates_to_binary(dim, :xdr, code(:point, dim, false, :xdr)))
           ])
         end
 
-        def to_ewkb(%{points: points, srid: srid}, :ndr) do
+        def to_ewkb(%{points: coordinates, srid: srid}, :ndr) do
           IO.iodata_to_binary([
             unquote(
               binary([
                 code(:multi_point, dim, true, :ndr),
                 srid_to_binary(:ndr),
-                count(quote(do: points), :ndr)
+                count(quote(do: coordinates), :ndr)
               ])
             ),
-            unquote(points_to_binary(dim, :ndr, code(:point, dim, false, :ndr)))
+            unquote(coordinates_to_binary(dim, :ndr, code(:point, dim, false, :ndr)))
           ])
         end
       end
@@ -539,7 +539,7 @@ defmodule Geometry.Protocols do
   defmacro wkt(:point, dim) do
     quote do
       defimpl Geometry.Encoder.WKT do
-        def to_wkt(%{coordinate: []}) do
+        def to_wkt(%{coordinates: []}) do
           unquote(
             binary([
               "Point",
@@ -549,7 +549,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_wkt(unquote(match(:coordinate, dim))) do
+        def to_wkt(unquote(match(:coordinates, dim))) do
           unquote(
             binary([
               "Point",
@@ -561,7 +561,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{coordinate: [], srid: srid}) do
+        def to_ewkt(%{coordinates: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -572,7 +572,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(unquote(match_with_srid(:coordinate, dim))) do
+        def to_ewkt(unquote(match_with_srid(:coordinates, dim))) do
           unquote(
             binary([
               srid_to_string(),
@@ -591,7 +591,7 @@ defmodule Geometry.Protocols do
   defmacro wkt(:line_string, dim) do
     quote do
       defimpl Geometry.Encoder.WKT do
-        def to_wkt(%{points: []}) do
+        def to_wkt(%{path: []}) do
           unquote(
             binary([
               "LineString",
@@ -601,8 +601,8 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_wkt(%{points: points}) do
-          data = unquote(points_to_string(dim))
+        def to_wkt(%{path: coordinates}) do
+          data = unquote(coordinates_to_string(dim))
 
           unquote(
             binary([
@@ -615,7 +615,7 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: [], srid: srid}) do
+        def to_ewkt(%{path: [], srid: srid}) do
           unquote(
             binary([
               srid_to_string(),
@@ -626,8 +626,8 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: points, srid: srid}) do
-          data = unquote(points_to_string(dim))
+        def to_ewkt(%{path: coordinates, srid: srid}) do
+          data = unquote(coordinates_to_string(dim))
 
           unquote(
             binary([
@@ -713,8 +713,8 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_wkt(%{points: points}) do
-          data = unquote(points_to_string(dim))
+        def to_wkt(%{points: coordinates}) do
+          data = unquote(coordinates_to_string(dim))
 
           unquote(
             binary([
@@ -738,8 +738,8 @@ defmodule Geometry.Protocols do
           )
         end
 
-        def to_ewkt(%{points: points, srid: srid}) do
-          data = unquote(points_to_string(dim))
+        def to_ewkt(%{points: coordinates, srid: srid}) do
+          data = unquote(coordinates_to_string(dim))
 
           unquote(
             binary([
@@ -975,7 +975,7 @@ defmodule Geometry.Protocols do
             list, :done ->
               %{
                 geometry
-                | points: Enum.reduce(list, data, fn point, acc -> [point.coordinate | acc] end)
+                | points: Enum.reduce(list, data, fn point, acc -> [point.coordinates | acc] end)
               }
 
             _list, :halt ->
@@ -1000,7 +1000,9 @@ defmodule Geometry.Protocols do
               %{
                 geometry
                 | line_strings:
-                    Enum.reduce(list, data, fn line_string, acc -> [line_string.points | acc] end)
+                    Enum.reduce(list, data, fn line_string, acc ->
+                      [line_string.path | acc]
+                    end)
               }
 
             _list, :halt ->
@@ -1144,9 +1146,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_binary(:xy, endian) do
+  defp coordinates_to_binary(:xy, endian) do
     quote do
-      Enum.map(points, fn [x, y] ->
+      Enum.map(coordinates, fn [x, y] ->
         <<
           x::unquote(modifier(endian))-float-size(64),
           y::unquote(modifier(endian))-float-size(64)
@@ -1155,9 +1157,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_binary(dim, endian) when dim in [:xyz, :xym] do
+  defp coordinates_to_binary(dim, endian) when dim in [:xyz, :xym] do
     quote do
-      Enum.map(points, fn [x, y, z] ->
+      Enum.map(coordinates, fn [x, y, z] ->
         <<
           x::unquote(modifier(endian))-float-size(64),
           y::unquote(modifier(endian))-float-size(64),
@@ -1167,9 +1169,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_binary(:xyzm, endian) do
+  defp coordinates_to_binary(:xyzm, endian) do
     quote do
-      Enum.map(points, fn [x, y, z, m] ->
+      Enum.map(coordinates, fn [x, y, z, m] ->
         <<
           x::unquote(modifier(endian))-float-size(64),
           y::unquote(modifier(endian))-float-size(64),
@@ -1180,9 +1182,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_binary(:xy, endian, code) do
+  defp coordinates_to_binary(:xy, endian, code) do
     quote do
-      Enum.map(points, fn [x, y] ->
+      Enum.map(coordinates, fn [x, y] ->
         <<
           unquote(IO.iodata_to_binary(code))::binary,
           x::unquote(modifier(endian))-float-size(64),
@@ -1192,9 +1194,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_binary(dim, endian, code) when dim in [:xyz, :xym] do
+  defp coordinates_to_binary(dim, endian, code) when dim in [:xyz, :xym] do
     quote do
-      Enum.map(points, fn [x, y, z] ->
+      Enum.map(coordinates, fn [x, y, z] ->
         <<
           unquote(IO.iodata_to_binary(code))::binary,
           x::unquote(modifier(endian))-float-size(64),
@@ -1205,9 +1207,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_binary(:xyzm, endian, code) do
+  defp coordinates_to_binary(:xyzm, endian, code) do
     quote do
-      Enum.map(points, fn [x, y, z, m] ->
+      Enum.map(coordinates, fn [x, y, z, m] ->
         <<
           unquote(IO.iodata_to_binary(code))::binary,
           x::unquote(modifier(endian))-float-size(64),
@@ -1221,13 +1223,13 @@ defmodule Geometry.Protocols do
 
   defp line_strings_to_binary(dim, endian, code) do
     quote do
-      Enum.map(line_strings, fn points ->
+      Enum.map(line_strings, fn coordinates ->
         [
           <<
             unquote(IO.iodata_to_binary(code))::binary,
-            unquote(count(quote(do: points), endian))
+            unquote(count(quote(do: coordinates), endian))
           >>,
-          unquote(points_to_binary(dim, endian))
+          unquote(coordinates_to_binary(dim, endian))
         ]
       end)
     end
@@ -1253,9 +1255,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_string(:xy) do
+  defp coordinates_to_string(:xy) do
     quote do
-      Enum.reduce(points, <<>>, fn
+      Enum.reduce(coordinates, <<>>, fn
         [x, y], <<>> ->
           <<
             to_string(x)::binary,
@@ -1275,9 +1277,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_string(dim) when dim in [:xyz, :xym] do
+  defp coordinates_to_string(dim) when dim in [:xyz, :xym] do
     quote do
-      Enum.reduce(points, <<>>, fn
+      Enum.reduce(coordinates, <<>>, fn
         [x, y, z], <<>> ->
           <<
             to_string(x)::binary,
@@ -1301,9 +1303,9 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defp points_to_string(:xyzm) do
+  defp coordinates_to_string(:xyzm) do
     quote do
-      Enum.reduce(points, <<>>, fn
+      Enum.reduce(coordinates, <<>>, fn
         [x, y, z, m], <<>> ->
           <<
             to_string(x)::binary,
@@ -1333,22 +1335,22 @@ defmodule Geometry.Protocols do
 
   defp rings_to_string(dim) do
     quote do
-      [points | rings] = rings
-      hd = <<"(", unquote(points_to_string(dim))::binary, ")">>
+      [coordinates | rings] = rings
+      hd = <<"(", unquote(coordinates_to_string(dim))::binary, ")">>
 
-      Enum.reduce(rings, hd, fn points, acc ->
-        <<acc::binary, ", (", unquote(points_to_string(dim))::binary, ")">>
+      Enum.reduce(rings, hd, fn coordinates, acc ->
+        <<acc::binary, ", (", unquote(coordinates_to_string(dim))::binary, ")">>
       end)
     end
   end
 
   defp line_strings_to_string(dim) do
     quote do
-      [points | line_strings] = line_strings
-      hd = <<"(", unquote(points_to_string(dim))::binary, ")">>
+      [coordinates | line_strings] = line_strings
+      hd = <<"(", unquote(coordinates_to_string(dim))::binary, ")">>
 
-      Enum.reduce(line_strings, hd, fn points, acc ->
-        <<acc::binary, ", (", unquote(points_to_string(dim))::binary, ")">>
+      Enum.reduce(line_strings, hd, fn coordinates, acc ->
+        <<acc::binary, ", (", unquote(coordinates_to_string(dim))::binary, ")">>
       end)
     end
   end
@@ -1450,10 +1452,10 @@ defmodule Geometry.Protocols do
 
   defp rings_to_binary(dim, endian) do
     quote do
-      Enum.map(rings, fn points ->
+      Enum.map(rings, fn coordinates ->
         [
-          <<length(points)::unquote(modifier(endian))-integer-size(32)>>,
-          unquote(points_to_binary(dim, endian))
+          <<length(coordinates)::unquote(modifier(endian))-integer-size(32)>>,
+          unquote(coordinates_to_binary(dim, endian))
         ]
       end)
     end

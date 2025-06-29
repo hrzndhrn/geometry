@@ -44,19 +44,19 @@ defmodule Geometry.Decoder.GeoJson do
   def decode(_json, _dim), do: {:error, %DecodeError{from: :geo_json, reason: :type_not_found}}
 
   defp decode("Point", %{"coordinates" => [_x, _y] = coordinate}, :xy) do
-    {:ok, %Point{coordinate: coordinate, srid: @geojson_srid}}
+    {:ok, %Point{coordinates: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => [_x, _y, _z] = coordinate}, :xyz) do
-    {:ok, %PointZ{coordinate: coordinate, srid: @geojson_srid}}
+    {:ok, %PointZ{coordinates: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => [_x, _y, _m] = coordinate}, :xym) do
-    {:ok, %PointM{coordinate: coordinate, srid: @geojson_srid}}
+    {:ok, %PointM{coordinates: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => [_x, _y, _z, _m] = coordinate}, :xyzm) do
-    {:ok, %PointZM{coordinate: coordinate, srid: @geojson_srid}}
+    {:ok, %PointZM{coordinates: coordinate, srid: @geojson_srid}}
   end
 
   defp decode("Point", %{"coordinates" => _coordinates}, _dim) do
@@ -67,20 +67,20 @@ defmodule Geometry.Decoder.GeoJson do
     {:error, %DecodeError{from: :geo_json, reason: :coordinates_not_found}}
   end
 
-  defp decode("LineString", %{"coordinates" => points}, :xy) do
-    {:ok, %LineString{points: points, srid: @geojson_srid}}
+  defp decode("LineString", %{"coordinates" => coordinates}, :xy) do
+    {:ok, %LineString{path: coordinates, srid: @geojson_srid}}
   end
 
-  defp decode("LineString", %{"coordinates" => points}, :xym) do
-    {:ok, %LineStringM{points: points, srid: @geojson_srid}}
+  defp decode("LineString", %{"coordinates" => coordinates}, :xym) do
+    {:ok, %LineStringM{path: coordinates, srid: @geojson_srid}}
   end
 
-  defp decode("LineString", %{"coordinates" => points}, :xyz) do
-    {:ok, %LineStringZ{points: points, srid: @geojson_srid}}
+  defp decode("LineString", %{"coordinates" => coordinates}, :xyz) do
+    {:ok, %LineStringZ{path: coordinates, srid: @geojson_srid}}
   end
 
-  defp decode("LineString", %{"coordinates" => points}, :xyzm) do
-    {:ok, %LineStringZM{points: points, srid: @geojson_srid}}
+  defp decode("LineString", %{"coordinates" => coordinates}, :xyzm) do
+    {:ok, %LineStringZM{path: coordinates, srid: @geojson_srid}}
   end
 
   defp decode("LineString", _json, _dim) do
@@ -107,20 +107,20 @@ defmodule Geometry.Decoder.GeoJson do
     {:error, %DecodeError{from: :geo_json, reason: :coordinates_not_found}}
   end
 
-  defp decode("MultiPoint", %{"coordinates" => points}, :xy) do
-    {:ok, %MultiPoint{points: points, srid: @geojson_srid}}
+  defp decode("MultiPoint", %{"coordinates" => coordinates}, :xy) do
+    {:ok, %MultiPoint{points: coordinates, srid: @geojson_srid}}
   end
 
-  defp decode("MultiPoint", %{"coordinates" => points}, :xym) do
-    {:ok, %MultiPointM{points: points, srid: @geojson_srid}}
+  defp decode("MultiPoint", %{"coordinates" => coordinates}, :xym) do
+    {:ok, %MultiPointM{points: coordinates, srid: @geojson_srid}}
   end
 
-  defp decode("MultiPoint", %{"coordinates" => points}, :xyz) do
-    {:ok, %MultiPointZ{points: points, srid: @geojson_srid}}
+  defp decode("MultiPoint", %{"coordinates" => coordinates}, :xyz) do
+    {:ok, %MultiPointZ{points: coordinates, srid: @geojson_srid}}
   end
 
-  defp decode("MultiPoint", %{"coordinates" => points}, :xyzm) do
-    {:ok, %MultiPointZM{points: points, srid: @geojson_srid}}
+  defp decode("MultiPoint", %{"coordinates" => coordinates}, :xyzm) do
+    {:ok, %MultiPointZM{points: coordinates, srid: @geojson_srid}}
   end
 
   defp decode("MultiPoint", _json, _dim) do

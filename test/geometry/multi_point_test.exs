@@ -153,9 +153,11 @@ defmodule Geometry.MultiPointTest do
 
       describe "[#{inspect(module)}] new/1" do
         test "returns a multi-point" do
-          points = points(unquote(data[:term]), unquote(dim))
+          coordinates = coordinates(unquote(data[:term]), unquote(dim))
 
-          assert unquote(module).new(points) == %unquote(module){points: unquote(data[:term])}
+          assert unquote(module).new(coordinates) == %unquote(module){
+                   points: unquote(data[:term])
+                 }
         end
 
         test "returns an empty multi-point" do
@@ -170,8 +172,8 @@ defmodule Geometry.MultiPointTest do
         end
 
         test "returns false if multi-point is not empty" do
-          points = points(unquote(data[:term]), unquote(dim))
-          multi_point = unquote(module).new(points)
+          coordinates = coordinates(unquote(data[:term]), unquote(dim))
+          multi_point = unquote(module).new(coordinates)
           assert Geometry.empty?(multi_point) == false
         end
       end
@@ -612,18 +614,18 @@ defmodule Geometry.MultiPointTest do
       describe "[#{inspect(module)}] into/2" do
         test "returns multi-point" do
           multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
-          points = points(unquote(data[:term]), unquote(dim))
+          coordinates = coordinates(unquote(data[:term]), unquote(dim))
 
-          assert Enum.into(points, unquote(module).new()) == multi_point
+          assert Enum.into(coordinates, unquote(module).new()) == multi_point
         end
       end
 
       describe "[#{inspect(module)}] member?/2" do
         test "returns true" do
           multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
-          points = points(unquote(data[:term]), unquote(dim))
+          coordinates = coordinates(unquote(data[:term]), unquote(dim))
 
-          assert Enum.member?(multi_point, hd(points)) == true
+          assert Enum.member?(multi_point, hd(coordinates)) == true
         end
 
         test "returns false" do
@@ -634,7 +636,7 @@ defmodule Geometry.MultiPointTest do
       end
 
       describe "[#{inspect(module)}] map/2" do
-        test "returns points" do
+        test "returns coordinates" do
           multi_point = multi_point(unquote(module), unquote(data[:term]), unquote(dim))
 
           assert Enum.map(multi_point, fn x -> x end) == unquote(data[:term])
@@ -658,18 +660,18 @@ defmodule Geometry.MultiPointTest do
   defp wkt(name, [], srid), do: "SRID=#{srid};#{name} EMPTY"
 
   defp wkt(name, data, srid) do
-    points = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
+    coordinates = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
 
     srid = if srid == "", do: "", else: "SRID=#{srid};"
 
-    "#{srid}#{name} (#{points})"
+    "#{srid}#{name} (#{coordinates})"
   end
 
   defp multi_point(module, data, dim, srid \\ 0, to_float \\ false) do
-    module.new(points(data, dim, srid, to_float), srid)
+    module.new(coordinates(data, dim, srid, to_float), srid)
   end
 
-  defp points(data, dim, srid \\ 0, to_float \\ false) do
+  defp coordinates(data, dim, srid \\ 0, to_float \\ false) do
     Enum.map(data, fn point ->
       point = if to_float, do: Enum.map(point, fn value -> value * 1.0 end), else: point
 

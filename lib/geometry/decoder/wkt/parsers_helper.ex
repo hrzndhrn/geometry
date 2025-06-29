@@ -310,7 +310,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
   defp fraction(combinator \\ empty()) do
     combinator
     |> string(".")
-    |> integer(min: 1)
+    |> ascii_string([?0..?9], min: 1)
   end
 
   @spec post_number(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
@@ -328,8 +328,9 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
     {rest, [number], context}
   end
 
-  defp to_number(int, frac) do
-    digits = frac |> Integer.digits() |> length()
+  defp to_number(int, frac_string) do
+    digits = String.length(frac_string)
+    frac = String.to_integer(frac_string)
     int + frac / :math.pow(10, digits)
   end
 

@@ -954,11 +954,11 @@ defmodule Geometry.GeometryCollectionTest do
   defp geometries(data, :xy, srid, empty?) do
     add_empty(
       [
-        %Point{coordinate: data[:point], srid: srid},
-        %LineString{points: data[:line_string], srid: srid},
+        %Point{coordinates: data[:point], srid: srid},
+        %LineString{path: data[:line_string], srid: srid},
         %Polygon{rings: data[:polygon], srid: srid}
       ],
-      %Point{coordinate: [], srid: srid},
+      %Point{coordinates: [], srid: srid},
       empty?
     )
   end
@@ -966,11 +966,11 @@ defmodule Geometry.GeometryCollectionTest do
   defp geometries(data, :xym, srid, empty?) do
     add_empty(
       [
-        %PointM{coordinate: data[:point], srid: srid},
-        %LineStringM{points: data[:line_string], srid: srid},
+        %PointM{coordinates: data[:point], srid: srid},
+        %LineStringM{path: data[:line_string], srid: srid},
         %PolygonM{rings: data[:polygon], srid: srid}
       ],
-      %PointM{coordinate: [], srid: srid},
+      %PointM{coordinates: [], srid: srid},
       empty?
     )
   end
@@ -978,11 +978,11 @@ defmodule Geometry.GeometryCollectionTest do
   defp geometries(data, :xyz, srid, empty?) do
     add_empty(
       [
-        %PointZ{coordinate: data[:point], srid: srid},
-        %LineStringZ{points: data[:line_string], srid: srid},
+        %PointZ{coordinates: data[:point], srid: srid},
+        %LineStringZ{path: data[:line_string], srid: srid},
         %PolygonZ{rings: data[:polygon], srid: srid}
       ],
-      %PointZ{coordinate: [], srid: srid},
+      %PointZ{coordinates: [], srid: srid},
       empty?
     )
   end
@@ -990,11 +990,11 @@ defmodule Geometry.GeometryCollectionTest do
   defp geometries(data, :xyzm, srid, empty?) do
     add_empty(
       [
-        %PointZM{coordinate: data[:point], srid: srid},
-        %LineStringZM{points: data[:line_string], srid: srid},
+        %PointZM{coordinates: data[:point], srid: srid},
+        %LineStringZM{path: data[:line_string], srid: srid},
         %PolygonZM{rings: data[:polygon], srid: srid}
       ],
-      %PointZM{coordinate: [], srid: srid},
+      %PointZM{coordinates: [], srid: srid},
       empty?
     )
   end

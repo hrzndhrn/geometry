@@ -143,21 +143,21 @@ defmodule Geometry.PointNewTest do
        } ->
       describe "[#{inspect(module)}] new/0" do
         test "returns an empty point" do
-          assert unquote(module).new() == %unquote(module){coordinate: []}
+          assert unquote(module).new() == %unquote(module){coordinates: []}
         end
       end
 
       describe "[#{inspect(module)}] new/1" do
         test "returns a point" do
           assert unquote(module).new(unquote(data[:term])) ==
-                   %unquote(module){coordinate: unquote(data[:term])}
+                   %unquote(module){coordinates: unquote(data[:term])}
         end
       end
 
       describe "[#{inspect(module)}] new/#{length(data[:term])}" do
         test "returns a point" do
           assert unquote(module).new(unquote_splicing(data[:term])) ==
-                   %unquote(module){coordinate: unquote(data[:term])}
+                   %unquote(module){coordinates: unquote(data[:term])}
         end
 
         test "[#{inspect(module)}] raises an error for invalid args" do
@@ -195,11 +195,11 @@ defmodule Geometry.PointNewTest do
           assert GeoJsonValidator.valid?(geo_json)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) ==
-                   {:ok, %unquote(module){coordinate: unquote(data[:term]), srid: 4326}}
+                   {:ok, %unquote(module){coordinates: unquote(data[:term]), srid: 4326}}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json(geo_json) ==
-                     {:ok, %unquote(module){coordinate: unquote(data[:term]), srid: 4326}}
+                     {:ok, %unquote(module){coordinates: unquote(data[:term]), srid: 4326}}
           end
         end
 
@@ -242,11 +242,11 @@ defmodule Geometry.PointNewTest do
             """)
 
           assert Geometry.from_geo_json!(geo_json, unquote(dim)) ==
-                   %unquote(module){coordinate: unquote(data[:term]), srid: 4326}
+                   %unquote(module){coordinates: unquote(data[:term]), srid: 4326}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json!(geo_json) ==
-                     %unquote(module){coordinate: unquote(data[:term]), srid: 4326}
+                     %unquote(module){coordinates: unquote(data[:term]), srid: 4326}
           end
         end
 

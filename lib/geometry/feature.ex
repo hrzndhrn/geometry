@@ -33,7 +33,7 @@ defmodule Geometry.Feature do
       ...>   properties: %{facility: :hotel}
       ...> )
       %Feature{
-        geometry: %Point{coordinate: [1, 2]},
+        geometry: %Point{coordinates: [1, 2]},
         properties: %{facility: :hotel}
       }
   """

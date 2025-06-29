@@ -2,7 +2,7 @@ defmodule Geometry.MultiLineStringZM do
   @moduledoc """
   A set of line-strings from type `Geometry.LineStringZM`
 
-  `MultiLineStringMZ` implements the protocols `Enumerable` and `Collectable`.
+  `MultiLineStringZM` implements the protocols `Enumerable` and `Collectable`.
 
   ## Examples
 
@@ -35,7 +35,7 @@ defmodule Geometry.MultiLineStringZM do
 
   defstruct line_strings: [], srid: 0
 
-  @type t :: %MultiLineStringZM{line_strings: [Geometry.coordinates()], srid: Geometry.srid()}
+  @type t :: %MultiLineStringZM{line_strings: [Geometry.path()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiLineStringZM`.
@@ -82,7 +82,7 @@ defmodule Geometry.MultiLineStringZM do
 
   def new(line_strings, srid) do
     %MultiLineStringZM{
-      line_strings: Enum.map(line_strings, fn line_string -> line_string.points end),
+      line_strings: Enum.map(line_strings, fn line_string -> line_string.path end),
       srid: srid
     }
   end

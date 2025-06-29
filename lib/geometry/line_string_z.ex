@@ -2,7 +2,7 @@ defmodule Geometry.LineStringZ do
   @moduledoc """
   A line-string struct, representing a 3D line.
 
-  A none empty line-string requires at least two points.
+  A non-empty line-string requires at least two coordinates.
   """
 
   use Geometry.Protocols
@@ -10,9 +10,9 @@ defmodule Geometry.LineStringZ do
   alias Geometry.LineStringZ
   alias Geometry.PointZ
 
-  defstruct points: [], srid: 0
+  defstruct path: [], srid: 0
 
-  @type t :: %LineStringZ{points: Geometry.coordinates(), srid: Geometry.srid()}
+  @type t :: %LineStringZ{path: Geometry.path(), srid: Geometry.srid()}
 
   @doc """
   Creates an empty `LineStringZ`.
@@ -20,7 +20,7 @@ defmodule Geometry.LineStringZ do
   ## Examples
 
       iex> LineStringZ.new()
-      %LineStringZ{points: [], srid: 0}
+      %LineStringZ{path: [], srid: 0}
   """
   @spec new :: t()
   def new, do: %LineStringZ{}
@@ -31,14 +31,14 @@ defmodule Geometry.LineStringZ do
   ## Examples
 
       iex> LineStringZ.new([PointZ.new(1, 2, 3), PointZ.new(3, 4, 5)])
-      %LineStringZ{points: [[1, 2, 3], [3, 4, 5]], srid: 0}
+      %LineStringZ{path: [[1, 2, 3], [3, 4, 5]], srid: 0}
   """
   @spec new([PointZ.t()], Geometry.srid()) :: t()
-  def new(point, srid \\ 0)
+  def new(path, srid \\ 0)
 
   def new([], srid), do: %LineStringZ{srid: srid}
 
-  def new([_, _ | _] = points, srid) do
-    %LineStringZ{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
+  def new([_, _ | _] = path, srid) do
+    %LineStringZ{path: Enum.map(path, fn point -> point.coordinates end), srid: srid}
   end
 end

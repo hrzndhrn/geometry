@@ -41,7 +41,7 @@ defmodule Geometry.FeatureTest do
       """
 
       feature = %Feature{
-        geometry: %Point{coordinate: [1, 2], srid: 4326},
+        geometry: %Point{coordinates: [1, 2], srid: 4326},
         properties: %{"facility" => "Hotel"}
       }
 
@@ -74,7 +74,7 @@ defmodule Geometry.FeatureTest do
       assert Geometry.from_geo_json(geo_json, :xym) ==
                {:ok,
                 %Feature{
-                  geometry: %PointM{coordinate: [1, 2, 3], srid: 4326},
+                  geometry: %PointM{coordinates: [1, 2, 3], srid: 4326},
                   properties: %{"facility" => "Hotel"}
                 }}
     end
@@ -91,7 +91,7 @@ defmodule Geometry.FeatureTest do
       assert Geometry.from_geo_json(geo_json, :xyz) ==
                {:ok,
                 %Feature{
-                  geometry: %PointZ{coordinate: [1, 2, 3], srid: 4326},
+                  geometry: %PointZ{coordinates: [1, 2, 3], srid: 4326},
                   properties: %{"facility" => "Hotel"}
                 }}
     end
@@ -108,7 +108,7 @@ defmodule Geometry.FeatureTest do
       assert Geometry.from_geo_json(geo_json, :xyzm) ==
                {:ok,
                 %Feature{
-                  geometry: %PointZM{coordinate: [1, 2, 3, 4], srid: 4326},
+                  geometry: %PointZM{coordinates: [1, 2, 3, 4], srid: 4326},
                   properties: %{"facility" => "Hotel"}
                 }}
     end

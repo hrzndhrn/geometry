@@ -26,7 +26,7 @@ defmodule Geometry.MultiPointZM do
 
   defstruct points: [], srid: 0
 
-  @type t :: %MultiPointZM{points: [Geometry.coordinate()], srid: Geometry.srid()}
+  @type t :: %MultiPointZM{points: [Geometry.coordinates()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPointZM`.
@@ -59,6 +59,6 @@ defmodule Geometry.MultiPointZM do
   def new([], srid), do: %MultiPointZM{srid: srid}
 
   def new(points, srid) do
-    %MultiPointZM{points: Enum.map(points, fn point -> point.coordinate end), srid: srid}
+    %MultiPointZM{points: Enum.map(points, fn point -> point.coordinates end), srid: srid}
   end
 end
