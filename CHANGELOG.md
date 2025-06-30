@@ -2,7 +2,7 @@
 
 ## 1.0.0 - 2025/06/30
 
-+ Require Elixir version `~> 1.11`
++ Require Elixir version `~> 1.15`
 
 ### Breaking changes
 
