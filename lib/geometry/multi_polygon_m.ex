@@ -69,7 +69,7 @@ defmodule Geometry.MultiPolygonM do
 
   defstruct polygons: [], srid: 0
 
-  @type t :: %MultiPolygonM{polygons: [Geometry.coordinates()], srid: Geometry.srid()}
+  @type t :: %MultiPolygonM{polygons: [[Geometry.ring()]], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `MultiPolygonM`.

@@ -8,9 +8,9 @@ defmodule Geometry.Point do
 
   alias Geometry.Point
 
-  defstruct coordinate: [], srid: 0
+  defstruct coordinates: [], srid: 0
 
-  @type t :: %Point{coordinate: Geometry.coordinate() | [], srid: Geometry.srid()}
+  @type t :: %Point{coordinates: Geometry.coordinates() | [], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `Point`.
@@ -18,7 +18,7 @@ defmodule Geometry.Point do
   ## Examples
 
       iex> Point.new()
-      %Point{coordinate: []}
+      %Point{coordinates: []}
   """
   @spec new :: t()
   def new, do: %Point{}
@@ -29,11 +29,11 @@ defmodule Geometry.Point do
   ## Examples
 
       iex> Point.new([1.5, -2.1])
-      %Point{coordinate: [1.5, -2.1], srid: 0}
+      %Point{coordinates: [1.5, -2.1], srid: 0}
   """
-  @spec new(Geometry.coordinate()) :: t()
+  @spec new(Geometry.coordinates()) :: t()
   def new([x, y] = coordinate) when is_coordinate(x, y) do
-    %Point{coordinate: coordinate}
+    %Point{coordinates: coordinate}
   end
 
   @doc """
@@ -42,20 +42,20 @@ defmodule Geometry.Point do
   ## Examples
 
       iex> Point.new(-1.1, 2.2)
-      %Point{coordinate: [-1.1, 2.2], srid: 0}
+      %Point{coordinates: [-1.1, 2.2], srid: 0}
   """
-  @spec new(Geometry.coordinate() | [], Geometry.srid()) :: t()
+  @spec new(Geometry.coordinates() | [], Geometry.srid()) :: t()
   def new([], srid) do
-    %Point{coordinate: [], srid: srid}
+    %Point{coordinates: [], srid: srid}
   end
 
   def new([x, y] = coordinate, srid) when is_coordinate(x, y) do
-    %Point{coordinate: coordinate, srid: srid}
+    %Point{coordinates: coordinate, srid: srid}
   end
 
   @spec new(number(), number()) :: t()
   def new(x, y) when is_coordinate(x, y) do
-    %Point{coordinate: [x, y]}
+    %Point{coordinates: [x, y]}
   end
 
   @doc """
@@ -64,10 +64,10 @@ defmodule Geometry.Point do
   ## Examples
 
       iex> Point.new(-1.1, 2.2, 4326)
-      %Point{coordinate: [-1.1, 2.2], srid: 4326}
+      %Point{coordinates: [-1.1, 2.2], srid: 4326}
   """
   @spec new(number(), number(), Geometry.srid()) :: t()
   def new(x, y, srid) when is_coordinate(x, y) do
-    %Point{coordinate: [x, y], srid: srid}
+    %Point{coordinates: [x, y], srid: srid}
   end
 end

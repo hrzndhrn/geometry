@@ -160,18 +160,18 @@ defmodule Geometry.LineStringTest do
        } ->
       describe "[#{inspect(module)}] new/0" do
         test "returns an empty line" do
-          assert unquote(module).new() == %unquote(module){points: []}
+          assert unquote(module).new() == %unquote(module){path: []}
         end
       end
 
       describe "[#{inspect(module)}] new/1" do
         test "returns a line" do
-          points = points(unquote(data[:term]), unquote(dim))
-          assert unquote(module).new(points) == %unquote(module){points: unquote(data[:term])}
+          coordinates = coordinates(unquote(data[:term]), unquote(dim))
+          assert unquote(module).new(coordinates) == %unquote(module){path: unquote(data[:term])}
         end
 
         test "returns an empty line" do
-          assert unquote(module).new([]) == %unquote(module){points: []}
+          assert unquote(module).new([]) == %unquote(module){path: []}
         end
       end
 
@@ -182,8 +182,8 @@ defmodule Geometry.LineStringTest do
         end
 
         test "returns false if line is not empty" do
-          points = points(unquote(data[:term]), unquote(dim))
-          line = unquote(module).new(points)
+          coordinates = coordinates(unquote(data[:term]), unquote(dim))
+          line = unquote(module).new(coordinates)
           assert Geometry.empty?(line) == false
         end
       end
@@ -207,11 +207,11 @@ defmodule Geometry.LineStringTest do
           assert GeoJsonValidator.valid?(geo_json)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) ==
-                   {:ok, %unquote(module){points: unquote(data[:term]), srid: 4326}}
+                   {:ok, %unquote(module){path: unquote(data[:term]), srid: 4326}}
 
           if unquote(dim) == :xy do
             assert Geometry.from_geo_json(geo_json) ==
-                     {:ok, %unquote(module){points: unquote(data[:term]), srid: 4326}}
+                     {:ok, %unquote(module){path: unquote(data[:term]), srid: 4326}}
           end
         end
 
@@ -232,7 +232,7 @@ defmodule Geometry.LineStringTest do
         @describetag :geo_json
 
         test "returns json compatible map" do
-          line = %unquote(module){points: unquote(data[:term])}
+          line = %unquote(module){path: unquote(data[:term])}
           geo_json = Geometry.to_geo_json(line)
 
           assert geo_json == %{
@@ -591,18 +591,18 @@ defmodule Geometry.LineStringTest do
   defp wkt(name, [], srid), do: "SRID=#{srid};#{name} EMPTY"
 
   defp wkt(name, data, srid) do
-    points = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
+    coordinates = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
 
     srid = if srid == "", do: "", else: "SRID=#{srid};"
 
-    "#{srid}#{name} (#{points})"
+    "#{srid}#{name} (#{coordinates})"
   end
 
   defp line(module, data, dim, srid \\ 0) do
-    module.new(points(data, dim), srid)
+    module.new(coordinates(data, dim), srid)
   end
 
-  defp points(data, dim) do
+  defp coordinates(data, dim) do
     Enum.map(data, fn point ->
       case dim do
         :xy -> Point.new(point)

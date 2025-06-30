@@ -22,7 +22,7 @@ defmodule Geometry.FeatureCollection do
       ...>     Map.get(properties, "facility") == "Hotel"
       ...>   end
       ...> )
-      [%Feature{geometry: %Point{coordinate: [11, 12]}, properties: %{"facility" => "Hotel"}}]
+      [%Feature{geometry: %Point{coordinates: [11, 12]}, properties: %{"facility" => "Hotel"}}]
 
       iex> Enum.into(
       ...>   [Feature.new(geometry: Point.new(5, 1), properties: %{"area" => 51})],
@@ -32,8 +32,8 @@ defmodule Geometry.FeatureCollection do
       ...> )
       %FeatureCollection{
         features: [
-            %Feature{geometry: %Point{coordinate: [5, 1]}, properties: %{"area" => 51}},
-            %Feature{geometry: %Point{coordinate: [4, 2]}, properties: %{"area" => 42}}
+            %Feature{geometry: %Point{coordinates: [5, 1]}, properties: %{"area" => 51}},
+            %Feature{geometry: %Point{coordinates: [4, 2]}, properties: %{"area" => 42}}
           ]
       }
   """
@@ -73,10 +73,10 @@ defmodule Geometry.FeatureCollection do
       ...> ])
       %FeatureCollection{features: [
         %Feature{
-          geometry: %Point{coordinate: [1, 2]},
+          geometry: %Point{coordinates: [1, 2]},
           properties: %{facility: :hotel}},
         %Feature{
-          geometry: %Point{coordinate: [3, 4]},
+          geometry: %Point{coordinates: [3, 4]},
           properties: %{facility: :school}}
       ]}
   """

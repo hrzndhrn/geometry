@@ -16,7 +16,7 @@ defmodule GeometryTest do
     @describetag :wkt
     test "LineString: geometry -> ewkt -> geometry, integer values" do
       geometry_original = %Geometry.LineString{
-        points: [
+        path: [
           [-8, 375],
           [-8, 37],
           [-8, 375],
@@ -45,7 +45,7 @@ defmodule GeometryTest do
 
     test "LineString: geometry -> ewkt -> geometry, all floating point" do
       geometry_original = %Geometry.LineString{
-        points: [
+        path: [
           [-8.91605728674111, 37.004786050505705],
           [-8.916004741413165, 37.01473548835222],
           [-8.915952155261275, 37.014681049196575],
@@ -74,7 +74,7 @@ defmodule GeometryTest do
 
     test "LineString: geometry -> ewkt -> geometry, mixed integer and floating point" do
       geometry_original = %Geometry.LineString{
-        points: [
+        path: [
           [-8, 375],
           [-8, 37],
           [-8, 375],
