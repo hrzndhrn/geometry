@@ -14,7 +14,7 @@ dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:geometry, "~> 0.3"}
+    {:geometry, "~> 1.0"}
   ]
 end
 ```
@@ -25,14 +25,14 @@ end
 iex> wkb = "00000000013FF0000000000000400199999999999A"
 "00000000013FF0000000000000400199999999999A"
 iex> wkb |> Base.decode16!() |> Geometry.from_wkb()
-{:ok, %Geometry.Point{coordinates: [1.0, 2.2]}}
+{:ok, %Geometry.Point{coordinates: [1.0, 2.2], srid: 0}}
 iex> point = wkb |> Base.decode16!() |> Geometry.from_wkb!()
-%Geometry.Point{coordinates: [1.0, 2.2]}
+%Geometry.Point{coordinates: [1.0, 2.2], srid: 0}
 iex> Geometry.to_wkt(point)
 "Point (1.0 2.2)"
 
 iex> line_string = Geometry.from_wkt!("LineString Z (1 2 3, 4 5 6, 9 9 9)")
-%Geometry.LineStringZ{coordinates: [[1, 2, 3], [4, 5, 6], [9, 9, 9]]}
+%Geometry.LineStringZ{path: [[1, 2, 3], [4, 5, 6], [9, 9, 9]], srid: 0}
 iex> Geometry.to_wkb(line_string) |> Base.encode16()
 "010200008003000000000000000000F03F00000000000000400000000000000840000000000000104000000000000014400000000000001840000000000000224000000000000022400000000000002240"
 iex> Geometry.to_wkb(line_string, :xdr) |> Base.encode16()
@@ -43,7 +43,8 @@ iex> polygon = Geometry.from_wkt!("POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10),
   rings: [
     [[35, 10], [45, 45], [15, 40], [10, 20], [35, 10]],
     [[20, 30], [35, 35], [30, 20], [20, 30]]
-  ]
+  ],
+  srid: 0
 }
 iex> polygon |> Geometry.to_geo_json() |> Jason.encode!() |> IO.puts()
 {"coordinates":[[[35,10],[45,45],[15,40],[10,20],[35,10]],[[20,30],[35,35],[30,20],[20,30]]],"type":"Polygon"}
