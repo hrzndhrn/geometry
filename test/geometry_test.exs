@@ -14,6 +14,125 @@ defmodule GeometryTest do
 
   describe "from_wkt/1" do
     @describetag :wkt
+    test "LineString: geometry -> ewkt -> geometry, integer values" do
+      geometry_original = %Geometry.LineString{
+        points: [
+          [-8, 375],
+          [-8, 37],
+          [-8, 375],
+          [-8, 376],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 375]
+        ],
+        srid: 4326
+      }
+
+      ewkt = Geometry.to_ewkt(geometry_original)
+
+      geometry_hydrated = Geometry.from_ewkt!(ewkt)
+
+      assert geometry_original == geometry_hydrated
+    end
+
+    test "LineString: geometry -> ewkt -> geometry, all floating point" do
+      geometry_original = %Geometry.LineString{
+        points: [
+          [-8.91605728674111, 37.004786050505705],
+          [-8.916004741413165, 37.01473548835222],
+          [-8.915952155261275, 37.014681049196575],
+          [-8.915962095363229, 37.014641876859656],
+          [-8.916008623674168, 37.01461030595236],
+          [-8.916081231858929, 37.01459027129624],
+          [-8.91613341474863, 37.01460551438246],
+          [-8.91618086764759, 37.0146639501776],
+          [-8.916191835920474, 37.01471469650441],
+          [-8.91621298667903, 37.01474979186158],
+          [-8.916197854221068, 37.01479683407043],
+          [-8.916182273129241, 37.01480081322952],
+          [-8.916135584881212, 37.01481680058167],
+          [-8.916094008628827, 37.01481707489911],
+          [-8.91605728674111, 37.014786050505705]
+        ],
+        srid: 4326
+      }
+
+      ewkt = Geometry.to_ewkt(geometry_original)
+
+      geometry_hydrated = Geometry.from_ewkt!(ewkt)
+
+      assert geometry_original == geometry_hydrated
+    end
+
+    test "LineString: geometry -> ewkt -> geometry, mixed integer and floating point" do
+      geometry_original = %Geometry.LineString{
+        points: [
+          [-8, 375],
+          [-8, 37],
+          [-8, 375],
+          [-8.915952155261275, 37.014681049196575],
+          [-8.915962095363229, 37.014641876859656],
+          [-8.916008623674168, 37.01461030595236],
+          [-8.916081231858929, 37.01459027129624],
+          [-8.91613341474863, 37.01460551438246],
+          [-8.91618086764759, 37.0146639501776],
+          [-8.916191835920474, 37.01471469650441],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 37],
+          [-8, 375]
+        ],
+        srid: 4326
+      }
+
+      ewkt = Geometry.to_ewkt(geometry_original)
+
+      geometry_hydrated = Geometry.from_ewkt!(ewkt)
+
+      assert geometry_original == geometry_hydrated
+    end
+
+    test "MultiPolygon: geometry -> ewkt -> geometry" do
+      geometry_original = %Geometry.MultiPolygon{
+        polygons: [
+          [
+            [
+              [-8.91605728674111, 37.004786050505705],
+              [-8.916004741413165, 37.01473548835222],
+              [-8.915952155261275, 37.014681049196575],
+              [-8.915962095363229, 37.014641876859656],
+              [-8.916008623674168, 37.01461030595236],
+              [-8.916081231858929, 37.01459027129624],
+              [-8.91613341474863, 37.01460551438246],
+              [-8.91618086764759, 37.0146639501776],
+              [-8.916191835920474, 37.01471469650441],
+              [-8.91621298667903, 37.01474979186158],
+              [-8.916197854221068, 37.01479683407043],
+              [-8.916182273129241, 37.01480081322952],
+              [-8.916135584881212, 37.01481680058167],
+              [-8.916094008628827, 37.01481707489911],
+              [-8.91605728674111, 37.014786050505705]
+            ]
+          ]
+        ],
+        srid: 4326
+      }
+
+      ewkt = Geometry.to_ewkt(geometry_original)
+
+      geometry_hydrated = Geometry.from_ewkt!(ewkt)
+
+      assert geometry_original == geometry_hydrated
+    end
 
     test "returns an error tuple" do
       assert Geometry.from_wkt("Dot M (4 6 7)") == {
