@@ -1,21 +1,21 @@
 defmodule Geometry.MixProject do
   use Mix.Project
 
-  @github "https://github.com/hrzndhrn/geometry"
+  @version "1.0.0"
+  @source_url "https://github.com/hrzndhrn/geometry"
 
   def project do
     [
       app: :geometry,
       name: "Geometry",
-      version: "1.0.0",
+      version: @version,
       elixir: "~> 1.14",
-      description: description(),
-      source_url: @github,
+      description: "A set of geometry types for WKT/EWT, WKB/EWKB and GeoJson.",
+      source_url: @source_url,
       start_permanent: Mix.env() == :prod,
       dialyzer: dialyzer(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: preferred_cli_env(),
       package: package(),
       aliases: aliases(),
       docs: docs(),
@@ -27,8 +27,17 @@ defmodule Geometry.MixProject do
     [extra_applications: [:logger]]
   end
 
-  def description do
-    "A set of geometry types for WKT/EWT, WKB/EWKB and GeoJson."
+  def cli do
+    [
+      preferred_envs: [
+        carp: :test,
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test,
+        "geometry.gen": :test
+      ]
+    ]
   end
 
   def elixirc_paths(env) do
@@ -36,17 +45,6 @@ defmodule Geometry.MixProject do
       :test -> ["lib", "test/support"]
       _ -> ["lib"]
     end
-  end
-
-  defp preferred_cli_env do
-    [
-      carp: :test,
-      coveralls: :test,
-      "coveralls.detail": :test,
-      "coveralls.html": :test,
-      "coveralls.github": :test,
-      "geometry.gen": :test
-    ]
   end
 
   defp aliases do
@@ -57,10 +55,9 @@ defmodule Geometry.MixProject do
 
   defp docs do
     [
-      extras: [
-        "CHANGELOG.md"
-      ],
-      source_url: @github,
+      extras: ["CHANGELOG.md"],
+      source_url: @source_url,
+      source_ref: "v#{@version}",
       main: Geometry,
       formatters: ["html"],
       groups_for_modules: [
@@ -153,7 +150,7 @@ defmodule Geometry.MixProject do
     [
       maintainers: ["Marcus Kruse"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @github},
+      links: %{"GitHub" => @source_url},
       files: [
         "lib",
         "mix.exs",
