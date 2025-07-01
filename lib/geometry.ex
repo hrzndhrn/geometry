@@ -313,13 +313,13 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.to_ewkt(PointZ.new(1.1, 2.2, 3.3, 4211))
-      "SRID=4211;Point Z (1.1 2.2 3.3)"
+      "SRID=4211;POINT Z (1.1 2.2 3.3)"
 
       iex> Geometry.to_ewkt(LineString.new([Point.new(1, 2), Point.new(3, 4)], 3825))
-      "SRID=3825;LineString (1 2, 3 4)"
+      "SRID=3825;LINESTRING (1 2, 3 4)"
 
       iex> Geometry.to_ewkt(Point.new(1, 2))
-      "Point (1 2)"
+      "POINT (1 2)"
   """
   @spec to_ewkt(Geometry.t()) :: wkt()
   def to_ewkt(%{srid: 0} = geometry), do: to_wkt(geometry)
@@ -332,13 +332,13 @@ defmodule Geometry do
   ## Examples
 
       iex> Geometry.to_wkt(PointZ.new(1.1, 2.2, 3.3))
-      "Point Z (1.1 2.2 3.3)"
+      "POINT Z (1.1 2.2 3.3)"
 
       iex> Geometry.to_wkt(LineString.new([Point.new(1, 2), Point.new(3, 4)]))
-      "LineString (1 2, 3 4)"
+      "LINESTRING (1 2, 3 4)"
 
       iex> Geometry.to_wkt(Point.new(1, 2))
-      "Point (1 2)"
+      "POINT (1 2)"
   """
   @spec to_wkt(Geometry.t()) :: wkt()
   def to_wkt(geometry), do: Encoder.WKT.to_wkt(geometry)

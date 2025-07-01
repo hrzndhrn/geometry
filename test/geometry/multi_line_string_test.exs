@@ -725,9 +725,9 @@ defmodule Geometry.MultiLineStringTest do
 
   defp wkt(name, data \\ [], srid \\ "")
 
-  defp wkt(name, [], ""), do: "#{name} EMPTY"
+  defp wkt(name, [], ""), do: "#{String.upcase(name)} EMPTY"
 
-  defp wkt(name, [], srid), do: "SRID=#{srid};#{name} EMPTY"
+  defp wkt(name, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
 
   defp wkt(name, data, srid) do
     coordinates =
@@ -739,7 +739,7 @@ defmodule Geometry.MultiLineStringTest do
       end)
       |> in_brackets()
 
-    "#{srid(srid)}#{name} #{coordinates}"
+    "#{srid(srid)}#{String.upcase(name)} #{coordinates}"
   end
 
   defp srid(""), do: ""

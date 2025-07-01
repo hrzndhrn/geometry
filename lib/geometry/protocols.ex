@@ -542,7 +542,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{coordinates: []}) do
           unquote(
             binary([
-              "Point",
+              "POINT",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -552,7 +552,7 @@ defmodule Geometry.Protocols do
         def to_wkt(unquote(match(:coordinates, dim))) do
           unquote(
             binary([
-              "Point",
+              "POINT",
               @wkt_types[dim],
               "(",
               coordinate_to_string(dim),
@@ -565,7 +565,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "Point",
+              "POINT",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -576,7 +576,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "Point",
+              "POINT",
               @wkt_types[dim],
               "(",
               coordinate_to_string(dim),
@@ -594,7 +594,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{path: []}) do
           unquote(
             binary([
-              "LineString",
+              "LINESTRING",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -606,7 +606,7 @@ defmodule Geometry.Protocols do
 
           unquote(
             binary([
-              "LineString",
+              "LINESTRING",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -619,7 +619,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "LineString",
+              "LINESTRING",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -632,7 +632,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "LineString",
+              "LINESTRING",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -650,7 +650,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{rings: []}) do
           unquote(
             binary([
-              "Polygon",
+              "POLYGON",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -662,7 +662,7 @@ defmodule Geometry.Protocols do
 
           unquote(
             binary([
-              "Polygon",
+              "POLYGON",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -675,7 +675,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "Polygon",
+              "POLYGON",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -688,7 +688,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "Polygon",
+              "POLYGON",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -706,7 +706,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{points: []}) do
           unquote(
             binary([
-              "MultiPoint",
+              "MULTIPOINT",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -718,7 +718,7 @@ defmodule Geometry.Protocols do
 
           unquote(
             binary([
-              "MultiPoint",
+              "MULTIPOINT",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -731,7 +731,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "MultiPoint",
+              "MULTIPOINT",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -744,7 +744,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "MultiPoint",
+              "MULTIPOINT",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -762,7 +762,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{line_strings: []}) do
           unquote(
             binary([
-              "MultiLineString",
+              "MULTILINESTRING",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -774,7 +774,7 @@ defmodule Geometry.Protocols do
 
           unquote(
             binary([
-              "MultiLineString",
+              "MULTILINESTRING",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -787,7 +787,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "MultiLineString",
+              "MULTILINESTRING",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -800,7 +800,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "MultiLineString",
+              "MULTILINESTRING",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -818,7 +818,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{polygons: []}) do
           unquote(
             binary([
-              "MultiPolygon",
+              "MULTIPOLYGON",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -830,7 +830,7 @@ defmodule Geometry.Protocols do
 
           unquote(
             binary([
-              "MultiPolygon",
+              "MULTIPOLYGON",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -843,7 +843,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "MultiPolygon",
+              "MULTIPOLYGON",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -856,7 +856,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "MultiPolygon",
+              "MULTIPOLYGON",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -874,7 +874,7 @@ defmodule Geometry.Protocols do
         def to_wkt(%{geometries: []}) do
           unquote(
             binary([
-              "GeometryCollection",
+              "GEOMETRYCOLLECTION",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -886,7 +886,7 @@ defmodule Geometry.Protocols do
 
           unquote(
             binary([
-              "GeometryCollection",
+              "GEOMETRYCOLLECTION",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -899,7 +899,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "GeometryCollection",
+              "GEOMETRYCOLLECTION",
               @wkt_types[dim],
               "EMPTY"
             ])
@@ -912,7 +912,7 @@ defmodule Geometry.Protocols do
           unquote(
             binary([
               srid_to_string(),
-              "GeometryCollection",
+              "GEOMETRYCOLLECTION",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),

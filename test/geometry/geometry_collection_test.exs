@@ -864,12 +864,12 @@ defmodule Geometry.GeometryCollectionTest do
 
   defp wkt_parts(name, dim \\ nil, data \\ [], srid \\ "")
 
-  defp wkt_parts(name, _dim, [], ""), do: [~r/#{name}\sEMPTY/]
+  defp wkt_parts(name, _dim, [], ""), do: [~r/#{String.upcase(name)}\sEMPTY/]
 
-  defp wkt_parts(name, _dim, [], srid), do: [~r/SRID=#{srid};#{name}\sEMPTY/]
+  defp wkt_parts(name, _dim, [], srid), do: [~r/SRID=#{srid};#{String.upcase(name)}\sEMPTY/]
 
   defp wkt_parts(name, dim, data, srid) do
-    [~r/#{srid(srid)}#{name}\s\(.*\)/ | wkt_parts_regex(dim, data, srid)]
+    [~r/#{srid(srid)}#{String.upcase(name)}\s\(.*\)/ | wkt_parts_regex(dim, data, srid)]
   end
 
   defp wkt_parts_regex(dim, data, srid) do
@@ -882,12 +882,12 @@ defmodule Geometry.GeometryCollectionTest do
 
   defp wkt(name, dim \\ nil, data \\ [], srid \\ "")
 
-  defp wkt(name, _dim, [], ""), do: "#{name} EMPTY"
+  defp wkt(name, _dim, [], ""), do: "#{String.upcase(name)} EMPTY"
 
-  defp wkt(name, _dim, [], srid), do: "SRID=#{srid};#{name} EMPTY"
+  defp wkt(name, _dim, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
 
   defp wkt(name, dim, data, srid) do
-    "#{srid(srid)}#{name} (#{dim |> wkt_parts_text(data, srid) |> Enum.join(", ")})"
+    "#{srid(srid)}#{String.upcase(name)} (#{dim |> wkt_parts_text(data, srid) |> Enum.join(", ")})"
   end
 
   defp wkt_parts_text(dim, data, srid) do
