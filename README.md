@@ -29,10 +29,12 @@ iex> wkb |> Base.decode16!() |> Geometry.from_wkb()
 iex> point = wkb |> Base.decode16!() |> Geometry.from_wkb!()
 %Geometry.Point{coordinates: [1.0, 2.2], srid: 0}
 iex> Geometry.to_wkt(point)
-"Point (1.0 2.2)"
+"POINT (1.0 2.2)"
 
 iex> line_string = Geometry.from_wkt!("LineString Z (1 2 3, 4 5 6, 9 9 9)")
 %Geometry.LineStringZ{path: [[1, 2, 3], [4, 5, 6], [9, 9, 9]], srid: 0}
+iex> Geometry.to_wkt(line_string)
+"LINESTRING Z (1 2 3, 4 5 6, 9 9 9)"
 iex> Geometry.to_wkb(line_string) |> Base.encode16()
 "010200008003000000000000000000F03F00000000000000400000000000000840000000000000104000000000000014400000000000001840000000000000224000000000000022400000000000002240"
 iex> Geometry.to_wkb(line_string, :xdr) |> Base.encode16()

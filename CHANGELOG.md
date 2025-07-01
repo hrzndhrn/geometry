@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 - 2025/07/01
+
++ Upcase WKT geometry types as per the standard. (Aaron Seigo)
+
 ## 1.0.0 - 2025/06/30
 
 + Require Elixir version `~> 1.15`
