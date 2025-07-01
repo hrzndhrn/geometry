@@ -655,16 +655,16 @@ defmodule Geometry.MultiPointTest do
 
   defp wkt(name, data \\ [], srid \\ "")
 
-  defp wkt(name, [], ""), do: "#{name} EMPTY"
+  defp wkt(name, [], ""), do: "#{String.upcase(name)} EMPTY"
 
-  defp wkt(name, [], srid), do: "SRID=#{srid};#{name} EMPTY"
+  defp wkt(name, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
 
   defp wkt(name, data, srid) do
     coordinates = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
 
     srid = if srid == "", do: "", else: "SRID=#{srid};"
 
-    "#{srid}#{name} (#{coordinates})"
+    "#{srid}#{String.upcase(name)} (#{coordinates})"
   end
 
   defp multi_point(module, data, dim, srid \\ 0, to_float \\ false) do

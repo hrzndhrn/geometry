@@ -624,7 +624,7 @@ defmodule Geometry.PointNewTest do
         @describetag :wkt
 
         test "returns a point from WKT" do
-          wkt = "#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
+          wkt = "#{unquote(String.upcase(text))} (#{unquote(Enum.join(data[:term], @blank))})"
           point = unquote(module).new(unquote(data[:term]))
 
           assert Geometry.from_wkt!(wkt) == point
@@ -635,14 +635,14 @@ defmodule Geometry.PointNewTest do
         @describetag :wkt
 
         test "returns WKT for a point" do
-          wkt = "#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
+          wkt = "#{unquote(String.upcase(text))} (#{unquote(Enum.join(data[:term], @blank))})"
           point = unquote(module).new(unquote(data[:term]))
 
           assert Geometry.to_wkt(point) == wkt
         end
 
         test "returns WKT for an empty point" do
-          wkt = "#{unquote(text)} EMPTY"
+          wkt = "#{unquote(String.upcase(text))} EMPTY"
           point = unquote(module).new()
 
           assert Geometry.to_wkt(point) == wkt
@@ -653,14 +653,14 @@ defmodule Geometry.PointNewTest do
         @describetag :wkt
 
         test "returns a point from WKT" do
-          wkt = "#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
+          wkt = "#{unquote(String.upcase(text))} (#{unquote(Enum.join(data[:term], @blank))})"
           point = unquote(module).new(unquote(data[:term]))
 
           assert Geometry.from_ewkt(wkt) == {:ok, point}
         end
 
         test "returns an empty point from WKT" do
-          wkt = "#{unquote(text)} empty"
+          wkt = "#{unquote(String.upcase(text))} empty"
           point = unquote(module).new()
 
           assert Geometry.from_ewkt(wkt) == {:ok, point}
@@ -668,7 +668,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns a point from WKT with srid" do
           wkt =
-            "SRID=#{unquote(srid)};#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
+            "SRID=#{unquote(srid)};#{unquote(String.upcase(text))} (#{unquote(Enum.join(data[:term], @blank))})"
 
           point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
@@ -676,7 +676,7 @@ defmodule Geometry.PointNewTest do
         end
 
         test "returns an empty point from WKT with srid" do
-          wkt = "SRID=#{unquote(srid)};#{unquote(text)} empty"
+          wkt = "SRID=#{unquote(srid)};#{unquote(String.upcase(text))} empty"
           point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.from_ewkt(wkt) == {:ok, point}
@@ -687,7 +687,7 @@ defmodule Geometry.PointNewTest do
         @describetag :wkt
 
         test "returns a point from WKT" do
-          wkt = "#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
+          wkt = "#{unquote(String.upcase(text))} (#{unquote(Enum.join(data[:term], @blank))})"
           point = unquote(module).new(unquote(data[:term]))
 
           assert Geometry.from_ewkt!(wkt) == point
@@ -699,7 +699,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns WKT for a point" do
           wkt =
-            "SRID=#{unquote(srid)};#{unquote(text)} (#{unquote(Enum.join(data[:term], @blank))})"
+            "SRID=#{unquote(srid)};#{unquote(String.upcase(text))} (#{unquote(Enum.join(data[:term], @blank))})"
 
           point = unquote(module).new(unquote(data[:term]), unquote(srid))
 
@@ -707,7 +707,7 @@ defmodule Geometry.PointNewTest do
         end
 
         test "returns WKT for an empty point" do
-          wkt = "SRID=#{unquote(srid)};#{unquote(text)} EMPTY"
+          wkt = "SRID=#{unquote(srid)};#{unquote(String.upcase(text))} EMPTY"
           point = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.to_ewkt(point) == wkt

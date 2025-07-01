@@ -753,12 +753,12 @@ defmodule Geometry.MultiPolygonTest do
 
   defp wkt(name, data \\ [], srid \\ "")
 
-  defp wkt(name, [], ""), do: "#{name} EMPTY"
+  defp wkt(name, [], ""), do: "#{String.upcase(name)} EMPTY"
 
-  defp wkt(name, [], srid), do: "SRID=#{srid};#{name} EMPTY"
+  defp wkt(name, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
 
   defp wkt(name, data, srid) do
-    "#{srid(srid)}#{name} #{wkt_data(data)}"
+    "#{srid(srid)}#{String.upcase(name)} #{wkt_data(data)}"
   end
 
   defp wkt_data([x | _] = point) when is_number(x), do: Enum.join(point, @blank)
