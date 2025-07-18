@@ -117,6 +117,11 @@ defmodule Geometry do
   @type path :: [coordinates()]
 
   @typedoc """
+  A list of n-dimensional coordinates.
+  """
+  @type arcs :: [coordinates()]
+
+  @typedoc """
   A list of n-dimensional coordinates where the first and last point are equal, creating a ring.
   """
   @type ring :: [coordinates()]
