@@ -40,6 +40,10 @@ defmodule Geometry do
 
   alias Geometry.DecodeError
 
+  alias Geometry.CircularString
+  alias Geometry.CircularStringM
+  alias Geometry.CircularStringZ
+  alias Geometry.CircularStringZM
   alias Geometry.Feature
   alias Geometry.FeatureCollection
   alias Geometry.GeometryCollection
@@ -77,7 +81,11 @@ defmodule Geometry do
   The supported geometries.
   """
   @type t() ::
-          GeometryCollection.t()
+          CircularString.t()
+          | CircularStringM.t()
+          | CircularStringZ.t()
+          | CircularStringZM.t()
+          | GeometryCollection.t()
           | GeometryCollectionM.t()
           | GeometryCollectionZ.t()
           | GeometryCollectionZM.t()
