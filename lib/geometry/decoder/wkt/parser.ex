@@ -16,6 +16,10 @@ defmodule Geometry.Decoder.WKT.Parser do
   defparsec(:line_string_xyz, line_string_xyz())
   defparsec(:line_string_xyzm, line_string_xyzm())
 
+  defparsec(:circular_string_xy, circular_string_xy())
+  defparsec(:circular_string_xyz, circular_string_xyz())
+  defparsec(:circular_string_xyzm, circular_string_xyzm())
+
   defparsec(:polygon_xy, polygon_xy())
   defparsec(:polygon_xyz, polygon_xyz())
   defparsec(:polygon_xyzm, polygon_xyzm())
@@ -85,6 +89,7 @@ defmodule Geometry.Decoder.WKT.Parser do
         :point,
         :polygon,
         :line_string,
+        :circular_string,
         :multi_point,
         :multi_line_string,
         :multi_polygon,
