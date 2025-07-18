@@ -202,7 +202,7 @@ defmodule Geometry.CircularStringTest do
           circular_string = %unquote(module){arcs: unquote(data[:term])}
 
           message =
-            ~r|protocol Geometry.Encoder.GeoJson not implemented for type #{inspect(unquote(module))}|
+            ~r|protocol.Geometry.Encoder.GeoJson.not.implemented.for.*#{inspect(unquote(module))}|
 
           assert_raise Protocol.UndefinedError, message, fn ->
             Geometry.to_geo_json(circular_string)
