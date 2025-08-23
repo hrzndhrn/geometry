@@ -51,7 +51,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
-  @spec char(NimbleParsec.t()) :: NimbleParsec.t()
+  @spec char(NimbleParsec.t(), char()) :: NimbleParsec.t()
   def char(combinator \\ empty(), char) do
     str = to_string([char])
 
