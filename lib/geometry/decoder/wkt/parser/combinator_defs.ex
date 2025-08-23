@@ -1,4 +1,5 @@
 defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
+  @moduledoc false
   import NimbleParsec
 
   @type rest :: String.t()
@@ -7,36 +8,21 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
   @type line :: {pos_integer(), non_neg_integer()}
   @type offset :: non_neg_integer()
 
-  def atom(geometry) do
-    geometry |> Macro.underscore() |> String.to_atom()
-  end
-
-  @spec post_geometry_tag(rest(), args(), context(), line(), offset()) ::
-          {rest(), args(), context()}
-  def post_geometry_tag(rest, args, context, _line, _offset) do
-    # add :xy to geometries whitout Z, M, or ZM tag
-    case args do
-      [geometry] -> {rest, [:xy, geometry], context}
-      [_tag, _geometry] -> {rest, args, context}
-    end
-  end
-
-  @spec whitespace() :: NimbleParsec.t()
-  def whitespace do
-    [?\s, ?\t, ?\n]
-    |> ascii_char()
-    |> repeat()
-    |> ignore()
-  end
-
+  ####
+  # Combinators
+  ####
   @spec whitespace(NimpleParsec.t()) :: NimbleParsec.t()
-  def whitespace(combinator) do
+  def whitespace(combinator \\ empty()) do
     concat(
       combinator,
-      whitespace()
+      [?\s, ?\t, ?\n]
+      |> ascii_char()
+      |> repeat()
+      |> ignore()
     )
   end
 
+  @spec any_case_string(NimpleParsec.t()) :: NimbleParsec.t()
   def any_case_string(combinator \\ empty(), string) do
     downcase = string |> String.downcase() |> to_charlist()
     upcase = string |> String.upcase() |> to_charlist()
@@ -49,6 +35,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     |> reduce({IO, :iodata_to_binary, []})
   end
 
+  @spec srid_label(NimpleParsec.t()) :: NimbleParsec.t()
   def srid_label(combinator) do
     concat(
       combinator,
@@ -56,6 +43,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
+  @spec srid_value(NimpleParsec.t()) :: NimbleParsec.t()
   def srid_value(combinator) do
     concat(
       combinator,
@@ -63,6 +51,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
+  @spec char(NimpleParsec.t()) :: NimbleParsec.t()
   def char(combinator \\ empty(), char) do
     str = to_string([char])
 
@@ -74,13 +63,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
-  def to_atom_name(name) do
-    name
-    |> String.downcase()
-    |> String.to_atom()
-  end
-
-  @spec srid :: NimbleParsec.t()
+  @spec srid() :: NimbleParsec.t()
   def srid do
     whitespace()
     |> srid_label()
@@ -89,6 +72,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     |> char(?;)
   end
 
+  @spec geometry_tag_match() :: NimbleParsec.t()
   def geometry_tag_match do
     choice([
       any_case_string("ZM") |> replace(:xyzm),
@@ -97,6 +81,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     ])
   end
 
+  @spec geometry_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def geometry_tag(combinator \\ empty()) do
     optional(
       combinator,
@@ -105,6 +90,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     |> post_traverse({__MODULE__, :post_geometry_tag, []})
   end
 
+  @spec empty_tag() :: NimbleParsec.t()
   def empty_tag, do: ignore(any_case_string("EMPTY"))
 
   @spec post_next(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
@@ -116,7 +102,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     end
   end
 
-  @spec next :: NimbleParsec.t()
+  @spec next() :: NimbleParsec.t()
   def next do
     whitespace()
     |> choice([empty_tag(), ascii_char([?(, ?,, ?)])])
@@ -124,6 +110,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     |> label("coordinates or EMPTY")
   end
 
+  @spec separator() :: NimbleParsec.t()
   def separator do
     [?\s, ?\n]
     |> ascii_char()
@@ -131,21 +118,54 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     |> ignore()
   end
 
+  @spec fraction() :: NimbleParsec.t()
   def fraction do
     string(".")
     |> ascii_string([?0..?9], min: 1)
   end
 
-  def number do
-    whitespace()
-    |> optional(choice([string("+"), string("-")]))
-    |> integer(min: 1)
-    |> optional(fraction())
-    |> post_traverse({__MODULE__, :post_number, []})
+  @spec number(NimbleParsec.t()) :: NimbleParsec.t()
+  def number(combinator \\ empty()) do
+    concat(
+      combinator,
+      whitespace()
+      |> optional(choice([string("+"), string("-")]))
+      |> integer(min: 1)
+      |> optional(fraction())
+      |> post_traverse({__MODULE__, :post_number, []})
+    )
   end
 
-  def number(combinator) do
-    concat(combinator, number())
+  @spec open() :: NimbleParsec.t()
+  def open do
+    whitespace()
+    |> string("(")
+    |> whitespace()
+    |> ignore()
+  end
+
+  @spec close(NimbleParsec.t()) :: NimbleParsec.t()
+  def close(combinator \\ empty()) do
+    concat(
+      combinator,
+      whitespace()
+      |> string(")")
+      |> whitespace()
+      |> ignore()
+    )
+  end
+
+  ####
+  # Post-match processing functions
+  ####
+  @spec post_geometry_tag(rest(), args(), context(), line(), offset()) ::
+          {rest(), args(), context()}
+  def post_geometry_tag(rest, args, context, _line, _offset) do
+    # add :xy to geometries whitout Z, M, or ZM tag
+    case args do
+      [geometry] -> {rest, [:xy, geometry], context}
+      [_tag, _geometry] -> {rest, args, context}
+    end
   end
 
   @spec post_number(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
@@ -163,33 +183,39 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     {rest, [number], context}
   end
 
+  @spec post_geometry(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
+  def post_geometry(rest, args, context, _line, _offset) do
+    case args do
+      [tag, geometry, srid] ->
+        {rest, [%{geometry: geometry, tag: tag, srid: srid}], context}
+
+      [tag, geometry] ->
+        {rest, [%{geometry: geometry, tag: tag}], context}
+
+      _missing_data ->
+        {:error, :no_data_found}
+    end
+  end
+
+  ####
+  # Utilities
+  ####
+  @spec to_number(integer(), String.t()) :: number()
   defp to_number(int, frac_string) do
     digits = String.length(frac_string)
     frac = String.to_integer(frac_string)
     int + frac / :math.pow(10, digits)
   end
 
-  def open do
-    whitespace()
-    |> string("(")
-    |> whitespace()
-    |> ignore()
+  @spec to_atom_name(String.t()) :: atom()
+  def to_atom_name(name) do
+    name
+    |> String.downcase()
+    |> String.to_atom()
   end
 
-  def close do
-    whitespace()
-    |> string(")")
-    |> whitespace()
-    |> ignore()
-  end
-
-  def close(combinator) do
-    concat(
-      combinator,
-      whitespace()
-      |> string(")")
-      |> whitespace()
-      |> ignore()
-    )
+  @spec atom(String.t()) :: atom()
+  def atom(geometry) do
+    geometry |> Macro.underscore() |> String.to_atom()
   end
 end

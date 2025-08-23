@@ -4,12 +4,6 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
   import NimbleParsec
   import Geometry.Decoder.WKT.Parser.CombinatorDefs
 
-  @type rest :: String.t()
-  @type args :: list()
-  @type context :: map()
-  @type line :: {pos_integer(), non_neg_integer()}
-  @type offset :: non_neg_integer()
-
   @geometries [
     "Point",
     "LineString",
@@ -46,22 +40,8 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     whitespace()
     |> optional(srid())
     |> parsec(:geometry_selection)
-    |> post_traverse({__MODULE__, :post_geometry, []})
+    |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_geometry, []})
   )
-
-  @spec post_geometry(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
-  def post_geometry(rest, args, context, _line, _offset) do
-    case args do
-      [tag, geometry, srid] ->
-        {rest, [%{geometry: geometry, tag: tag, srid: srid}], context}
-
-      [tag, geometry] ->
-        {rest, [%{geometry: geometry, tag: tag}], context}
-
-      _missing_data ->
-        {:error, :no_data_found}
-    end
-  end
 
   @types
   |> Enum.with_index(1)
