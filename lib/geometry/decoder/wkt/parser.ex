@@ -6,7 +6,7 @@ defmodule Geometry.Decoder.WKT.Parser do
   alias Geometry.DecodeError
 
   @spec parse(Geometry.wkt()) ::
-          {tpye :: atom(), dim :: atom(), data :: term(), srid :: Geometry.srid() | nil}
+          {type :: atom(), dim :: atom(), data :: term(), srid :: Geometry.srid() | nil}
           | {:error, DecodeError.t()}
   def parse(string) do
     with {:ok, [info], rest, _context, line, byte_offset} <- geometry(string),

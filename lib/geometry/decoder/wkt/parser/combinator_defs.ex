@@ -11,7 +11,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
   ####
   # Combinators
   ####
-  @spec whitespace(NimpleParsec.t()) :: NimbleParsec.t()
+  @spec whitespace(NimbleParsec.t()) :: NimbleParsec.t()
   def whitespace(combinator \\ empty()) do
     concat(
       combinator,
@@ -22,7 +22,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
-  @spec any_case_string(NimpleParsec.t()) :: NimbleParsec.t()
+  @spec any_case_string(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def any_case_string(combinator \\ empty(), string) do
     downcase = string |> String.downcase() |> to_charlist()
     upcase = string |> String.upcase() |> to_charlist()
@@ -35,7 +35,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     |> reduce({IO, :iodata_to_binary, []})
   end
 
-  @spec srid_label(NimpleParsec.t()) :: NimbleParsec.t()
+  @spec srid_label(NimbleParsec.t()) :: NimbleParsec.t()
   def srid_label(combinator) do
     concat(
       combinator,
@@ -43,7 +43,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
-  @spec srid_value(NimpleParsec.t()) :: NimbleParsec.t()
+  @spec srid_value(NimbleParsec.t()) :: NimbleParsec.t()
   def srid_value(combinator) do
     concat(
       combinator,
@@ -51,7 +51,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
     )
   end
 
-  @spec char(NimpleParsec.t()) :: NimbleParsec.t()
+  @spec char(NimbleParsec.t()) :: NimbleParsec.t()
   def char(combinator \\ empty(), char) do
     str = to_string([char])
 
@@ -161,7 +161,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
   @spec post_geometry_tag(rest(), args(), context(), line(), offset()) ::
           {rest(), args(), context()}
   def post_geometry_tag(rest, args, context, _line, _offset) do
-    # add :xy to geometries whitout Z, M, or ZM tag
+    # add :xy to geometries without Z, M, or ZM tag
     case args do
       [geometry] -> {rest, [:xy, geometry], context}
       [_tag, _geometry] -> {rest, args, context}
