@@ -10,6 +10,8 @@ defmodule Geometry.CircularStringM do
 
   use Geometry.Protocols
 
+  import Geometry.Guards
+
   alias Geometry.CircularStringM
   alias Geometry.PointM
 
@@ -42,7 +44,7 @@ defmodule Geometry.CircularStringM do
 
   def new([], srid), do: %CircularStringM{srid: srid}
 
-  def new([_, _ | _] = arcs, srid) do
+  def new([_, _ | _] = arcs, srid) when is_odd_list(arcs) do
     %CircularStringM{arcs: Enum.map(arcs, fn point -> point.coordinates end), srid: srid}
   end
 end
