@@ -13,6 +13,7 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
     "Point",
     "LineString",
     "Polygon",
+    "CircularString",
     "MultiPoint",
     "MultiLineString",
     "MultiPolygon",
@@ -130,6 +131,29 @@ defmodule Geometry.Decoder.WKT.ParserHelpers do
         |> times(char(?,) |> unquote(:"coordinate_#{type}")(), min: 3)
         |> close()
         |> reduce({List, :wrap, []})
+      )
+    end
+  end)
+
+  Enum.each(@types, fn type ->
+    @spec unquote(:"circular_string_#{type}")(NimbleParsec.t()) :: NimbleParsec.t()
+    def unquote(:"circular_string_#{type}")(combinator \\ empty()) do
+      concat(
+        combinator,
+        choice([
+          open()
+          |> unquote(:"coordinate_#{type}")()
+          |> times(
+            char(?,)
+            |> unquote(:"coordinate_#{type}")()
+            |> char(?,)
+            |> unquote(:"coordinate_#{type}")(),
+            min: 1
+          )
+          |> close(),
+          empty_tag()
+        ])
+        |> label("CircularString data")
       )
     end
   end)
