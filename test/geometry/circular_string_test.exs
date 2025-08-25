@@ -180,6 +180,22 @@ defmodule Geometry.CircularStringTest do
         test "returns an empty curve" do
           assert unquote(module).new([]) == %unquote(module){arcs: []}
         end
+
+        test "raises a FunctionClauseError for a too short list" do
+          coordinate = Enum.take(coordinates(unquote(data[:term]), unquote(dim)), 1)
+
+          assert_raise FunctionClauseError, fn ->
+            unquote(module).new(coordinate) == %unquote(module){arcs: []}
+          end
+        end
+
+        test "raises a FunctionClauseError for an even list" do
+          coordinates = Enum.take(coordinates(unquote(data[:term]), unquote(dim)), 2)
+
+          assert_raise FunctionClauseError, fn ->
+            unquote(module).new(coordinates) == %unquote(module){arcs: []}
+          end
+        end
       end
 
       describe "[#{inspect(module)}] empty?/1" do
