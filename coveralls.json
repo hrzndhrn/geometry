@@ -6,7 +6,7 @@
   "skip_files": [
     "lib/geometry/guards.ex",
     "lib/geometry/protocols.ex",
-    "lib/geometry/decoder/wkt/parsers_helper.ex",
+    "lib/geometry/decoder/wkt/parser/combinator_defs.ex",
     "test/support/"
   ]
 }
