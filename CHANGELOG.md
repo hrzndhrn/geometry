@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2025/09/04
+
++ Refactor the WKT parser to optimise compilation. (Aaron Seigo)
+
 ## 1.1.0 - 2025/07/01
 
 + Upcase WKT geometry types as per the standard. (Aaron Seigo)
