@@ -724,7 +724,7 @@ defmodule Geometry.Decoder.WKB do
           {:ok, PointM.new(x, y, m, srid), bin}
 
         <<unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), bin::bits>> ->
-          {:ok, PointM.new() |> Map.put(:srid, srid), bin}
+          {:ok, PointM.new([], srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}
@@ -738,7 +738,7 @@ defmodule Geometry.Decoder.WKB do
           {:ok, PointZ.new(x, y, z, srid), bin}
 
         <<unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), bin::bits>> ->
-          {:ok, PointZ.new() |> Map.put(:srid, srid), bin}
+          {:ok, PointZ.new([], srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}
@@ -753,7 +753,7 @@ defmodule Geometry.Decoder.WKB do
 
         <<unquote(geo.empty), unquote(geo.empty), unquote(geo.empty), unquote(geo.empty),
           bin::bits>> ->
-          {:ok, PointZM.new() |> Map.put(:srid, srid), bin}
+          {:ok, PointZM.new([], srid), bin}
 
         _error ->
           {:error, :invalid_coordinate, bin}

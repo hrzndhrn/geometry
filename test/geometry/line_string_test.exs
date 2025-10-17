@@ -576,7 +576,7 @@ defmodule Geometry.LineStringTest do
 
         test "returns ewkt from an empty line" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          line = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          line = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.to_ewkt(line) == wkt
         end

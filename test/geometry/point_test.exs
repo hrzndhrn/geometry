@@ -342,14 +342,14 @@ defmodule Geometry.PointNewTest do
 
         test "returns an empty point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
 
         test "returns an empty point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_wkb(wkb) == {:ok, point}
         end
@@ -430,14 +430,14 @@ defmodule Geometry.PointNewTest do
 
         test "returns an empty point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_wkb!(wkb) == point
         end
 
         test "returns an empty point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_wkb!(wkb) == point
         end
@@ -529,14 +529,14 @@ defmodule Geometry.PointNewTest do
 
         test "returns an empty point from xdr binary with srid" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
 
         test "returns an empty point from ndr binary with srid" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_ewkb(wkb) == {:ok, point}
         end
@@ -573,14 +573,14 @@ defmodule Geometry.PointNewTest do
 
         test "returns xdr binary for an empty point" do
           wkb = unquote(code_srid[:xdr] <> empty[:xdr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.to_ewkb(point, :xdr) == wkb
         end
 
         test "returns ndr binary for an empty point" do
           wkb = unquote(code_srid[:ndr] <> empty[:ndr])
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.to_ewkb(point) == wkb
         end
@@ -614,7 +614,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns an empty point from WKT with srid" do
           wkt = "SRID=#{unquote(srid)};#{unquote(text)} empty"
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_wkt(wkt) == {:ok, point}
         end
@@ -677,7 +677,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns an empty point from WKT with srid" do
           wkt = "SRID=#{unquote(srid)};#{unquote(String.upcase(text))} empty"
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.from_ewkt(wkt) == {:ok, point}
         end
@@ -708,7 +708,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns WKT for an empty point" do
           wkt = "SRID=#{unquote(srid)};#{unquote(String.upcase(text))} EMPTY"
-          point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.to_ewkt(point) == wkt
         end

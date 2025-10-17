@@ -597,7 +597,7 @@ defmodule Geometry.MultiPointTest do
 
         test "returns ewkt from an empty multi-point" do
           wkt = wkt(unquote(text), [], unquote(srid))
-          multi_point = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          multi_point = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Geometry.to_ewkt(multi_point) == wkt
         end

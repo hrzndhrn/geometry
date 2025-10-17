@@ -31,8 +31,14 @@ defmodule Geometry.PointM do
       iex> PointM.new([1.5, -2.1, 4])
       %PointM{coordinates: [1.5, -2.1, 4]}
   """
-  @spec new(Geometry.coordinates(), Geometry.srid()) :: t()
-  def new([x, y, m] = coordinate, srid \\ 0) when is_coordinate(x, y, m) do
+  @spec new(Geometry.coordinates() | [], Geometry.srid()) :: t()
+  def new(coordinate, srid \\ 0)
+
+  def new([], srid) do
+    %PointM{coordinates: [], srid: srid}
+  end
+
+  def new([x, y, m] = coordinate, srid) when is_coordinate(x, y, m) do
     %PointM{coordinates: coordinate, srid: srid}
   end
 

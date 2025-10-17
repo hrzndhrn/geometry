@@ -776,7 +776,7 @@ defmodule Geometry.GeometryCollectionTest do
 
         test "returns ewkt from an empty geometry-collection" do
           [regex] = wkt_parts(unquote(text), nil, [], unquote(srid))
-          geometry_collection = unquote(module).new() |> Map.put(:srid, unquote(srid))
+          geometry_collection = Map.put(unquote(module).new(), :srid, unquote(srid))
 
           assert Regex.match?(regex, Geometry.to_ewkt(geometry_collection))
         end
