@@ -31,7 +31,7 @@ defmodule Geometry.PointZM do
       iex> PointZM.new([1.5, -2.1, 3, 4])
       %PointZM{coordinates: [1.5, -2.1, 3, 4]}
   """
-  @spec new(Geometry.coordinates(), Geometry.srid()) :: t()
+  @spec new(Geometry.coordinates() | [], Geometry.srid()) :: t()
   def new(coordinate, srid \\ 0)
 
   def new([], srid) do
