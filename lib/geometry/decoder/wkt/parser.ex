@@ -56,6 +56,7 @@ defmodule Geometry.Decoder.WKT.Parser do
         :point,
         :polygon,
         :line_string,
+        :circular_string,
         :multi_point,
         :multi_line_string,
         :multi_polygon,

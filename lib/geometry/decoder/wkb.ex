@@ -3,6 +3,10 @@ defmodule Geometry.Decoder.WKB do
 
   alias Geometry.DecodeError
 
+  alias Geometry.CircularString
+  alias Geometry.CircularStringM
+  alias Geometry.CircularStringZ
+  alias Geometry.CircularStringZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -41,7 +45,8 @@ defmodule Geometry.Decoder.WKB do
       :multi_point,
       :multi_line_string,
       :multi_polygon,
-      :geometry_collection
+      :geometry_collection,
+      :circular_string
     ]
     |> Enum.with_index(1)
     |> Enum.flat_map(fn {type, index} ->
@@ -419,6 +424,46 @@ defmodule Geometry.Decoder.WKB do
     end
 
     defp line_string(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
+      {:error, :invalid_length, bin}
+    end
+
+    defp circular_string(
+           unquote(geo.dim),
+           unquote(geo.endian),
+           srid,
+           <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
+         ) do
+      try do
+        {data, rest} =
+          Enum.map_reduce(List.duplicate(0, length), bin, fn _ignore, bin ->
+            case coordinate(unquote(geo.dim), unquote(geo.endian), bin) do
+              {:ok, data, bin} ->
+                {data, bin}
+
+              error ->
+                throw(error)
+            end
+          end)
+
+        circular_string = %unquote(
+            case geo.dim do
+              :xy -> CircularString
+              :xym -> CircularStringM
+              :xyz -> CircularStringZ
+              :xyzm -> CircularStringZM
+            end
+          ){
+          arcs: data,
+          srid: srid
+        }
+
+        {:ok, circular_string, rest}
+      catch
+        error -> error
+      end
+    end
+
+    defp circular_string(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 

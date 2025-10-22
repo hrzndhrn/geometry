@@ -8,6 +8,7 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     "Point",
     "LineString",
     "Polygon",
+    "CircularString",
     "MultiPoint",
     "MultiLineString",
     "MultiPolygon",
@@ -130,6 +131,24 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
       |> times(char(?,) |> parsec(:"coordinate_#{type}"), min: 3)
       |> close()
       |> reduce({List, :wrap, []})
+    )
+
+    defparsec(
+      :"circular_string_#{type}",
+      choice([
+        open()
+        |> parsec(:"coordinate_#{type}")
+        |> times(
+          char(?,)
+          |> parsec(:"coordinate_#{type}")
+          |> char(?,)
+          |> parsec(:"coordinate_#{type}"),
+          min: 1
+        )
+        |> close(),
+        empty_tag()
+      ])
+      |> label("CircularString data")
     )
 
     defcombinator(
