@@ -43,6 +43,12 @@ defmodule Geometry.Point do
 
       iex> Point.new(-1.1, 2.2)
       %Point{coordinates: [-1.1, 2.2], srid: 0}
+
+      iex> Point.new([1, 2], 42)
+      %Point{coordinates: [1, 2], srid: 42}
+
+      iex> Point.new([3.3, 4.4])
+      %Point{coordinates: [3.3, 4.4], srid: 0}
   """
   @spec new(Geometry.coordinates() | [] | number(), Geometry.srid() | number()) :: t()
   def new(coordinates, srid \\ 0)
@@ -55,7 +61,6 @@ defmodule Geometry.Point do
     %Point{coordinates: coordinate, srid: srid}
   end
 
-  @spec new(number(), number()) :: t()
   def new(x, y) when is_coordinate(x, y) do
     %Point{coordinates: [x, y]}
   end
