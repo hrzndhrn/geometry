@@ -623,9 +623,15 @@ defmodule Geometry.Decoder.WKB do
         {data, rest} =
           Enum.map_reduce(List.duplicate(0, length), bin, fn _ignore, bin ->
             case collection(unquote(geo.dim), unquote(geo.endian), bin) do
-              {:ok, :point, bin} ->
-                case point(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-                  {:ok, point, bin} -> {point, bin}
+              {:ok, :geometry_collection, bin} ->
+                case geometry_collection(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, geometry_collection, bin} -> {geometry_collection, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :line_string, bin} ->
+                case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, line_string, bin} -> {line_string, bin}
                   error -> throw(error)
                 end
 
@@ -635,9 +641,21 @@ defmodule Geometry.Decoder.WKB do
                   error -> throw(error)
                 end
 
-              {:ok, :line_string, bin} ->
-                case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-                  {:ok, line_string, bin} -> {line_string, bin}
+              {:ok, :multi_point, bin} ->
+                case multi_point(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, multi_point, bin} -> {multi_point, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :multi_polygon, bin} ->
+                case multi_polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, multi_polygon, bin} -> {multi_polygon, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :point, bin} ->
+                case point(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, point, bin} -> {point, bin}
                   error -> throw(error)
                 end
 

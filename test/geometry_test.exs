@@ -5,10 +5,15 @@ defmodule GeometryTest do
 
   alias Geometry.DecodeError
 
+  alias Geometry.GeometryCollection
   alias Geometry.LineString
+  alias Geometry.MultiLineString
+  alias Geometry.MultiPoint
+  alias Geometry.MultiPolygon
   alias Geometry.Point
   alias Geometry.PointZ
   alias Geometry.PointZM
+  alias Geometry.Polygon
 
   doctest Geometry, import: true
 
@@ -245,7 +250,7 @@ defmodule GeometryTest do
   describe "from_wkb/1" do
     @describetag :wkb
 
-    test "odd" do
+    test "geometry collection supports multilinestrings" do
       data =
         <<1, 7, 0, 0, 32, 230, 16, 0, 0, 2, 0, 0, 0, 1, 5, 0, 0, 0, 2, 0, 0, 0, 1, 2, 0, 0, 0, 2,
           0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 64, 0, 0, 0, 0, 0, 128, 86, 192, 0, 0, 0, 0, 0, 0, 62,
@@ -261,6 +266,35 @@ defmodule GeometryTest do
       {:ok, actual} = Geometry.from_wkb(data)
 
       assert expected == actual
+    end
+
+    test "geometry collections supports all possible nested types" do
+      srid = 4326
+      point = Point.new([1, 2], srid)
+      linestring = LineString.new([point, point], srid)
+      polygon = Polygon.new([linestring], srid)
+      multilinestring = MultiLineString.new([linestring], srid)
+      multipoint = MultiPoint.new([point], srid)
+      multipolygon = MultiPolygon.new([polygon], srid)
+
+      collection =
+        GeometryCollection.new(
+          [
+            point,
+            linestring,
+            polygon,
+            multilinestring,
+            multipoint,
+            multipolygon
+          ],
+          4326
+        )
+
+      outer = GeometryCollection.new([collection], 4326)
+
+      ewkb = Geometry.to_ewkb(outer)
+
+      assert {:ok, outer} == Geometry.from_ewkb(ewkb)
     end
 
     test "returns an error tuple for an empty binary" do
