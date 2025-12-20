@@ -637,13 +637,13 @@ defmodule Geometry.Decoder.WKB do
 
               {:ok, :line_string, bin} ->
                 case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-                  {:ok, point, bin} -> {point, bin}
+                  {:ok, line_string, bin} -> {line_string, bin}
                   error -> throw(error)
                 end
 
               {:ok, :polygon, bin} ->
                 case polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-                  {:ok, point, bin} -> {point, bin}
+                  {:ok, polygon, bin} -> {polygon, bin}
                   error -> throw(error)
                 end
 
