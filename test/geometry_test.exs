@@ -245,6 +245,24 @@ defmodule GeometryTest do
   describe "from_wkb/1" do
     @describetag :wkb
 
+    test "odd" do
+      data =
+        <<1, 7, 0, 0, 32, 230, 16, 0, 0, 2, 0, 0, 0, 1, 5, 0, 0, 0, 2, 0, 0, 0, 1, 2, 0, 0, 0, 2,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 64, 0, 0, 0, 0, 0, 128, 86, 192, 0, 0, 0, 0, 0, 0, 62,
+          64, 0, 0, 0, 0, 0, 160, 86, 192, 1, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 64, 0,
+          0, 0, 0, 0, 160, 86, 192, 0, 0, 0, 0, 0, 0, 62, 64, 0, 0, 0, 0, 0, 192, 86, 192, 1, 5,
+          0, 0, 0, 0, 0, 0, 0>>
+
+      textual =
+        "SRID=4326;GEOMETRYCOLLECTION(MULTILINESTRING((30 -90,30 -90.5),(30 -90.5,30 -91)),MULTILINESTRING EMPTY)"
+
+      {:ok, expected} = Geometry.from_wkt(textual)
+
+      {:ok, actual} = Geometry.from_wkb(data)
+
+      assert expected == actual
+    end
+
     test "returns an error tuple for an empty binary" do
       assert Geometry.from_wkb(<<>>) == {:error, %DecodeError{from: :wkb, reason: :empty}}
     end

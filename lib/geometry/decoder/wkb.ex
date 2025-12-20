@@ -629,6 +629,12 @@ defmodule Geometry.Decoder.WKB do
                   error -> throw(error)
                 end
 
+              {:ok, :multi_line_string, bin} ->
+                case multi_line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, multi_line_string, bin} -> {multi_line_string, bin}
+                  error -> throw(error)
+                end
+
               {:ok, :line_string, bin} ->
                 case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, point, bin} -> {point, bin}
