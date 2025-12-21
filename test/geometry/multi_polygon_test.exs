@@ -295,7 +295,7 @@ defmodule Geometry.MultiPolygonTest do
 
         test "returns multi-polygon" do
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "MultiPolygon",
               "coordinates": #{inspect(unquote(data[:term]), charlists: :as_lists)},
@@ -317,7 +317,7 @@ defmodule Geometry.MultiPolygonTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "MultiPolygon"}|)
+          geo_json = :json.decode(~s|{"type": "MultiPolygon"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,

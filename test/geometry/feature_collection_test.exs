@@ -22,7 +22,7 @@ defmodule Geometry.FeatureCollectionTest do
   describe "to_geo_json/1" do
     test "returns geo json" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [
@@ -59,7 +59,7 @@ defmodule Geometry.FeatureCollectionTest do
   describe "from_geo_json!/2" do
     test "returns FeatureCollection (xy)" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [
@@ -93,7 +93,7 @@ defmodule Geometry.FeatureCollectionTest do
 
     test "returns FeatureCollection (xyz)" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [
@@ -127,7 +127,7 @@ defmodule Geometry.FeatureCollectionTest do
 
     test "returns FeatureCollection (xym)" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [
@@ -161,7 +161,7 @@ defmodule Geometry.FeatureCollectionTest do
 
     test "returns FeatureCollection (xyzm)" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [
@@ -195,7 +195,7 @@ defmodule Geometry.FeatureCollectionTest do
 
     test "raises an error for invalid data" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [
@@ -219,7 +219,7 @@ defmodule Geometry.FeatureCollectionTest do
 
     test "raises an error for missing type in features" do
       geo_json =
-        Jason.decode!("""
+        :json.decode("""
         {
            "type": "FeatureCollection",
            "features": [

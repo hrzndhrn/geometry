@@ -183,7 +183,7 @@ defmodule Geometry.MultiPointTest do
 
         test "returns multi-point" do
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "MultiPoint",
               "coordinates": #{inspect(unquote(data[:term]), charlists: :as_lists)},
@@ -203,7 +203,7 @@ defmodule Geometry.MultiPointTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "MultiPoint"}|)
+          geo_json = :json.decode(~s|{"type": "MultiPoint"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,

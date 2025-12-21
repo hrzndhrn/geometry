@@ -196,7 +196,7 @@ defmodule Geometry.LineStringTest do
             Enum.map_join(unquote(data[:term]), ", ", fn point -> "[#{Enum.join(point, ",")}]" end)
 
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "LineString",
               "coordinates": [#{coordinates}],
@@ -216,7 +216,7 @@ defmodule Geometry.LineStringTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "LineString"}|)
+          geo_json = :json.decode(~s|{"type": "LineString"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,

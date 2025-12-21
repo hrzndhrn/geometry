@@ -448,17 +448,17 @@ defmodule Geometry do
   ## Examples
 
       iex> ~s({"type": "Point", "coordinates": [1, 2]})
-      iex> |> Jason.decode!()
+      iex> |> :json.decode()
       iex> |> Geometry.from_geo_json()
       {:ok, %Point{coordinates: [1, 2], srid: 4326}}
 
       iex> ~s({"type": "Point", "coordinates": [1, 2, 3, 4]})
-      iex> |> Jason.decode!()
+      iex> |> :json.decode()
       iex> |> Geometry.from_geo_json(:xyzm)
       {:ok, %PointZM{coordinates: [1, 2, 3, 4], srid: 4326}}
 
       iex> ~s({"type": "Dot", "coordinates": [1, 2]})
-      iex> |> Jason.decode!()
+      iex> |> :json.decode()
       iex> |> Geometry.from_geo_json()
       {
         :error,

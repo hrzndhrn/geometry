@@ -120,8 +120,7 @@ defmodule Geometry.MixProject do
         :benchee_markdown,
         :deep_merge,
         :eex,
-        :geo,
-        :jason
+        :geo
       ]
     ]
   end
@@ -138,7 +137,6 @@ defmodule Geometry.MixProject do
       {:ex_doc, "~> 0.28", only: :dev, runtime: false},
       {:excoveralls, "~> 0.14", only: :test, runtime: false},
       {:geo, "~> 4.0", only: :dev},
-      {:jason, "~> 1.3", only: [:dev, :test]},
       {:mix_test_watch, "~> 1.1", only: :dev, runtime: false},
       {:prove, "~> 0.1", only: [:dev, :test]},
       {:recode, "~> 0.4", only: :dev},

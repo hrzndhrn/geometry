@@ -297,7 +297,7 @@ defmodule Geometry.GeometryCollectionTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "GeometryCollection"}|)
+          geo_json = :json.decode(~s|{"type": "GeometryCollection"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,
@@ -924,7 +924,7 @@ defmodule Geometry.GeometryCollectionTest do
   end
 
   defp geo_json(data) do
-    Jason.decode!("""
+    :json.decode("""
     {
       "type": "GeometryCollection",
       "geometries": [

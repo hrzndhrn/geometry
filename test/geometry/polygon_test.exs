@@ -276,7 +276,7 @@ defmodule Geometry.PolygonTest do
           coordinates = Jason.encode!(unquote(data[:term]))
 
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "Polygon",
               "coordinates": #{coordinates},
@@ -296,7 +296,7 @@ defmodule Geometry.PolygonTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "Polygon"}|)
+          geo_json = :json.decode(~s|{"type": "Polygon"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,

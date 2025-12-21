@@ -184,7 +184,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns point" do
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "Point",
               "coordinates": [#{Enum.join(unquote(data[:term]), ",")}],
@@ -204,7 +204,7 @@ defmodule Geometry.PointNewTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "Point"}|)
+          geo_json = :json.decode(~s|{"type": "Point"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,
@@ -216,7 +216,7 @@ defmodule Geometry.PointNewTest do
         end
 
         test "returns an error for invalid coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "Point", "coordinates": ["invalid"]}|)
+          geo_json = :json.decode(~s|{"type": "Point", "coordinates": ["invalid"]}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,
@@ -233,7 +233,7 @@ defmodule Geometry.PointNewTest do
 
         test "returns point" do
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "Point",
               "coordinates": [#{Enum.join(unquote(data[:term]), ",")}],
@@ -251,14 +251,14 @@ defmodule Geometry.PointNewTest do
         end
 
         test "raises an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "Point"}|)
+          geo_json = :json.decode(~s|{"type": "Point"}|)
           message = "coordinates not found"
 
           assert_fail :from_geo_json!, [geo_json, unquote(dim)], message
         end
 
         test "raises an error for invalid coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "Point", "coordinates": ["invalid"]}|)
+          geo_json = :json.decode(~s|{"type": "Point", "coordinates": ["invalid"]}|)
           message = "invalid data"
 
           assert_fail :from_geo_json!, [geo_json, unquote(dim)], message

@@ -208,7 +208,7 @@ defmodule Geometry.MultiLineStringTest do
 
         test "returns multi-line-string" do
           geo_json =
-            Jason.decode!("""
+            :json.decode("""
             {
               "type": "MultiLineString",
               "coordinates": #{inspect(unquote(data[:term]), charlists: :as_lists)},
@@ -231,7 +231,7 @@ defmodule Geometry.MultiLineStringTest do
         end
 
         test "returns an error for missing coordinates" do
-          geo_json = Jason.decode!(~s|{"type": "MultiLineString"}|)
+          geo_json = :json.decode(~s|{"type": "MultiLineString"}|)
 
           assert Geometry.from_geo_json(geo_json, unquote(dim)) == {
                    :error,

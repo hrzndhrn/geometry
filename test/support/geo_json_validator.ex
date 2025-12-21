@@ -5,7 +5,7 @@ defmodule GeoJsonValidator do
 
   @schema @external_resource
           |> File.read!()
-          |> Jason.decode!()
+          |> :json.decode()
           |> Xema.from_json_schema()
 
   @spec valid?(term()) :: boolean
