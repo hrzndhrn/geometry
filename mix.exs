@@ -9,7 +9,7 @@ defmodule Geometry.MixProject do
       app: :geometry,
       name: "Geometry",
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.17",
       description: "A set of geometry types for WKT/EWT, WKB/EWKB and GeoJson.",
       source_url: @source_url,
       start_permanent: Mix.env() == :prod,
