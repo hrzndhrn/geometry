@@ -273,7 +273,7 @@ defmodule Geometry.PolygonTest do
 
       describe "[#{inspect(module)}] from_geo_json/2" do
         test "returns polygon" do
-          coordinates = Jason.encode!(unquote(data[:term]))
+          coordinates = :json.encode(unquote(data[:term]))
 
           geo_json =
             :json.decode("""
@@ -318,7 +318,7 @@ defmodule Geometry.PolygonTest do
                    "coordinates" => unquote(data[:term])
                  }
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
 
@@ -327,7 +327,7 @@ defmodule Geometry.PolygonTest do
           geo_json = Geometry.to_geo_json(polygon)
 
           assert geo_json == %{"type" => "Polygon", "coordinates" => []}
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
       end

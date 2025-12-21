@@ -318,7 +318,7 @@ defmodule Geometry.GeometryCollectionTest do
 
           geo_json = Geometry.to_geo_json(geometry_collection)
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
           assert geo_json["type"] == "GeometryCollection"
 
@@ -330,7 +330,7 @@ defmodule Geometry.GeometryCollectionTest do
           geometry_collection = unquote(module).new()
           geo_json = Geometry.to_geo_json(geometry_collection)
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
           assert geo_json == %{"type" => "GeometryCollection", "geometries" => []}
         end

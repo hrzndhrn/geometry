@@ -277,7 +277,7 @@ defmodule Geometry.PointNewTest do
                    "coordinates" => unquote(data[:term])
                  }
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
 
@@ -290,7 +290,7 @@ defmodule Geometry.PointNewTest do
                    "coordinates" => []
                  }
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
       end

@@ -227,7 +227,7 @@ defmodule Geometry.MultiPointTest do
                    "coordinates" => unquote(data[:term])
                  }
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
 
@@ -236,7 +236,7 @@ defmodule Geometry.MultiPointTest do
           geo_json = Geometry.to_geo_json(multi_point)
 
           assert geo_json == %{"type" => "MultiPoint", "coordinates" => []}
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
       end

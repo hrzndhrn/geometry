@@ -341,7 +341,7 @@ defmodule Geometry.MultiPolygonTest do
                    "coordinates" => unquote(data[:term])
                  }
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
 
@@ -350,7 +350,7 @@ defmodule Geometry.MultiPolygonTest do
           geo_json = Geometry.to_geo_json(multi_polygon)
 
           assert geo_json == %{"type" => "MultiPolygon", "coordinates" => []}
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
       end

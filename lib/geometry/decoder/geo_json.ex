@@ -196,7 +196,14 @@ defmodule Geometry.Decoder.GeoJson do
   end
 
   defp decode("Feature", %{"geometry" => geometry, "properties" => properties}, dim)
-       when is_map(properties) or is_nil(properties) do
+       when is_nil(properties) or properties == :null do
+    with {:ok, geometry} <- decode(geometry, dim) do
+      {:ok, %Feature{geometry: geometry, properties: nil}}
+    end
+  end
+
+  defp decode("Feature", %{"geometry" => geometry, "properties" => properties}, dim)
+       when is_map(properties) do
     with {:ok, geometry} <- decode(geometry, dim) do
       {:ok, %Feature{geometry: geometry, properties: properties}}
     end

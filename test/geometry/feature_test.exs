@@ -2,7 +2,6 @@ defmodule Geometry.FeatureTest do
   use ExUnit.Case, async: true
 
   import Assertions
-  import Jason.Sigil
 
   alias Geometry.DecodeError
 
@@ -32,13 +31,14 @@ defmodule Geometry.FeatureTest do
 
   describe "to_geo_json/1" do
     test "returns json represenation for a feature" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [1, 2]},
-        "properties": {"facility": "Hotel"}
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [1, 2]},
+          "properties": {"facility": "Hotel"}
+        }
+        """)
 
       feature = %Feature{
         geometry: %Point{coordinates: [1, 2], srid: 4326},
@@ -49,13 +49,11 @@ defmodule Geometry.FeatureTest do
     end
 
     test "returns json represenation for an empty feature" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": null,
-        "properties": null
+      geo_json = %{
+        "type" => "Feature",
+        "geometry" => nil,
+        "properties" => nil
       }
-      """
 
       assert Geometry.to_geo_json(Feature.new()) == geo_json
     end
@@ -63,13 +61,14 @@ defmodule Geometry.FeatureTest do
 
   describe "from_geo_json/1" do
     test "returns a feature (xym)" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
-        "properties": {"facility": "Hotel"}
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
+          "properties": {"facility": "Hotel"}
+        }
+        """)
 
       assert Geometry.from_geo_json(geo_json, :xym) ==
                {:ok,
@@ -80,13 +79,14 @@ defmodule Geometry.FeatureTest do
     end
 
     test "returns a feature (xyz)" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
-        "properties": {"facility": "Hotel"}
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [1, 2, 3]},
+          "properties": {"facility": "Hotel"}
+        }
+        """)
 
       assert Geometry.from_geo_json(geo_json, :xyz) ==
                {:ok,
@@ -97,13 +97,14 @@ defmodule Geometry.FeatureTest do
     end
 
     test "returns a feature (xyzm)" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [1, 2, 3, 4]},
-        "properties": {"facility": "Hotel"}
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [1, 2, 3, 4]},
+          "properties": {"facility": "Hotel"}
+        }
+        """)
 
       assert Geometry.from_geo_json(geo_json, :xyzm) ==
                {:ok,
@@ -114,13 +115,14 @@ defmodule Geometry.FeatureTest do
     end
 
     test "returns an error tuple for invalid data" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [1, 2]},
-        "properties": 44
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [1, 2]},
+          "properties": 44
+        }
+        """)
 
       assert Geometry.from_geo_json(geo_json, :xy) ==
                {:error,
@@ -135,13 +137,14 @@ defmodule Geometry.FeatureTest do
     end
 
     test "returns an error tuple for invalid geometry" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Thing", "coordinates": [1, 2]},
-        "properties": null
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Thing", "coordinates": [1, 2]},
+          "properties": null
+        }
+        """)
 
       assert Geometry.from_geo_json(geo_json, :xy) ==
                {:error,
@@ -158,13 +161,14 @@ defmodule Geometry.FeatureTest do
 
   describe "from_geo_json!/1" do
     test "raises an error for invalid geometry" do
-      geo_json = ~J"""
-      {
-        "type": "Feature",
-        "geometry": {"type": "Thing", "coordinates": [1, 2]},
-        "properties": null
-      }
-      """
+      geo_json =
+        :json.decode("""
+        {
+          "type": "Feature",
+          "geometry": {"type": "Thing", "coordinates": [1, 2]},
+          "properties": null
+        }
+        """)
 
       message = "unknown type 'Thing'"
 

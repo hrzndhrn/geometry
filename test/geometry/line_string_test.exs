@@ -240,7 +240,7 @@ defmodule Geometry.LineStringTest do
                    "coordinates" => unquote(data[:term])
                  }
 
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
 
@@ -249,7 +249,7 @@ defmodule Geometry.LineStringTest do
           geo_json = Geometry.to_geo_json(line)
 
           assert geo_json == %{"type" => "LineString", "coordinates" => []}
-          assert Jason.encode!(geo_json)
+          assert :json.encode(geo_json)
           assert GeoJsonValidator.valid?(geo_json)
         end
       end
