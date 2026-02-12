@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 - 2025/09/04
+
++ Fix: Support all geometry types in GeometryCollections in WKB
+
 ## 1.1.1 - 2025/09/04
 
 + Refactor the WKT parser to optimise compilation. (Aaron Seigo)
