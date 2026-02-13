@@ -62,6 +62,8 @@ defmodule Geometry.MixProject do
       formatters: ["html"],
       groups_for_modules: [
         "Geometry primitives 2D": [
+          Geometry.CircularString,
+          Geometry.CircularStringM,
           Geometry.LineString,
           Geometry.LineStringM,
           Geometry.Polygon,
@@ -70,6 +72,8 @@ defmodule Geometry.MixProject do
           Geometry.PointM
         ],
         "Geometry primitives 3D": [
+          Geometry.CircularStringZ,
+          Geometry.CircularStringZM,
           Geometry.LineStringZ,
           Geometry.LineStringZM,
           Geometry.PolygonZ,

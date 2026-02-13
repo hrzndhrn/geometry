@@ -17,6 +17,9 @@ defmodule Geometry do
   + Polygon
     + `Geometry.Polygon`, `Geometry.PolygonM`, `Geometry.PolygonZ`,
       `Geometry.PolygonZM`
+  + CircularString
+    + `Geometry.CircularString`, `Geometry.CircularStringM`,
+      `Geometry.CircularStringZ`, `Geometry.CircularStringZM`
   + MultiPoint
     + `Geometry.MultiPoint`, `Geometry.MultiPointM`, `Geometry.MultiPointZ`,
       `Geometry.MultiPointZM`
