@@ -17,9 +17,13 @@ defmodule Geometry do
   + Polygon
     + `Geometry.Polygon`, `Geometry.PolygonM`, `Geometry.PolygonZ`,
       `Geometry.PolygonZM`
+
+  Geometry subtypes containing curves:
   + CircularString
     + `Geometry.CircularString`, `Geometry.CircularStringM`,
       `Geometry.CircularStringZ`, `Geometry.CircularStringZM`
+
+  Collections:
   + MultiPoint
     + `Geometry.MultiPoint`, `Geometry.MultiPointM`, `Geometry.MultiPointZ`,
       `Geometry.MultiPointZM`
