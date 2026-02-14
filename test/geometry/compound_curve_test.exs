@@ -3,8 +3,6 @@ defmodule Geometry.CompoundCurveTest do
 
   import Assertions
 
-  alias Binary
-
   alias Geometry.DecodeError
 
   alias Geometry.CircularString

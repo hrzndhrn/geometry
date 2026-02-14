@@ -3,8 +3,6 @@ defmodule Geometry.LineStringTest do
 
   import Assertions
 
-  alias Binary
-
   alias Geometry.DecodeError
 
   alias Geometry.LineString

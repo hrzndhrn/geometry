@@ -3,8 +3,6 @@ defmodule Geometry.CircularStringTest do
 
   import Assertions
 
-  alias Binary
-
   alias Geometry.DecodeError
 
   alias Geometry.CircularString
