@@ -553,7 +553,9 @@ defmodule Geometry.CompoundCurveTest do
               unquote(dim)
             )
 
-          assert Geometry.from_wkt(wkt) == {:error, :todo}
+          assert {:error, %DecodeError{} = error} = Geometry.from_wkt(wkt)
+          assert error.from == :wkt
+          assert error.message == "unexpected segment in COMPOUNDCURVE"
         end
       end
 
