@@ -446,6 +446,15 @@ defmodule GeometryTest do
       expected SRID at position 5, got: <<0x0, 0x0, 0x12>>\
       """
     end
+
+    test "raises an error for invalid segment" do
+      wkb = Base.decode16!("00000000090000000100000000013FF00000000000004000000000000000")
+
+      assert_fail :from_ewkb!, wkb, """
+      expected geometry code for LINESTRING or CURVESTRING at position 9, got: \
+      <<0x0, 0x0, 0x0, 0x0, 0x1, 0x3F, 0xF0, 0x0, 0x0, ...>>\
+      """
+    end
   end
 
   describe "from_geo_json" do
