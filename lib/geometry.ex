@@ -22,6 +22,9 @@ defmodule Geometry do
   + CircularString
     + `Geometry.CircularString`, `Geometry.CircularStringM`,
       `Geometry.CircularStringZ`, `Geometry.CircularStringZM`
+  + CompoundCurve
+    + `Geometry.CompoundCurve`, `Geometry.CompoundCurveM`,
+      `Geometry.CompoundCurveZ`, `Geometry.CompoundCurveZM`
 
   Collections:
   + MultiPoint
@@ -51,6 +54,10 @@ defmodule Geometry do
   alias Geometry.CircularStringM
   alias Geometry.CircularStringZ
   alias Geometry.CircularStringZM
+  alias Geometry.CompoundCurve
+  alias Geometry.CompoundCurveM
+  alias Geometry.CompoundCurveZ
+  alias Geometry.CompoundCurveZM
   alias Geometry.Feature
   alias Geometry.FeatureCollection
   alias Geometry.GeometryCollection
@@ -92,6 +99,10 @@ defmodule Geometry do
           | CircularStringM.t()
           | CircularStringZ.t()
           | CircularStringZM.t()
+          | CompoundCurve.t()
+          | CompoundCurveM.t()
+          | CompoundCurveZ.t()
+          | CompoundCurveZM.t()
           | GeometryCollection.t()
           | GeometryCollectionM.t()
           | GeometryCollectionZ.t()

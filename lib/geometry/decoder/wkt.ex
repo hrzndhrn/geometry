@@ -9,6 +9,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.CircularStringM
   alias Geometry.CircularStringZ
   alias Geometry.CircularStringZM
+  alias Geometry.CompoundCurve
+  alias Geometry.CompoundCurveM
+  alias Geometry.CompoundCurveZ
+  alias Geometry.CompoundCurveZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -95,6 +99,38 @@ defmodule Geometry.Decoder.WKT do
 
   defp geometry(:circular_string, :xyzm, arcs, srid),
     do: %CircularStringZM{arcs: arcs, srid: srid}
+
+  defp geometry(:compound_curve, dim, {:segments, segments}, srid) do
+    geometry(:compound_curve, dim, segments, srid)
+  end
+
+  defp geometry(:compound_curve, :xy, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xy, segment, srid) end)
+
+    %CompoundCurve{segments: segments, srid: srid}
+  end
+
+  defp geometry(:compound_curve, :xym, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xym, segment, srid) end)
+
+    %CompoundCurveM{segments: segments, srid: srid}
+  end
+
+  defp geometry(:compound_curve, :xyz, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xyz, segment, srid) end)
+
+    %CompoundCurveZ{segments: segments, srid: srid}
+  end
+
+  defp geometry(:compound_curve, :xyzm, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xyzm, segment, srid) end)
+
+    %CompoundCurveZM{segments: segments, srid: srid}
+  end
 
   defp geometry(:multi_point, :xy, coordinates, srid),
     do: %MultiPoint{points: coordinates, srid: srid}
