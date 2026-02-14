@@ -15,5 +15,7 @@ defmodule Binary do
     :binary.replace(bin, Base.decode16!(pattern), Base.decode16!(replacement))
   end
 
-  def take(bin, offset), do: :binary.part(bin, {0, offset})
+  def take(bin, offset) when offset >= 0, do: :binary.part(bin, {0, offset})
+
+  def drop(bin, offset) when offset <= 0, do: :binary.part(bin, {0, byte_size(bin) + offset})
 end

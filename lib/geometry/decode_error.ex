@@ -86,6 +86,13 @@ defmodule Geometry.DecodeError do
     "expected end of binary at position #{error.offset}, got: #{inspect_hex(error.rest, 9)}"
   end
 
+  def message(%{from: :wkb, reason: :expected_compound_curve_segment} = error) do
+    """
+    expected geometry code for LINESTRING or CURVESTRING at position #{error.offset}, \
+    got: #{inspect_hex(error.rest, 9)}\
+    """
+  end
+
   def message(%{from: :geo_json, reason: [unknown_type: type]}) do
     "unknown type '#{type}'"
   end

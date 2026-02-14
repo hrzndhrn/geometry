@@ -7,6 +7,10 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.CircularStringM
   alias Geometry.CircularStringZ
   alias Geometry.CircularStringZM
+  alias Geometry.CompoundCurve
+  alias Geometry.CompoundCurveM
+  alias Geometry.CompoundCurveZ
+  alias Geometry.CompoundCurveZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -46,7 +50,8 @@ defmodule Geometry.Decoder.WKB do
       :multi_line_string,
       :multi_polygon,
       :geometry_collection,
-      :circular_string
+      :circular_string,
+      :compound_curve
     ]
     |> Enum.with_index(1)
     |> Enum.flat_map(fn {type, index} ->
@@ -329,7 +334,15 @@ defmodule Geometry.Decoder.WKB do
     {:xdr, :polygon, :xy} => <<0, 0, 0, 0, 3>>,
     {:xdr, :polygon, :xym} => <<0, 64, 0, 0, 3>>,
     {:xdr, :polygon, :xyz} => <<0, 128, 0, 0, 3>>,
-    {:xdr, :polygon, :xyzm} => <<0, 192, 0, 0, 3>>
+    {:xdr, :polygon, :xyzm} => <<0, 192, 0, 0, 3>>,
+    {:ndr, :circular_string, :xy} => <<1, 8, 0, 0, 0>>,
+    {:ndr, :circular_string, :xym} => <<1, 8, 0, 0, 64>>,
+    {:ndr, :circular_string, :xyz} => <<1, 8, 0, 0, 128>>,
+    {:ndr, :circular_string, :xyzm} => <<1, 8, 0, 0, 192>>,
+    {:xdr, :circular_string, :xy} => <<0, 0, 0, 0, 8>>,
+    {:xdr, :circular_string, :xym} => <<0, 64, 0, 0, 8>>,
+    {:xdr, :circular_string, :xyz} => <<0, 128, 0, 0, 8>>,
+    {:xdr, :circular_string, :xyzm} => <<0, 192, 0, 0, 8>>
   }
 
   for geo <- geos, geo.type == :point, geo.srid? do
@@ -464,6 +477,55 @@ defmodule Geometry.Decoder.WKB do
     end
 
     defp circular_string(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
+      {:error, :invalid_length, bin}
+    end
+
+    defp compound_curve(
+           unquote(geo.dim),
+           unquote(geo.endian),
+           srid,
+           <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
+         ) do
+      try do
+        {data, rest} =
+          Enum.map_reduce(List.duplicate(0, length), bin, fn
+            _ignore,
+            <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
+              case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                {:ok, line_string, bin} -> {line_string, bin}
+                error -> throw(error)
+              end
+
+            _ignore,
+            <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
+              case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                {:ok, circular_string, bin} -> {circular_string, bin}
+                error -> throw(error)
+              end
+
+            _ignore, bin ->
+              throw({:error, :expected_compound_curve_segment, bin})
+          end)
+
+        compound_curve = %unquote(
+            case geo.dim do
+              :xy -> CompoundCurve
+              :xym -> CompoundCurveM
+              :xyz -> CompoundCurveZ
+              :xyzm -> CompoundCurveZM
+            end
+          ){
+          segments: data,
+          srid: srid
+        }
+
+        {:ok, compound_curve, rest}
+      catch
+        error -> error
+      end
+    end
+
+    defp compound_curve(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
     end
 
@@ -707,6 +769,18 @@ defmodule Geometry.Decoder.WKB do
               {:ok, :polygon, bin} ->
                 case polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, polygon, bin} -> {polygon, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :circular_string, bin} ->
+                case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, circular_string, bin} -> {circular_string, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :compound_curve, bin} ->
+                case compound_curve(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, compound_curve, bin} -> {compound_curve, bin}
                   error -> throw(error)
                 end
 

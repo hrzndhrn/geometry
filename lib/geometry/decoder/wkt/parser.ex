@@ -52,11 +52,39 @@ defmodule Geometry.Decoder.WKT.Parser do
     end
   end
 
+  defp compound_curve_segment(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry} when geometry in [:line_string, :circular_string] ->
+          compound_curve_segment_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected segment in COMPOUNDCURVE", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in COMPOUNDCURVE", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in collection", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp compound_curve_segment_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
   for parser <- [
         :point,
         :polygon,
         :line_string,
         :circular_string,
+        :compound_curve,
         :multi_point,
         :multi_line_string,
         :multi_polygon,
@@ -103,6 +131,38 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:halt], rest, context, line, byte_offset} ->
           {:ok, {:geometries, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  for compound_curve <- [
+        :compound_curve_xy,
+        :compound_curve_xyz,
+        :compound_curve_xyzm
+      ] do
+    defp unquote(compound_curve)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:segments, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 compound_curve_segment(rest,
+                   line: line,
+                   byte_offset: byte_offset,
+                   tag: tag
+                 ) do
+            unquote(compound_curve)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:segments, Enum.reverse(acc)}, rest, context, line, byte_offset}
       end
     end
   end

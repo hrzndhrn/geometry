@@ -8,7 +8,8 @@ defmodule Geometry.Protocols do
          multi_line_string: 5,
          multi_polygon: 6,
          geometry_collection: 7,
-         circular_string: 8
+         circular_string: 8,
+         compound_curve: 9
   @dims xy: 2, xym: 3, xyz: 3, xyzm: 4
   @empty_xdr [127, 248, 0, 0, 0, 0, 0, 0]
   @empty_ndr [0, 0, 0, 0, 0, 0, 248, 127]
@@ -30,7 +31,8 @@ defmodule Geometry.Protocols do
                  multi_point: :points,
                  multi_line_string: :line_strings,
                  multi_polygon: :polygons,
-                 geometry_collection: :geometries
+                 geometry_collection: :geometries,
+                 compound_curve: :segments
 
   @multi_sub_keys multi_line_string: :path,
                   multi_polygon: :rings,
@@ -609,6 +611,62 @@ defmodule Geometry.Protocols do
     end
   end
 
+  defmacro wkb(:compound_curve, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{segments: segments}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, false, :xdr),
+                count(quote(do: segments), :xdr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{segments: segments}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, false, :ndr),
+                count(quote(do: segments), :ndr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{segments: segments, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: segments), :xdr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{segments: segments, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: segments), :ndr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
   defmacro wkt(:point, dim) do
     quote do
       defimpl Geometry.Encoder.WKT do
@@ -1042,6 +1100,62 @@ defmodule Geometry.Protocols do
             binary([
               srid_to_string(),
               "GEOMETRYCOLLECTION",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:compound_curve, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{segments: []}) do
+          unquote(
+            binary([
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{segments: segments}) do
+          data = Enum.map_join(segments, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{segments: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{segments: segments, srid: srid}) do
+          data = Enum.map_join(segments, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "COMPOUNDCURVE",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
