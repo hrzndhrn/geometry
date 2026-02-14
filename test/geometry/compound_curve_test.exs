@@ -332,6 +332,20 @@ defmodule Geometry.CompoundCurveTest do
                    }
                  } = Geometry.from_wkb(wkb)
         end
+
+        test "returns an error for an invalid LineString" do
+          wkb = Binary.take(unquote(code[:ndr]) <> unquote(data[:wkb_ndr]), -7)
+
+          assert Geometry.from_wkb(wkb) == {
+                   :error,
+                   %DecodeError{
+                     from: :wkb,
+                     rest: expected_rest,
+                     offset: 5,
+                     reason: :invalid_length
+                   }
+                 }
+        end
       end
 
       describe "[#{inspect(module)}] from_wkb!/1" do
