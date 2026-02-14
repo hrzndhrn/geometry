@@ -50,9 +50,6 @@ defmodule Geometry.CompoundCurveTest do
             {:circular_string, [[1.0, 1.0], [2.0, 2.0], [0.0, 1.0]]},
             {:line_string, [[0.0, 1.0], [5.0, 5.0]]}
           ],
-          unexpected_segments: [
-            {:point, [1, 1]}
-          ],
           wkb_xdr:
             Base.decode16!("""
             000000030000000002000000023FF000000000000000000000000000003FF0000000\
@@ -68,6 +65,17 @@ defmodule Geometry.CompoundCurveTest do
             F03F000000000000004000000000000000400000000000000000000000000000F03F\
             0102000000020000000000000000000000000000000000F03F000000000000144000\
             00000000001440\
+            """),
+          unexpected_segments: [
+            {:point, [1.0, 2.0]}
+          ],
+          unexpected_wkb_xdr:
+            Base.decode16!("""
+            00000000090000000100000000013FF00000000000004000000000000000\
+            """),
+          unexpected_wkb_ndr:
+            Base.decode16!("""
+            0109000000010000000101000000000000000000F03F0000000000000040\
             """)
         }
       },
@@ -107,6 +115,19 @@ defmodule Geometry.CompoundCurveTest do
             000000000000004000000000000018400000000000000000000000000000F03F0000\
             0000000014400102000040020000000000000000000000000000000000F03F000000\
             0000000840000000000000144000000000000014400000000000001840\
+            """),
+          unexpected_segments: [
+            {:point, [1.0, 2.0, 3.0]}
+          ],
+          unexpected_wkb_xdr:
+            Base.decode16!("""
+            00400000090000000100400000013FF000000000000040000000000000004008000000\
+            000000\
+            """),
+          unexpected_wkb_ndr:
+            Base.decode16!("""
+            0109000040010000000101000040000000000000F03F00000000000000400000000000\
+            000840\
             """)
         }
       },
@@ -146,6 +167,19 @@ defmodule Geometry.CompoundCurveTest do
             000000000000004000000000000018400000000000000000000000000000F03F0000\
             0000000014400102000080020000000000000000000000000000000000F03F000000\
             0000000840000000000000144000000000000014400000000000001840\
+            """),
+          unexpected_segments: [
+            {:point, [1.0, 2.0, 3.0]}
+          ],
+          unexpected_wkb_xdr:
+            Base.decode16!("""
+            00800000090000000100800000013FF000000000000040000000000000004008000000\
+            000000\
+            """),
+          unexpected_wkb_ndr:
+            Base.decode16!("""
+            0109000080010000000101000080000000000000F03F00000000000000400000000000\
+            000840\
             """)
         }
       },
@@ -190,6 +224,19 @@ defmodule Geometry.CompoundCurveTest do
             00000840000000000000184001020000C00200000000000000000000000000000000\
             00F03F00000000000008400000000000001440000000000000144000000000000014\
             4000000000000018400000000000001C40\
+            """),
+          unexpected_segments: [
+            {:point, [1.0, 2.0, 3.0, 4.0]}
+          ],
+          unexpected_wkb_xdr:
+            Base.decode16!("""
+            00C00000090000000100C00000013FF000000000000040000000000000004008000000\
+            0000004010000000000000\
+            """),
+          unexpected_wkb_ndr:
+            Base.decode16!("""
+            01090000C00100000001010000C0000000000000F03F00000000000000400000000000\
+            0008400000000000001040\
             """)
         }
       }
@@ -339,6 +386,12 @@ defmodule Geometry.CompoundCurveTest do
 
           assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :invalid_coordinate
+        end
+
+        test "returns an error for an unexpected geometry in xdr binary" do
+          wkb = unquote(data[:unexpected_wkb_xdr])
+          assert {:error, %Geometry.DecodeError{} = error} = Geometry.from_wkb(wkb)
+          assert error.reason == :expected_compound_curve_segment
         end
       end
 
@@ -491,6 +544,17 @@ defmodule Geometry.CompoundCurveTest do
 
           assert Geometry.from_wkt(wkt) == {:ok, compound_curve}
         end
+
+        test "returns an error for an unexpected segment" do
+          wkt =
+            wkt(
+              unquote(text),
+              unquote(Macro.escape(data[:unexpected_segments])),
+              unquote(dim)
+            )
+
+          assert Geometry.from_wkt(wkt) == {:error, :todo}
+        end
       end
 
       describe "[#{inspect(module)}] from_ewkt/1" do
@@ -587,7 +651,7 @@ defmodule Geometry.CompoundCurveTest do
   defp wkt(name, segment_data, dim, srid) do
     segments =
       Enum.map_join(segment_data, ", ", fn {type, coordinates} ->
-        segment_wkt(type, coordinates, dim)
+        "#{wkt_type(type)}#{wkt_dim(dim)}(#{wkt_coords(type, coordinates)})"
       end)
 
     srid = if srid == "", do: "", else: "SRID=#{srid};"
@@ -595,44 +659,21 @@ defmodule Geometry.CompoundCurveTest do
     "#{srid}#{String.upcase(name)} (#{segments})"
   end
 
-  defp segment_wkt(:line_string, coordinates, :xy) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "LINESTRING (#{coords})"
+  defp wkt_type(:line_string), do: "LINESTRING"
+  defp wkt_type(:circular_string), do: "CIRCULARSTRING"
+  defp wkt_type(:point), do: "POINT"
+
+  defp wkt_dim(:xy), do: " "
+  defp wkt_dim(:xyz), do: " Z "
+  defp wkt_dim(:xym), do: " M "
+  defp wkt_dim(:xyzm), do: " ZM "
+
+  defp wkt_coords(:point, coordinate) do
+    Enum.join(coordinate, @blank)
   end
 
-  defp segment_wkt(:line_string, coordinates, :xym) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "LINESTRING M (#{coords})"
-  end
-
-  defp segment_wkt(:line_string, coordinates, :xyz) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "LINESTRING Z (#{coords})"
-  end
-
-  defp segment_wkt(:line_string, coordinates, :xyzm) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "LINESTRING ZM (#{coords})"
-  end
-
-  defp segment_wkt(:circular_string, coordinates, :xy) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "CIRCULARSTRING (#{coords})"
-  end
-
-  defp segment_wkt(:circular_string, coordinates, :xym) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "CIRCULARSTRING M (#{coords})"
-  end
-
-  defp segment_wkt(:circular_string, coordinates, :xyz) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "CIRCULARSTRING Z (#{coords})"
-  end
-
-  defp segment_wkt(:circular_string, coordinates, :xyzm) do
-    coords = Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-    "CIRCULARSTRING ZM (#{coords})"
+  defp wkt_coords(_type, coordinates) do
+    Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
   end
 
   defp compound_curve(module, segments, srid \\ 0) do
