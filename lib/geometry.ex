@@ -17,6 +17,13 @@ defmodule Geometry do
   + Polygon
     + `Geometry.Polygon`, `Geometry.PolygonM`, `Geometry.PolygonZ`,
       `Geometry.PolygonZM`
+
+  Geometry subtypes containing curves:
+  + CircularString
+    + `Geometry.CircularString`, `Geometry.CircularStringM`,
+      `Geometry.CircularStringZ`, `Geometry.CircularStringZM`
+
+  Collections:
   + MultiPoint
     + `Geometry.MultiPoint`, `Geometry.MultiPointM`, `Geometry.MultiPointZ`,
       `Geometry.MultiPointZM`
@@ -40,6 +47,10 @@ defmodule Geometry do
 
   alias Geometry.DecodeError
 
+  alias Geometry.CircularString
+  alias Geometry.CircularStringM
+  alias Geometry.CircularStringZ
+  alias Geometry.CircularStringZM
   alias Geometry.Feature
   alias Geometry.FeatureCollection
   alias Geometry.GeometryCollection
@@ -77,7 +88,11 @@ defmodule Geometry do
   The supported geometries.
   """
   @type t() ::
-          GeometryCollection.t()
+          CircularString.t()
+          | CircularStringM.t()
+          | CircularStringZ.t()
+          | CircularStringZM.t()
+          | GeometryCollection.t()
           | GeometryCollectionM.t()
           | GeometryCollectionZ.t()
           | GeometryCollectionZM.t()
@@ -115,6 +130,11 @@ defmodule Geometry do
   A list of n-dimensional coordinates.
   """
   @type path :: [coordinates()]
+
+  @typedoc """
+  A list of n-dimensional coordinates.
+  """
+  @type arcs :: [coordinates()]
 
   @typedoc """
   A list of n-dimensional coordinates where the first and last point are equal, creating a ring.

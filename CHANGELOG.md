@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.1.2 - 2025/09/04
+## 1.2.0 - 2026/--/--
+
+...
+
+## 1.1.2 - 2026/02/12
 
 + Fix: Support all geometry types in GeometryCollections in WKB
 

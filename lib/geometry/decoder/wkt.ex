@@ -5,6 +5,10 @@ defmodule Geometry.Decoder.WKT do
 
   alias Geometry.DecodeError
 
+  alias Geometry.CircularString
+  alias Geometry.CircularStringM
+  alias Geometry.CircularStringZ
+  alias Geometry.CircularStringZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -82,6 +86,15 @@ defmodule Geometry.Decoder.WKT do
   defp geometry(:polygon, :xyz, rings, srid), do: %PolygonZ{rings: rings, srid: srid}
 
   defp geometry(:polygon, :xyzm, rings, srid), do: %PolygonZM{rings: rings, srid: srid}
+
+  defp geometry(:circular_string, :xy, arcs, srid), do: %CircularString{arcs: arcs, srid: srid}
+
+  defp geometry(:circular_string, :xym, arcs, srid), do: %CircularStringM{arcs: arcs, srid: srid}
+
+  defp geometry(:circular_string, :xyz, arcs, srid), do: %CircularStringZ{arcs: arcs, srid: srid}
+
+  defp geometry(:circular_string, :xyzm, arcs, srid),
+    do: %CircularStringZM{arcs: arcs, srid: srid}
 
   defp geometry(:multi_point, :xy, coordinates, srid),
     do: %MultiPoint{points: coordinates, srid: srid}
