@@ -50,6 +50,9 @@ defmodule Geometry.CompoundCurveTest do
             {:circular_string, [[1.0, 1.0], [2.0, 2.0], [0.0, 1.0]]},
             {:line_string, [[0.0, 1.0], [5.0, 5.0]]}
           ],
+          unexpected_segments: [
+            {:point, [1, 1]}
+          ],
           wkb_xdr:
             Base.decode16!("""
             000000030000000002000000023FF000000000000000000000000000003FF0000000\

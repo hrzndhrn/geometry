@@ -14,7 +14,9 @@ defmodule Geometry.CompoundCurve do
 
   defstruct segments: [], srid: 0
 
-  @type t :: %CompoundCurve{segments: [Geometry.t()], srid: Geometry.srid()}
+  @type segment :: Geometry.LineString.t() | Geometry.CircularString.t()
+
+  @type t :: %CompoundCurve{segments: [segment()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `CompoundCurve`.
@@ -49,6 +51,6 @@ defmodule Geometry.CompoundCurve do
         srid: 4326
       }
   """
-  @spec new([Geometry.t()], Geometry.srid()) :: t()
+  @spec new([segment()], Geometry.srid()) :: t()
   def new(segments, srid \\ 0), do: %CompoundCurve{segments: segments, srid: srid}
 end

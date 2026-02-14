@@ -14,7 +14,9 @@ defmodule Geometry.CompoundCurveZM do
 
   defstruct segments: [], srid: 0
 
-  @type t :: %CompoundCurveZM{segments: [Geometry.t()], srid: Geometry.srid()}
+  @type segment :: Geometry.LineStringZM.t() | Geometry.CircularStringZM.t()
+
+  @type t :: %CompoundCurveZM{segments: [segment()], srid: Geometry.srid()}
 
   @doc """
   Creates an empty `CompoundCurveZM`.
@@ -43,6 +45,6 @@ defmodule Geometry.CompoundCurveZM do
         srid: 0
       }
   """
-  @spec new([Geometry.t()], Geometry.srid()) :: t()
+  @spec new([segment()], Geometry.srid()) :: t()
   def new(segments, srid \\ 0), do: %CompoundCurveZM{segments: segments, srid: srid}
 end
