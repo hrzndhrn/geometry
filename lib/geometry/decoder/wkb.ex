@@ -539,49 +539,41 @@ defmodule Geometry.Decoder.WKB do
     end
 
     defp compound_curve_segments(unquote(geo.dim), unquote(geo.endian), srid, length, bin, acc) do
-      case bin do
-        <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
-          case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-            {:ok, line_string, bin} ->
-              if continuous_compound_curve?(unquote(geo.dim), line_string, acc) do
-                compound_curve_segments(
-                  unquote(geo.dim),
-                  unquote(geo.endian),
-                  srid,
-                  length - 1,
-                  bin,
-                  [line_string | acc]
-                )
-              else
-                throw({:error, :incontinuous_compound_curve, bin})
-              end
+      {geometry, bin} =
+        case bin do
+          <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
+            case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, line_string, bin} ->
+                {line_string, bin}
 
-            error ->
-              throw(error)
-          end
+              error ->
+                throw(error)
+            end
 
-        <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
-          case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-            {:ok, circular_string, bin} ->
-              if continuous_compound_curve?(unquote(geo.dim), circular_string, acc) do
-                compound_curve_segments(
-                  unquote(geo.dim),
-                  unquote(geo.endian),
-                  srid,
-                  length - 1,
-                  bin,
-                  [circular_string | acc]
-                )
-              else
-                throw({:error, :incontinuous_compound_curve, bin})
-              end
+          <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
+            case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, circular_string, bin} ->
+                {circular_string, bin}
 
-            error ->
-              throw(error)
-          end
+              error ->
+                throw(error)
+            end
 
-        bin ->
-          throw({:error, :expected_compound_curve_segment, bin})
+          bin ->
+            throw({:error, :expected_compound_curve_segment, bin})
+        end
+
+      if continuous_compound_curve?(unquote(geo.dim), geometry, acc) do
+        compound_curve_segments(
+          unquote(geo.dim),
+          unquote(geo.endian),
+          srid,
+          length - 1,
+          bin,
+          [geometry | acc]
+        )
+      else
+        throw({:error, :incontinuous_compound_curve, bin})
       end
     end
 
