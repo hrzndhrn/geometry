@@ -345,6 +345,7 @@ defmodule Geometry.Decoder.WKB do
     {:xdr, :circular_string, :xyzm} => <<0, 192, 0, 0, 8>>
   }
 
+  # TODO: create own geos here
   for geo <- geos, geo.type == :point, geo.srid? do
     defp coordinates(
            unquote(geo.dim),
@@ -488,24 +489,26 @@ defmodule Geometry.Decoder.WKB do
          ) do
       try do
         {data, rest} =
-          Enum.map_reduce(List.duplicate(0, length), bin, fn
-            _ignore,
-            <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
-              case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-                {:ok, line_string, bin} -> {line_string, bin}
-                error -> throw(error)
-              end
+          compound_curve_segments(unquote(geo.dim), unquote(geo.endian), srid, length, bin, [])
 
-            _ignore,
-            <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
-              case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-                {:ok, circular_string, bin} -> {circular_string, bin}
-                error -> throw(error)
-              end
-
-            _ignore, bin ->
-              throw({:error, :expected_compound_curve_segment, bin})
-          end)
+        # Enum.map_reduce(List.duplicate(0, length), bin, fn
+        #   _ignore,
+        #   <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
+        #     case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+        #       {:ok, line_string, bin} -> {line_string, bin}
+        #       error -> throw(error)
+        #     end
+        #
+        #   _ignore,
+        #   <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
+        #     case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+        #       {:ok, circular_string, bin} -> {circular_string, bin}
+        #       error -> throw(error)
+        #     end
+        #
+        #   _ignore, bin ->
+        #     throw({:error, :expected_compound_curve_segment, bin})
+        # end)
 
         compound_curve = %unquote(
             case geo.dim do
@@ -527,6 +530,77 @@ defmodule Geometry.Decoder.WKB do
 
     defp compound_curve(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
       {:error, :invalid_length, bin}
+    end
+
+    if geo.dim == :xy && geo.endian == :xdr do
+      defp compound_curve_segments(_dim, _endian, _srid, 0, bin, acc) do
+        {Enum.reverse(acc), bin}
+      end
+    end
+
+    defp compound_curve_segments(unquote(geo.dim), unquote(geo.endian), srid, length, bin, acc) do
+      case bin do
+        <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
+          case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+            {:ok, line_string, bin} ->
+              if continuous_compound_curve?(unquote(geo.dim), line_string, acc) do
+                compound_curve_segments(
+                  unquote(geo.dim),
+                  unquote(geo.endian),
+                  srid,
+                  length - 1,
+                  bin,
+                  [line_string | acc]
+                )
+              else
+                throw({:error, :incontinuous_compound_curve, bin})
+              end
+
+            error ->
+              throw(error)
+          end
+
+        <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
+          case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+            {:ok, circular_string, bin} ->
+              if continuous_compound_curve?(unquote(geo.dim), circular_string, acc) do
+                compound_curve_segments(
+                  unquote(geo.dim),
+                  unquote(geo.endian),
+                  srid,
+                  length - 1,
+                  bin,
+                  [circular_string | acc]
+                )
+              else
+                throw({:error, :incontinuous_compound_curve, bin})
+              end
+
+            error ->
+              throw(error)
+          end
+
+        bin ->
+          throw({:error, :expected_compound_curve_segment, bin})
+      end
+    end
+
+    if geo.dim == :xy && geo.endian == :xdr do
+      defp get_coordinates(%{path: path}), do: path
+      defp get_coordinates(%{arcs: arcs}), do: arcs
+
+      defp continuous_compound_curve?(_dim, _geometry, []), do: true
+
+      defp continuous_compound_curve?(dim, geometry, [last_geometry | _]) do
+        [coordinate | _] = get_coordinates(geometry)
+        last_coordinate = last_geometry |> get_coordinates() |> List.last()
+
+        if dim in [:xy, :xyz] do
+          coordinate == last_coordinate
+        else
+          Enum.drop(coordinate, -1) == Enum.drop(last_coordinate, -1)
+        end
+      end
     end
 
     defp polygon(

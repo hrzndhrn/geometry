@@ -62,13 +62,13 @@ defmodule Geometry.Decoder.WKT.Parser do
           )
 
         {true, nil, _geometry} ->
-          {:error, "unexpected segment in COMPOUNDCURVE", rest, context, line, byte_offset}
+          {:error, "unexpected segment in compound curve", rest, context, line, byte_offset}
 
         {false, nil, _geometry} ->
-          {:error, "unexpected geometry in COMPOUNDCURVE", rest, context, line, byte_offset}
+          {:error, "unexpected geometry in compound curve", rest, context, line, byte_offset}
 
         {_tag, _srid, _geometry} ->
-          {:error, "unexpected SRID in collection", rest, context, line, byte_offset}
+          {:error, "unexpected SRID in compound curve", rest, context, line, byte_offset}
       end
     end
   end
@@ -117,11 +117,7 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:next], rest, _context, line, byte_offset} ->
           with {:ok, geometry, rest, _context, line, byte_offset} <-
-                 geometry_collection_item(rest,
-                   line: line,
-                   byte_offset: byte_offset,
-                   tag: tag
-                 ) do
+                 geometry_collection_item(rest, line: line, byte_offset: byte_offset, tag: tag) do
             unquote(geometry_collection)(
               rest,
               [line: line, byte_offset: byte_offset, tag: tag],
@@ -148,12 +144,10 @@ defmodule Geometry.Decoder.WKT.Parser do
           {:ok, {:segments, acc}, rest, context, line, byte_offset}
 
         {:ok, [:next], rest, _context, line, byte_offset} ->
-          with {:ok, geometry, rest, _context, line, byte_offset} <-
-                 compound_curve_segment(rest,
-                   line: line,
-                   byte_offset: byte_offset,
-                   tag: tag
-                 ) do
+          with {:ok, geometry, rest, context, line, byte_offset} <-
+                 compound_curve_segment(rest, line: line, byte_offset: byte_offset, tag: tag),
+               :ok <-
+                 continuous_compound_curve(tag, geometry, acc, rest, context, line, byte_offset) do
             unquote(compound_curve)(
               rest,
               [line: line, byte_offset: byte_offset, tag: tag],
@@ -166,4 +160,41 @@ defmodule Geometry.Decoder.WKT.Parser do
       end
     end
   end
+
+  defp continuous_compound_curve(
+         _tag,
+         {_geometry, _type},
+         [],
+         _rest,
+         _context,
+         _line,
+         _byte_offset
+       ), do: :ok
+
+  defp continuous_compound_curve(
+         tag,
+         {_type, coordinates},
+         [{_last_type, last_coordinates} | _],
+         rest,
+         context,
+         line,
+         byte_offset
+       ) do
+    if continuous_compound_curve?(tag, coordinates, last_coordinates) do
+      :ok
+    else
+      {:error, "incontinuous compound curve", rest, context, line, byte_offset}
+    end
+  end
+
+  defp continuous_compound_curve?(tag, [coordinate | _rest], [_ | _] = coordinates)
+       when tag in [:xy, :xyz] do
+    coordinate == List.last(coordinates)
+  end
+
+  defp continuous_compound_curve?(_tag, [coordinate | _rest], [_ | _] = coordinates) do
+    Enum.drop(coordinate, -1) == coordinates |> List.last() |> Enum.drop(-1)
+  end
+
+  defp continuous_compound_curve?(_tag, _coordinates, _last_coordinates), do: false
 end
