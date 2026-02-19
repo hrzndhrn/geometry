@@ -81,13 +81,13 @@ defmodule Geometry.MixProject do
           Geometry.CircularString,
           Geometry.CircularStringM,
           Geometry.CompoundCurve,
-          Geometry.CompoundCurveM,
+          Geometry.CompoundCurveM
         ],
         "Curves 3D": [
           Geometry.CircularStringZ,
           Geometry.CircularStringZM,
           Geometry.CompoundCurveZ,
-          Geometry.CompoundCurveZM,
+          Geometry.CompoundCurveZM
         ],
         "Multipart geometries 2D": [
           Geometry.MultiLineString,
