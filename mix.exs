@@ -70,6 +70,7 @@ defmodule Geometry.MixProject do
           Geometry.PointM
         ],
         "Geometry primitives 3D": [
+          Geometry.LineStringZ,
           Geometry.LineStringZM,
           Geometry.PolygonZ,
           Geometry.PolygonZM,
@@ -87,7 +88,6 @@ defmodule Geometry.MixProject do
           Geometry.CircularStringZM,
           Geometry.CompoundCurveZ,
           Geometry.CompoundCurveZM,
-          Geometry.LineStringZ,
         ],
         "Multipart geometries 2D": [
           Geometry.MultiLineString,
