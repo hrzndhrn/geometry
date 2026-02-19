@@ -543,36 +543,14 @@ defmodule Geometry.Decoder.WKB do
             throw({:error, :expected_compound_curve_segment, bin})
         end
 
-      if continuous_compound_curve?(unquote(geo.dim), geometry, acc) do
-        compound_curve_segments(
-          unquote(geo.dim),
-          unquote(geo.endian),
-          srid,
-          length - 1,
-          bin,
-          [geometry | acc]
-        )
-      else
-        throw({:error, :incontinuous_compound_curve, bin})
-      end
-    end
-
-    if geo.dim == :xy && geo.endian == :xdr do
-      defp get_coordinates(%{path: path}), do: path
-      defp get_coordinates(%{arcs: arcs}), do: arcs
-
-      defp continuous_compound_curve?(_dim, _geometry, []), do: true
-
-      defp continuous_compound_curve?(dim, geometry, [last_geometry | _]) do
-        [coordinate | _] = get_coordinates(geometry)
-        last_coordinate = last_geometry |> get_coordinates() |> List.last()
-
-        if dim in [:xy, :xyz] do
-          coordinate == last_coordinate
-        else
-          Enum.drop(coordinate, -1) == Enum.drop(last_coordinate, -1)
-        end
-      end
+      compound_curve_segments(
+        unquote(geo.dim),
+        unquote(geo.endian),
+        srid,
+        length - 1,
+        bin,
+        [geometry | acc]
+      )
     end
 
     defp polygon(

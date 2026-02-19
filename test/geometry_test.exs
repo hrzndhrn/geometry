@@ -240,24 +240,6 @@ defmodule GeometryTest do
                   rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5)\n)\n"
                 }}
     end
-
-    test "returns an error tuple for an incontinuous compound curve" do
-      wkt = """
-      CompoundCurve(LineString(5 9, 7 8), LineString Empty)
-      """
-
-      assert Geometry.from_wkt(wkt) ==
-               {:error,
-                %Geometry.DecodeError{
-                  __exception__: true,
-                  from: :wkt,
-                  line: {1, 0},
-                  message: "incontinuous compound curve",
-                  offset: 52,
-                  reason: nil,
-                  rest: ")\n"
-                }}
-    end
   end
 
   describe "from_wkt!/1" do

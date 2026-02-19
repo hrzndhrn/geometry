@@ -76,22 +76,6 @@ defmodule Geometry.CompoundCurveTest do
           unexpected_wkb_ndr:
             Base.decode16!("""
             0109000000010000000101000000000000000000F03F0000000000000040\
-            """),
-          incontinuous_segments: [
-            {:line_string, [[0.0, 0.0], [1.0, 1.0]]},
-            {:line_string, [[2.0, 2.0], [3.0, 3.0]]}
-          ],
-          incontinuous_wkb_xdr:
-            Base.decode16!("""
-            00000000090000000200000000020000000200000000000000000000000000000000\
-            3FF00000000000003FF0000000000000000000000200000002400000000000000040\
-            0000000000000040080000000000004008000000000000\
-            """),
-          incontinuous_wkb_ndr:
-            Base.decode16!("""
-            01090000000200000001020000000200000000000000000000000000000000000000\
-            000000000000F03F000000000000F03F010200000002000000000000000000004000\
-            0000000000004000000000000008400000000000000840\
             """)
         }
       },
@@ -144,24 +128,6 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             0109000040010000000101000040000000000000F03F00000000000000400000000000\
             000840\
-            """),
-          incontinuous_segments: [
-            {:line_string, [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]},
-            {:line_string, [[2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]}
-          ],
-          incontinuous_wkb_xdr:
-            Base.decode16!("""
-            00400000090000000200400000020000000200000000000000000000000000000000\
-            00000000000000003FF00000000000003FF00000000000003FF00000000000000040\
-            00000200000002400000000000000040000000000000004000000000000000400800\
-            000000000040080000000000004008000000000000\
-            """),
-          incontinuous_wkb_ndr:
-            Base.decode16!("""
-            01090000400200000001020000400200000000000000000000000000000000000000\
-            0000000000000000000000000000F03F000000000000F03F000000000000F03F0102\
-            00004002000000000000000000004000000000000000400000000000000040000000\
-            000000084000000000000008400000000000000840\
             """)
         }
       },
@@ -214,24 +180,6 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             0109000080010000000101000080000000000000F03F00000000000000400000000000\
             000840\
-            """),
-          incontinuous_segments: [
-            {:line_string, [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]},
-            {:line_string, [[2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]}
-          ],
-          incontinuous_wkb_xdr:
-            Base.decode16!("""
-            00800000090000000200800000020000000200000000000000000000000000000000\
-            00000000000000003FF00000000000003FF00000000000003FF00000000000000080\
-            00000200000002400000000000000040000000000000004000000000000000400800\
-            000000000040080000000000004008000000000000\
-            """),
-          incontinuous_wkb_ndr:
-            Base.decode16!("""
-            01090000800200000001020000800200000000000000000000000000000000000000\
-            0000000000000000000000000000F03F000000000000F03F000000000000F03F0102\
-            00008002000000000000000000004000000000000000400000000000000040000000\
-            000000084000000000000008400000000000000840\
             """)
         }
       },
@@ -289,26 +237,6 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             01090000C00100000001010000C0000000000000F03F00000000000000400000000000\
             0008400000000000001040\
-            """),
-          incontinuous_segments: [
-            {:line_string, [[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]]},
-            {:line_string, [[2.0, 2.0, 2.0, 2.0], [3.0, 3.0, 3.0, 3.0]]}
-          ],
-          incontinuous_wkb_xdr:
-            Base.decode16!("""
-            00C00000090000000200C00000020000000200000000000000000000000000000000\
-            000000000000000000000000000000003FF00000000000003FF00000000000003FF0\
-            0000000000003FF000000000000000C0000002000000024000000000000000400000\
-            00000000004000000000000000400000000000000040080000000000004008000000\
-            00000040080000000000004008000000000000\
-            """),
-          incontinuous_wkb_ndr:
-            Base.decode16!("""
-            01090000C00200000001020000C00200000000000000000000000000000000000000\
-            00000000000000000000000000000000000000000000F03F000000000000F03F0000\
-            00000000F03F000000000000F03F01020000C0020000000000000000000040000000\
-            00000000400000000000000040000000000000004000000000000008400000000000\
-            00084000000000000008400000000000000840\
             """)
         }
       }
@@ -473,22 +401,6 @@ defmodule Geometry.CompoundCurveTest do
           assert {:error, %Geometry.DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :expected_compound_curve_segment
         end
-
-        @tag :work
-        test "returns an error for an incontinuous compound curve in xdr binary" do
-          wkb = unquote(data[:incontinuous_wkb_xdr])
-
-          assert {:error, %Geometry.DecodeError{} = error} = Geometry.from_wkb(wkb)
-          assert error.reason == :incontinuous_compound_curve
-        end
-
-        @tag :work
-        test "returns an error for an incontinuous compound curve in ndr binary" do
-          wkb = unquote(data[:incontinuous_wkb_ndr])
-
-          assert {:error, %Geometry.DecodeError{} = error} = Geometry.from_wkb(wkb)
-          assert error.reason == :incontinuous_compound_curve
-        end
       end
 
       describe "[#{inspect(module)}] from_wkb!/1" do
@@ -652,19 +564,6 @@ defmodule Geometry.CompoundCurveTest do
           assert {:error, %DecodeError{} = error} = Geometry.from_wkt(wkt)
           assert error.from == :wkt
           assert error.message == "unexpected segment in compound curve"
-        end
-
-        test "returns an error for invalid segments" do
-          wkt =
-            wkt(
-              unquote(text),
-              unquote(Macro.escape(data[:incontinuous_segments])),
-              unquote(dim)
-            )
-
-          assert {:error, %DecodeError{} = error} = Geometry.from_wkt(wkt)
-          assert error.from == :wkt
-          assert error.message == "incontinuous compound curve"
         end
       end
 
