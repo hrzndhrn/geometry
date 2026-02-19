@@ -169,7 +169,8 @@ defmodule Geometry.Decoder.WKT.Parser do
          _context,
          _line,
          _byte_offset
-       ), do: :ok
+       ),
+       do: :ok
 
   defp continuous_compound_curve(
          tag,
