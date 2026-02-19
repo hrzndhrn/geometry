@@ -345,7 +345,6 @@ defmodule Geometry.Decoder.WKB do
     {:xdr, :circular_string, :xyzm} => <<0, 192, 0, 0, 8>>
   }
 
-  # TODO: create own geos here
   for geo <- geos, geo.type == :point, geo.srid? do
     defp coordinates(
            unquote(geo.dim),
@@ -490,25 +489,6 @@ defmodule Geometry.Decoder.WKB do
       try do
         {data, rest} =
           compound_curve_segments(unquote(geo.dim), unquote(geo.endian), srid, length, bin, [])
-
-        # Enum.map_reduce(List.duplicate(0, length), bin, fn
-        #   _ignore,
-        #   <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
-        #     case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-        #       {:ok, line_string, bin} -> {line_string, bin}
-        #       error -> throw(error)
-        #     end
-        #
-        #   _ignore,
-        #   <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
-        #     case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
-        #       {:ok, circular_string, bin} -> {circular_string, bin}
-        #       error -> throw(error)
-        #     end
-        #
-        #   _ignore, bin ->
-        #     throw({:error, :expected_compound_curve_segment, bin})
-        # end)
 
         compound_curve = %unquote(
             case geo.dim do
