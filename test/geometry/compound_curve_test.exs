@@ -76,7 +76,10 @@ defmodule Geometry.CompoundCurveTest do
           unexpected_wkb_ndr:
             Base.decode16!("""
             0109000000010000000101000000000000000000F03F0000000000000040\
-            """)
+            """),
+          just_coords:
+            {"COMPOUNDCURVE(CIRCULARSTRING(0 0, 1 1, 1 0),(1 0, 0 1))",
+             "COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 1 0), LINESTRING (1 0, 0 1))"}
         }
       },
       %{
@@ -128,7 +131,10 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             0109000040010000000101000040000000000000F03F00000000000000400000000000\
             000840\
-            """)
+            """),
+          just_coords:
+            {"COMPOUNDCURVEM(CIRCULARSTRINGM(0 0 0, 1 1 1, 1 0 0),(1 0 0, 0 1 1))",
+             "COMPOUNDCURVE M (CIRCULARSTRING M (0 0 0, 1 1 1, 1 0 0), LINESTRING M (1 0 0, 0 1 1))"}
         }
       },
       %{
@@ -180,7 +186,11 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             0109000080010000000101000080000000000000F03F00000000000000400000000000\
             000840\
-            """)
+            """),
+          just_coords: {
+            "COMPOUNDCURVEZ(CIRCULARSTRINGZ(0 0 0, 1 1 1, 1 0 0),(1 0 0, 0 1 1))",
+            "COMPOUNDCURVE Z (CIRCULARSTRING Z (0 0 0, 1 1 1, 1 0 0), LINESTRING Z (1 0 0, 0 1 1))"
+          }
         }
       },
       %{
@@ -237,7 +247,11 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             01090000C00100000001010000C0000000000000F03F00000000000000400000000000\
             0008400000000000001040\
-            """)
+            """),
+          just_coords: {
+            "COMPOUNDCURVEZM(CIRCULARSTRINGZM(0 0 0 0, 1 1 1 1, 1 0 0 0),(1 0 0 0, 0 1 1 1))",
+            "COMPOUNDCURVE ZM (CIRCULARSTRING ZM (0 0 0 0, 1 1 1 1, 1 0 0 0), LINESTRING ZM (1 0 0 0, 0 1 1 1))"
+          }
         }
       }
     ],
@@ -564,6 +578,13 @@ defmodule Geometry.CompoundCurveTest do
           assert {:error, %DecodeError{} = error} = Geometry.from_wkt(wkt)
           assert error.from == :wkt
           assert error.message == "unexpected segment in compound curve"
+        end
+
+        test "interprets a list of coordinates as line string" do
+          {wkt, full_wkt} = unquote(Macro.escape(data[:just_coords]))
+          {:ok, geometry} = Geometry.from_wkt(wkt)
+
+          assert Geometry.to_wkt(geometry) == full_wkt
         end
       end
 

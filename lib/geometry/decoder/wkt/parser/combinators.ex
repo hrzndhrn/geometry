@@ -45,6 +45,14 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_geometry, []})
   )
 
+  defparsec(
+    :optional_geometry,
+    whitespace()
+    |> optional(srid())
+    |> optional(parsec(:geometry_selection))
+    |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_optional_geometry, []})
+  )
+
   @types
   |> Enum.with_index(1)
   |> Enum.each(fn {type, type_index} ->

@@ -53,7 +53,7 @@ defmodule Geometry.Decoder.WKT.Parser do
   end
 
   defp compound_curve_segment(string, opts) do
-    with {:ok, [info], rest, context, line, byte_offset} <- geometry(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_line_string(string, opts) do
       case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
         {true, nil, geometry} when geometry in [:line_string, :circular_string] ->
           compound_curve_segment_text({info.geometry, info.tag}, rest,
@@ -70,6 +70,13 @@ defmodule Geometry.Decoder.WKT.Parser do
         {_tag, _srid, _geometry} ->
           {:error, "unexpected SRID in compound curve", rest, context, line, byte_offset}
       end
+    end
+  end
+
+  defp geometry_or_line_string(string, opts) do
+    with {:ok, [:no_geometry_found], rest, context, line, byte_offset} <-
+           optional_geometry(string, opts) do
+      {:ok, [%{tag: opts[:tag], geometry: :line_string}], rest, context, line, byte_offset}
     end
   end
 
