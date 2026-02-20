@@ -88,7 +88,7 @@ defmodule Geometry.DecodeError do
 
   def message(%{from: :wkb, reason: :expected_compound_curve_segment} = error) do
     """
-    expected geometry code for LINESTRING or CURVESTRING at position #{error.offset}, \
+    expected geometry code for LINESTRING or CIRCULARSTRING at position #{error.offset}, \
     got: #{inspect_hex(error.rest, 9)}\
     """
   end

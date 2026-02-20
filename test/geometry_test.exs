@@ -493,7 +493,7 @@ defmodule GeometryTest do
       wkb = Base.decode16!("00000000090000000100000000013FF00000000000004000000000000000")
 
       assert_fail :from_ewkb!, wkb, """
-      expected geometry code for LINESTRING or CURVESTRING at position 9, got: \
+      expected geometry code for LINESTRING or CIRCULARSTRING at position 9, got: \
       <<0x0, 0x0, 0x0, 0x0, 0x1, 0x3F, 0xF0, 0x0, 0x0, ...>>\
       """
     end
