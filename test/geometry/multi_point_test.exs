@@ -3,8 +3,6 @@ defmodule Geometry.MultiPointTest do
 
   import Assertions
 
-  alias Binary
-
   alias Geometry.DecodeError
 
   alias Geometry.MultiPoint

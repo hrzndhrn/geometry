@@ -9,6 +9,7 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     "LineString",
     "Polygon",
     "CircularString",
+    "CompoundCurve",
     "MultiPoint",
     "MultiLineString",
     "MultiPolygon",
@@ -42,6 +43,14 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     |> optional(srid())
     |> parsec(:geometry_selection)
     |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_geometry, []})
+  )
+
+  defparsec(
+    :optional_geometry,
+    whitespace()
+    |> optional(srid())
+    |> optional(parsec(:geometry_selection))
+    |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_optional_geometry, []})
   )
 
   @types
