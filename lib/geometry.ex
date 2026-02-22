@@ -25,6 +25,9 @@ defmodule Geometry do
   + CompoundCurve
     + `Geometry.CompoundCurve`, `Geometry.CompoundCurveM`,
       `Geometry.CompoundCurveZ`, `Geometry.CompoundCurveZM`
+  + CurvePolygon
+    + `Geometry.CurvePolygon`, `Geometry.CurvePolygonM`,
+      `Geometry.CurvePolygonZ`, `Geometry.CurvePolygonZM`
 
   Collections:
   + MultiPoint
@@ -58,6 +61,10 @@ defmodule Geometry do
   alias Geometry.CompoundCurveM
   alias Geometry.CompoundCurveZ
   alias Geometry.CompoundCurveZM
+  alias Geometry.CurvePolygon
+  alias Geometry.CurvePolygonM
+  alias Geometry.CurvePolygonZ
+  alias Geometry.CurvePolygonZM
   alias Geometry.Feature
   alias Geometry.FeatureCollection
   alias Geometry.GeometryCollection
@@ -103,6 +110,10 @@ defmodule Geometry do
           | CompoundCurveM.t()
           | CompoundCurveZ.t()
           | CompoundCurveZM.t()
+          | CurvePolygon.t()
+          | CurvePolygonM.t()
+          | CurvePolygonZ.t()
+          | CurvePolygonZM.t()
           | GeometryCollection.t()
           | GeometryCollectionM.t()
           | GeometryCollectionZ.t()

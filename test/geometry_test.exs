@@ -220,6 +220,29 @@ defmodule GeometryTest do
                 }}
     end
 
+    test "returns an error tuple for an invalid srid in a curve polygon" do
+      wkt = """
+      CurvePolygon ZM (\
+        LineString ZM (5 9 2 1, 7 8 4 2),
+        SRID=77;LineString ZM (7 8 4 2, 1 2 3 4, 5 5 5 5),
+      )
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {2, 53},
+                   message: "unexpected SRID in curve polygon",
+                   offset: 77,
+                   reason: nil,
+                   rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5),\n)\n"
+                 }
+               }
+    end
+
     test "returns an error tuple for a unexpected geometry in a compound curve" do
       wkt = """
       CompoundCurve Z (\
@@ -239,6 +262,26 @@ defmodule GeometryTest do
                   reason: nil,
                   rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5)\n)\n"
                 }}
+    end
+
+    test "returns an error tuple for unexpected geometry in a curve polygon" do
+      wkt = """
+      CurvePolygon Z (LineString ZM (5 9 2 5, 7 8 4 5))
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {1, 0},
+                   message: "unexpected geometry in curve polygon",
+                   offset: 30,
+                   reason: nil,
+                   rest: "(5 9 2 5, 7 8 4 5))\n"
+                 }
+               }
     end
   end
 

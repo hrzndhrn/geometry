@@ -301,8 +301,7 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :geo_json
 
         test "raises a protocol error" do
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = %unquote(module){segments: segments}
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
 
           message =
             ~r|protocol.Geometry.Encoder.GeoJson.not.implemented.for.*#{inspect(unquote(module))}|
@@ -317,17 +316,15 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkb
 
         test "returns compound curve from xdr binary" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkb = unquote(code[:xdr]) <> unquote(data[:wkb_xdr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.from_wkb(wkb) == {:ok, compound_curve}
         end
 
         test "returns compound curve from ndr binary" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkb = unquote(code[:ndr]) <> unquote(data[:wkb_ndr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.from_wkb(wkb) == {:ok, compound_curve}
         end
@@ -347,21 +344,19 @@ defmodule Geometry.CompoundCurveTest do
         end
 
         test "returns compound curve from xdr binary with srid" do
-          wkb = unquote(code_srid[:xdr]) <> unquote(data[:wkb_xdr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), unquote(srid))
-
           compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
+          wkb = unquote(code_srid[:xdr]) <> unquote(data[:wkb_xdr])
 
           assert Geometry.from_wkb(wkb) == {:ok, compound_curve}
         end
 
         test "returns compound curve from ndr binary with srid" do
-          wkb = unquote(code_srid[:ndr]) <> unquote(data[:wkb_ndr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), unquote(srid))
-
           compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
+          wkb = unquote(code_srid[:ndr]) <> unquote(data[:wkb_ndr])
 
           assert Geometry.from_wkb(wkb) == {:ok, compound_curve}
         end
@@ -437,37 +432,33 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkb
 
         test "returns compound curve from xdr binary" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkb = unquote(code[:xdr]) <> unquote(data[:wkb_xdr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.from_ewkb(wkb) == {:ok, compound_curve}
         end
 
         test "returns compound curve from ndr binary" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkb = unquote(code[:ndr]) <> unquote(data[:wkb_ndr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.from_ewkb(wkb) == {:ok, compound_curve}
         end
 
         test "returns compound curve from xdr binary with srid" do
-          wkb = unquote(code_srid[:xdr]) <> unquote(data[:wkb_xdr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), unquote(srid))
-
           compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
+          wkb = unquote(code_srid[:xdr]) <> unquote(data[:wkb_xdr])
 
           assert Geometry.from_ewkb(wkb) == {:ok, compound_curve}
         end
 
         test "returns compound curve from ndr binary with srid" do
-          wkb = unquote(code_srid[:ndr]) <> unquote(data[:wkb_ndr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), unquote(srid))
-
           compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
+          wkb = unquote(code_srid[:ndr]) <> unquote(data[:wkb_ndr])
 
           assert Geometry.from_ewkb(wkb) == {:ok, compound_curve}
         end
@@ -477,17 +468,15 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkb
 
         test "returns a compound curve as xdr binary" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkb = unquote(code[:xdr]) <> unquote(data[:wkb_xdr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.to_wkb(compound_curve, :xdr) == wkb
         end
 
         test "returns compound curve as ndr binary" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkb = unquote(code[:ndr]) <> unquote(data[:wkb_ndr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.to_wkb(compound_curve) == wkb
           assert Geometry.to_wkb(compound_curve, :ndr) == wkb
@@ -512,21 +501,19 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkb
 
         test "returns compound curve as xdr binary with srid" do
-          wkb = unquote(code_srid[:xdr]) <> unquote(data[:wkb_xdr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), 0)
-
           compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
+          wkb = unquote(code_srid[:xdr]) <> unquote(data[:wkb_xdr])
 
           assert Geometry.to_ewkb(compound_curve, :xdr) == wkb
         end
 
         test "returns compound curve as ndr binary with srid" do
-          wkb = unquote(code_srid[:ndr]) <> unquote(data[:wkb_ndr])
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), 0)
-
           compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
+          wkb = unquote(code_srid[:ndr]) <> unquote(data[:wkb_ndr])
 
           assert Geometry.to_ewkb(compound_curve) == wkb
         end
@@ -536,14 +523,16 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkt
 
         test "returns curve" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkt = wkt(unquote(text), unquote(Macro.escape(data[:segments])), unquote(dim))
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.from_wkt(wkt) == {:ok, compound_curve}
         end
 
         test "returns curve with srid" do
+          compound_curve =
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
           wkt =
             wkt(
               unquote(text),
@@ -552,17 +541,12 @@ defmodule Geometry.CompoundCurveTest do
               unquote(srid)
             )
 
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), unquote(srid))
-
-          compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
-
           assert Geometry.from_wkt(wkt) == {:ok, compound_curve}
         end
 
         test "returns an empty curve" do
-          wkt = wkt(unquote(text))
           compound_curve = unquote(module).new()
+          wkt = wkt(unquote(text))
 
           assert Geometry.from_wkt(wkt) == {:ok, compound_curve}
         end
@@ -592,21 +576,23 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkt
 
         test "returns compound curve" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkt = wkt(unquote(text), unquote(Macro.escape(data[:segments])), unquote(dim))
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.from_ewkt(wkt) == {:ok, compound_curve}
         end
 
         test "returns an empty compound curve" do
-          wkt = wkt(unquote(text))
           compound_curve = unquote(module).new()
+          wkt = wkt(unquote(text))
 
           assert Geometry.from_ewkt(wkt) == {:ok, compound_curve}
         end
 
         test "returns compound curve from WKT with srid" do
+          compound_curve =
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
           wkt =
             wkt(
               unquote(text),
@@ -614,11 +600,6 @@ defmodule Geometry.CompoundCurveTest do
               unquote(dim),
               unquote(srid)
             )
-
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), unquote(srid))
-
-          compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
 
           assert Geometry.from_ewkt(wkt) == {:ok, compound_curve}
         end
@@ -628,16 +609,15 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkt
 
         test "returns wkt" do
+          compound_curve = compound_curve(unquote(module), unquote(Macro.escape(data[:segments])))
           wkt = wkt(unquote(text), unquote(Macro.escape(data[:segments])), unquote(dim))
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim))
-          compound_curve = compound_curve(unquote(module), segments)
 
           assert Geometry.to_wkt(compound_curve) == wkt
         end
 
         test "returns wkt from an empty compound curve" do
-          wkt = wkt(unquote(text))
           compound_curve = unquote(module).new()
+          wkt = wkt(unquote(text))
 
           assert Geometry.to_wkt(compound_curve) == wkt
         end
@@ -647,6 +627,9 @@ defmodule Geometry.CompoundCurveTest do
         @describetag :wkt
 
         test "returns ewkt" do
+          compound_curve =
+            compound_curve(unquote(module), unquote(Macro.escape(data[:segments])), unquote(srid))
+
           wkt =
             wkt(
               unquote(text),
@@ -655,17 +638,12 @@ defmodule Geometry.CompoundCurveTest do
               unquote(srid)
             )
 
-          segments = segments(unquote(Macro.escape(data[:segments])), unquote(dim), 0)
-
-          compound_curve =
-            compound_curve(unquote(module), segments, unquote(srid))
-
           assert Geometry.to_ewkt(compound_curve) == wkt
         end
 
         test "returns ewkt from an empty compound curve" do
+          compound_curve = compound_curve(unquote(module), [], unquote(srid))
           wkt = wkt(unquote(text), [], unquote(dim), unquote(srid))
-          compound_curve = unquote(module).new() |> Map.put(:srid, unquote(srid))
 
           assert Geometry.to_ewkt(compound_curve) == wkt
         end
@@ -699,6 +677,11 @@ defmodule Geometry.CompoundCurveTest do
   defp wkt_dim(:xym), do: " M "
   defp wkt_dim(:xyzm), do: " ZM "
 
+  defp dim(CompoundCurve), do: :xy
+  defp dim(CompoundCurveM), do: :xym
+  defp dim(CompoundCurveZ), do: :xyz
+  defp dim(CompoundCurveZM), do: :xyzm
+
   defp wkt_coords(:point, coordinate) do
     Enum.join(coordinate, @blank)
   end
@@ -707,8 +690,10 @@ defmodule Geometry.CompoundCurveTest do
     Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
   end
 
-  defp compound_curve(module, segments, srid \\ 0) do
-    module.new(segments, srid)
+  defp compound_curve(module, segment_data, srid \\ 0) do
+    segment_data
+    |> segments(dim(module), srid)
+    |> module.new(srid)
   end
 
   defp segments(segment_data, dim, srid \\ 0) do
