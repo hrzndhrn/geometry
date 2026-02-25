@@ -94,7 +94,13 @@ defmodule Geometry.CurvePolygonTest do
           unexpected_wkb_ndr:
             Base.decode16!("""
             010A000000010000000101000000000000000000F03F000000000000F03F\
-            """)
+            """),
+          invalid_line_string_ring_wkb_ndr:
+            Base.decode16!("010A00000001000000010200000002000000FF"),
+          invalid_circular_string_ring_wkb_ndr:
+            Base.decode16!("010A00000001000000010800000003000000FF"),
+          invalid_compound_curve_ring_wkb_ndr:
+            Base.decode16!("010A000000010000000109000000FF")
         }
       },
       %{
@@ -180,7 +186,13 @@ defmodule Geometry.CurvePolygonTest do
           unexpected_wkb_ndr:
             Base.decode16!("""
             010A000040010000000101000040000000000000F03F00000000000000400000000000000840\
-            """)
+            """),
+          invalid_line_string_ring_wkb_ndr:
+            Base.decode16!("010A00004001000000010200004002000000FF"),
+          invalid_circular_string_ring_wkb_ndr:
+            Base.decode16!("010A00004001000000010800004003000000FF"),
+          invalid_compound_curve_ring_wkb_ndr:
+            Base.decode16!("010A000040010000000109000040FF")
         }
       },
       %{
@@ -266,7 +278,13 @@ defmodule Geometry.CurvePolygonTest do
           unexpected_wkb_ndr:
             Base.decode16!("""
             010A000080010000000101000080000000000000F03F00000000000000400000000000000840\
-            """)
+            """),
+          invalid_line_string_ring_wkb_ndr:
+            Base.decode16!("010A00008001000000010200008002000000FF"),
+          invalid_circular_string_ring_wkb_ndr:
+            Base.decode16!("010A00008001000000010800008003000000FF"),
+          invalid_compound_curve_ring_wkb_ndr:
+            Base.decode16!("010A000080010000000109000080FF")
         }
       },
       %{
@@ -373,7 +391,13 @@ defmodule Geometry.CurvePolygonTest do
             Base.decode16!("""
             010A0000C00100000001010000C0000000000000F03F00000000000000400000\
             0000000008400000000000001040\
-            """)
+            """),
+          invalid_line_string_ring_wkb_ndr:
+            Base.decode16!("010A0000C00100000001020000C002000000FF"),
+          invalid_circular_string_ring_wkb_ndr:
+            Base.decode16!("010A0000C00100000001080000C003000000FF"),
+          invalid_compound_curve_ring_wkb_ndr:
+            Base.decode16!("010A0000C00100000001090000C0FF")
         }
       }
     ],
@@ -525,6 +549,27 @@ defmodule Geometry.CurvePolygonTest do
 
           assert {:error, %Geometry.DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :expected_curve_polygon_ring
+        end
+
+        test "returns an error for an invalid coordinate in a line string ring" do
+          wkb = unquote(data[:invalid_line_string_ring_wkb_ndr])
+
+          assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
+          assert error.reason == :invalid_coordinate
+        end
+
+        test "returns an error for an invalid coordinate in a circular string ring" do
+          wkb = unquote(data[:invalid_circular_string_ring_wkb_ndr])
+
+          assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
+          assert error.reason == :invalid_coordinate
+        end
+
+        test "returns an error for an invalid length in a compound curve ring" do
+          wkb = unquote(data[:invalid_compound_curve_ring_wkb_ndr])
+
+          assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
+          assert error.reason == :invalid_length
         end
       end
 

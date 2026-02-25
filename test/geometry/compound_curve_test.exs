@@ -77,6 +77,8 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("""
             0109000000010000000101000000000000000000F03F0000000000000040\
             """),
+          invalid_circular_string_wkb_ndr:
+            Base.decode16!("010900000001000000010800000003000000FF"),
           just_coords:
             {"COMPOUNDCURVE(CIRCULARSTRING(0 0, 1 1, 1 0),(1 0, 0 1))",
              "COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 1 0), LINESTRING (1 0, 0 1))"}
@@ -132,6 +134,8 @@ defmodule Geometry.CompoundCurveTest do
             0109000040010000000101000040000000000000F03F00000000000000400000000000\
             000840\
             """),
+          invalid_circular_string_wkb_ndr:
+            Base.decode16!("010900004001000000010800004003000000FF"),
           just_coords:
             {"COMPOUNDCURVEM(CIRCULARSTRINGM(0 0 0, 1 1 1, 1 0 0),(1 0 0, 0 1 1))",
              "COMPOUNDCURVE M (CIRCULARSTRING M (0 0 0, 1 1 1, 1 0 0), LINESTRING M (1 0 0, 0 1 1))"}
@@ -187,6 +191,8 @@ defmodule Geometry.CompoundCurveTest do
             0109000080010000000101000080000000000000F03F00000000000000400000000000\
             000840\
             """),
+          invalid_circular_string_wkb_ndr:
+            Base.decode16!("010900008001000000010800008003000000FF"),
           just_coords: {
             "COMPOUNDCURVEZ(CIRCULARSTRINGZ(0 0 0, 1 1 1, 1 0 0),(1 0 0, 0 1 1))",
             "COMPOUNDCURVE Z (CIRCULARSTRING Z (0 0 0, 1 1 1, 1 0 0), LINESTRING Z (1 0 0, 0 1 1))"
@@ -248,6 +254,8 @@ defmodule Geometry.CompoundCurveTest do
             01090000C00100000001010000C0000000000000F03F00000000000000400000000000\
             0008400000000000001040\
             """),
+          invalid_circular_string_wkb_ndr:
+            Base.decode16!("01090000C00100000001080000C003000000FF"),
           just_coords: {
             "COMPOUNDCURVEZM(CIRCULARSTRINGZM(0 0 0 0, 1 1 1 1, 1 0 0 0),(1 0 0 0, 0 1 1 1))",
             "COMPOUNDCURVE ZM (CIRCULARSTRING ZM (0 0 0 0, 1 1 1 1, 1 0 0 0), LINESTRING ZM (1 0 0 0, 0 1 1 1))"
@@ -392,6 +400,13 @@ defmodule Geometry.CompoundCurveTest do
 
         test "returns an error for an invalid coordinate" do
           wkb = Binary.drop(unquote(code[:ndr]) <> unquote(data[:wkb_ndr]), -7)
+
+          assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
+          assert error.reason == :invalid_coordinate
+        end
+
+        test "returns an error for an invalid coordinate in a circular string segment" do
+          wkb = unquote(data[:invalid_circular_string_wkb_ndr])
 
           assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :invalid_coordinate
