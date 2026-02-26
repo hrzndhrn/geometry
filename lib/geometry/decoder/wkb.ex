@@ -11,6 +11,10 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.CompoundCurveM
   alias Geometry.CompoundCurveZ
   alias Geometry.CompoundCurveZM
+  alias Geometry.CurvePolygon
+  alias Geometry.CurvePolygonM
+  alias Geometry.CurvePolygonZ
+  alias Geometry.CurvePolygonZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -51,7 +55,8 @@ defmodule Geometry.Decoder.WKB do
       :multi_polygon,
       :geometry_collection,
       :circular_string,
-      :compound_curve
+      :compound_curve,
+      :curve_polygon
     ]
     |> Enum.with_index(1)
     |> Enum.flat_map(fn {type, index} ->
@@ -342,7 +347,15 @@ defmodule Geometry.Decoder.WKB do
     {:xdr, :circular_string, :xy} => <<0, 0, 0, 0, 8>>,
     {:xdr, :circular_string, :xym} => <<0, 64, 0, 0, 8>>,
     {:xdr, :circular_string, :xyz} => <<0, 128, 0, 0, 8>>,
-    {:xdr, :circular_string, :xyzm} => <<0, 192, 0, 0, 8>>
+    {:xdr, :circular_string, :xyzm} => <<0, 192, 0, 0, 8>>,
+    {:ndr, :compound_curve, :xy} => <<1, 9, 0, 0, 0>>,
+    {:ndr, :compound_curve, :xym} => <<1, 9, 0, 0, 64>>,
+    {:ndr, :compound_curve, :xyz} => <<1, 9, 0, 0, 128>>,
+    {:ndr, :compound_curve, :xyzm} => <<1, 9, 0, 0, 192>>,
+    {:xdr, :compound_curve, :xy} => <<0, 0, 0, 0, 9>>,
+    {:xdr, :compound_curve, :xym} => <<0, 64, 0, 0, 9>>,
+    {:xdr, :compound_curve, :xyz} => <<0, 128, 0, 0, 9>>,
+    {:xdr, :compound_curve, :xyzm} => <<0, 192, 0, 0, 9>>
   }
 
   for geo <- geos, geo.type == :point, geo.srid? do
@@ -544,6 +557,88 @@ defmodule Geometry.Decoder.WKB do
         end
 
       compound_curve_segments(
+        unquote(geo.dim),
+        unquote(geo.endian),
+        srid,
+        length - 1,
+        bin,
+        [geometry | acc]
+      )
+    end
+
+    defp curve_polygon(
+           unquote(geo.dim),
+           unquote(geo.endian),
+           srid,
+           <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
+         ) do
+      try do
+        {data, rest} =
+          curve_polygon_rings(unquote(geo.dim), unquote(geo.endian), srid, length, bin, [])
+
+        curve_polygon = %unquote(
+            case geo.dim do
+              :xy -> CurvePolygon
+              :xym -> CurvePolygonM
+              :xyz -> CurvePolygonZ
+              :xyzm -> CurvePolygonZM
+            end
+          ){
+          rings: data,
+          srid: srid
+        }
+
+        {:ok, curve_polygon, rest}
+      catch
+        error -> error
+      end
+    end
+
+    defp curve_polygon(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
+      {:error, :invalid_length, bin}
+    end
+
+    if geo.dim == :xy && geo.endian == :xdr do
+      defp curve_polygon_rings(_dim, _endian, _srid, 0, bin, acc) do
+        {Enum.reverse(acc), bin}
+      end
+    end
+
+    defp curve_polygon_rings(unquote(geo.dim), unquote(geo.endian), srid, length, bin, acc) do
+      {geometry, bin} =
+        case bin do
+          <<unquote(endian_code_bin[{geo.endian, :line_string, geo.dim}]), bin::bits>> ->
+            case line_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, line_string, bin} ->
+                {line_string, bin}
+
+              error ->
+                throw(error)
+            end
+
+          <<unquote(endian_code_bin[{geo.endian, :circular_string, geo.dim}]), bin::bits>> ->
+            case circular_string(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, circular_string, bin} ->
+                {circular_string, bin}
+
+              error ->
+                throw(error)
+            end
+
+          <<unquote(endian_code_bin[{geo.endian, :compound_curve, geo.dim}]), bin::bits>> ->
+            case compound_curve(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, compound_curve, bin} ->
+                {compound_curve, bin}
+
+              error ->
+                throw(error)
+            end
+
+          bin ->
+            throw({:error, :expected_curve_polygon_ring, bin})
+        end
+
+      curve_polygon_rings(
         unquote(geo.dim),
         unquote(geo.endian),
         srid,
@@ -805,6 +900,12 @@ defmodule Geometry.Decoder.WKB do
               {:ok, :compound_curve, bin} ->
                 case compound_curve(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, compound_curve, bin} -> {compound_curve, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :curve_polygon, bin} ->
+                case curve_polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, curve_polygon, bin} -> {curve_polygon, bin}
                   error -> throw(error)
                 end
 

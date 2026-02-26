@@ -13,6 +13,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.CompoundCurveM
   alias Geometry.CompoundCurveZ
   alias Geometry.CompoundCurveZM
+  alias Geometry.CurvePolygon
+  alias Geometry.CurvePolygonM
+  alias Geometry.CurvePolygonZ
+  alias Geometry.CurvePolygonZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -130,6 +134,38 @@ defmodule Geometry.Decoder.WKT do
       Enum.map(segments, fn {type, segment} -> geometry(type, :xyzm, segment, srid) end)
 
     %CompoundCurveZM{segments: segments, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, dim, {:rings, rings}, srid) do
+    geometry(:curve_polygon, dim, rings, srid)
+  end
+
+  defp geometry(:curve_polygon, :xy, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xy, ring, srid) end)
+
+    %CurvePolygon{rings: rings, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, :xym, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xym, ring, srid) end)
+
+    %CurvePolygonM{rings: rings, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, :xyz, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xyz, ring, srid) end)
+
+    %CurvePolygonZ{rings: rings, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, :xyzm, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xyzm, ring, srid) end)
+
+    %CurvePolygonZM{rings: rings, srid: srid}
   end
 
   defp geometry(:multi_point, :xy, coordinates, srid),

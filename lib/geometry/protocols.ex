@@ -9,7 +9,8 @@ defmodule Geometry.Protocols do
          multi_polygon: 6,
          geometry_collection: 7,
          circular_string: 8,
-         compound_curve: 9
+         compound_curve: 9,
+         curve_polygon: 10
   @dims xy: 2, xym: 3, xyz: 3, xyzm: 4
   @empty_xdr [127, 248, 0, 0, 0, 0, 0, 0]
   @empty_ndr [0, 0, 0, 0, 0, 0, 248, 127]
@@ -32,7 +33,8 @@ defmodule Geometry.Protocols do
                  multi_line_string: :line_strings,
                  multi_polygon: :polygons,
                  geometry_collection: :geometries,
-                 compound_curve: :segments
+                 compound_curve: :segments,
+                 curve_polygon: :rings
 
   @multi_sub_keys multi_line_string: :path,
                   multi_polygon: :rings,
@@ -667,6 +669,62 @@ defmodule Geometry.Protocols do
     end
   end
 
+  defmacro wkb(:curve_polygon, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{rings: rings}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, false, :xdr),
+                count(quote(do: rings), :xdr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{rings: rings}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, false, :ndr),
+                count(quote(do: rings), :ndr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{rings: rings, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: rings), :xdr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{rings: rings, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: rings), :ndr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
   defmacro wkt(:point, dim) do
     quote do
       defimpl Geometry.Encoder.WKT do
@@ -1156,6 +1214,62 @@ defmodule Geometry.Protocols do
             binary([
               srid_to_string(),
               "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:curve_polygon, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{rings: []}) do
+          unquote(
+            binary([
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{rings: rings}) do
+          data = Enum.map_join(rings, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{rings: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{rings: rings, srid: srid}) do
+          data = Enum.map_join(rings, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "CURVEPOLYGON",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
