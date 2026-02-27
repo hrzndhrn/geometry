@@ -17,10 +17,6 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.CurvePolygonM
   alias Geometry.CurvePolygonZ
   alias Geometry.CurvePolygonZM
-  alias Geometry.MultiCurve
-  alias Geometry.MultiCurveM
-  alias Geometry.MultiCurveZ
-  alias Geometry.MultiCurveZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -29,6 +25,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
   alias Geometry.LineStringZM
+  alias Geometry.MultiCurve
+  alias Geometry.MultiCurveM
+  alias Geometry.MultiCurveZ
+  alias Geometry.MultiCurveZM
   alias Geometry.MultiLineString
   alias Geometry.MultiLineStringM
   alias Geometry.MultiLineStringZ

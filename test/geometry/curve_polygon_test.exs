@@ -99,7 +99,12 @@ defmodule Geometry.CurvePolygonTest do
             Base.decode16!("010A00000001000000010200000002000000FF"),
           invalid_circular_string_ring_wkb_ndr:
             Base.decode16!("010A00000001000000010800000003000000FF"),
-          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A000000010000000109000000FF")
+          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A000000010000000109000000FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("000000000700000001"),
+            ndr: Base.decode16!("010700000001000000")
+          }
         }
       },
       %{
@@ -190,7 +195,12 @@ defmodule Geometry.CurvePolygonTest do
             Base.decode16!("010A00004001000000010200004002000000FF"),
           invalid_circular_string_ring_wkb_ndr:
             Base.decode16!("010A00004001000000010800004003000000FF"),
-          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A000040010000000109000040FF")
+          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A000040010000000109000040FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("004000000700000001"),
+            ndr: Base.decode16!("010700004001000000")
+          }
         }
       },
       %{
@@ -281,7 +291,12 @@ defmodule Geometry.CurvePolygonTest do
             Base.decode16!("010A00008001000000010200008002000000FF"),
           invalid_circular_string_ring_wkb_ndr:
             Base.decode16!("010A00008001000000010800008003000000FF"),
-          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A000080010000000109000080FF")
+          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A000080010000000109000080FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("008000000700000001"),
+            ndr: Base.decode16!("010700008001000000")
+          }
         }
       },
       %{
@@ -393,7 +408,12 @@ defmodule Geometry.CurvePolygonTest do
             Base.decode16!("010A0000C00100000001020000C002000000FF"),
           invalid_circular_string_ring_wkb_ndr:
             Base.decode16!("010A0000C00100000001080000C003000000FF"),
-          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A0000C00100000001090000C0FF")
+          invalid_compound_curve_ring_wkb_ndr: Base.decode16!("010A0000C00100000001090000C0FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("00C000000700000001"),
+            ndr: Base.decode16!("01070000C001000000")
+          }
         }
       }
     ],
@@ -566,6 +586,38 @@ defmodule Geometry.CurvePolygonTest do
 
           assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :invalid_length
+        end
+
+        test "returns a geometry for a curve polygon inside a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(code[:xdr]) <> unquote(data[:wkb_xdr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns a geometry for a curve polygon inside a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(code[:ndr]) <> unquote(data[:wkb_ndr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid curve polygon in a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(data[:unexpected_wkb_xdr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid curve polygon in a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(data[:unexpected_wkb_ndr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
         end
       end
 

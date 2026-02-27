@@ -54,8 +54,7 @@ defmodule Geometry.MultiCurveTest do
             {:circular_string, [[4.0, 0.0], [4.0, 4.0], [8.0, 4.0]]},
             {:compound_curve,
              [
-               {:circular_string,
-                [[0.0, 0.0], [2.0, 0.0], [2.0, 1.0], [2.0, 3.0], [4.0, 3.0]]},
+               {:circular_string, [[0.0, 0.0], [2.0, 0.0], [2.0, 1.0], [2.0, 3.0], [4.0, 3.0]]},
                {:coords, [[4.0, 3.0], [4.0, 5.0], [1.0, 4.0], [0.0, 0.0]]}
              ]}
           ],
@@ -96,11 +95,15 @@ defmodule Geometry.MultiCurveTest do
             Base.decode16!("""
             010B000000010000000101000000000000000000F03F000000000000F03F\
             """),
-          invalid_line_string_wkb_ndr:
-            Base.decode16!("010B00000001000000010200000002000000FF"),
+          invalid_line_string_wkb_ndr: Base.decode16!("010B00000001000000010200000002000000FF"),
           invalid_circular_string_wkb_ndr:
             Base.decode16!("010B00000001000000010800000003000000FF"),
-          invalid_compound_curve_wkb_ndr: Base.decode16!("010B000000010000000109000000FF")
+          invalid_compound_curve_wkb_ndr: Base.decode16!("010B000000010000000109000000FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("000000000700000001"),
+            ndr: Base.decode16!("010700000001000000")
+          }
         }
       },
       %{
@@ -131,8 +134,7 @@ defmodule Geometry.MultiCurveTest do
                   [2.0, 3.0, 2.0],
                   [4.0, 3.0, 3.0]
                 ]},
-               {:coords,
-                [[4.0, 3.0, 6.0], [4.0, 5.0, 7.0], [1.0, 4.0, 8.0], [0.0, 0.0, 9.0]]}
+               {:coords, [[4.0, 3.0, 6.0], [4.0, 5.0, 7.0], [1.0, 4.0, 8.0], [0.0, 0.0, 9.0]]}
              ]}
           ],
           wkb_xdr:
@@ -180,11 +182,15 @@ defmodule Geometry.MultiCurveTest do
             Base.decode16!("""
             010B000040010000000101000040000000000000F03F00000000000000400000000000000840\
             """),
-          invalid_line_string_wkb_ndr:
-            Base.decode16!("010B00004001000000010200004002000000FF"),
+          invalid_line_string_wkb_ndr: Base.decode16!("010B00004001000000010200004002000000FF"),
           invalid_circular_string_wkb_ndr:
             Base.decode16!("010B00004001000000010800004003000000FF"),
-          invalid_compound_curve_wkb_ndr: Base.decode16!("010B000040010000000109000040FF")
+          invalid_compound_curve_wkb_ndr: Base.decode16!("010B000040010000000109000040FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("004000000700000001"),
+            ndr: Base.decode16!("010700004001000000")
+          }
         }
       },
       %{
@@ -215,8 +221,7 @@ defmodule Geometry.MultiCurveTest do
                   [2.0, 3.0, 2.0],
                   [4.0, 3.0, 3.0]
                 ]},
-               {:coords,
-                [[4.0, 3.0, 6.0], [4.0, 5.0, 7.0], [1.0, 4.0, 8.0], [0.0, 0.0, 9.0]]}
+               {:coords, [[4.0, 3.0, 6.0], [4.0, 5.0, 7.0], [1.0, 4.0, 8.0], [0.0, 0.0, 9.0]]}
              ]}
           ],
           wkb_xdr:
@@ -264,11 +269,15 @@ defmodule Geometry.MultiCurveTest do
             Base.decode16!("""
             010B000080010000000101000080000000000000F03F00000000000000400000000000000840\
             """),
-          invalid_line_string_wkb_ndr:
-            Base.decode16!("010B00008001000000010200008002000000FF"),
+          invalid_line_string_wkb_ndr: Base.decode16!("010B00008001000000010200008002000000FF"),
           invalid_circular_string_wkb_ndr:
             Base.decode16!("010B00008001000000010800008003000000FF"),
-          invalid_compound_curve_wkb_ndr: Base.decode16!("010B000080010000000109000080FF")
+          invalid_compound_curve_wkb_ndr: Base.decode16!("010B000080010000000109000080FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("008000000700000001"),
+            ndr: Base.decode16!("010700008001000000")
+          }
         }
       },
       %{
@@ -287,8 +296,7 @@ defmodule Geometry.MultiCurveTest do
         data: %{
           curves: [
             {:coords, [[0.0, 0.0, 1.0, 5.0], [5.0, 5.0, 2.0, 5.0]]},
-            {:line_string,
-             [[0.0, 1.0, 3.0, 4.0], [1.0, 1.0, 4.0, 5.0], [0.0, 2.0, 5.0, 6.0]]},
+            {:line_string, [[0.0, 1.0, 3.0, 4.0], [1.0, 1.0, 4.0, 5.0], [0.0, 2.0, 5.0, 6.0]]},
             {:circular_string,
              [[4.0, 0.0, 6.0, 5.0], [4.0, 4.0, 7.0, 5.0], [8.0, 4.0, 8.0, 8.0]]},
             {:compound_curve,
@@ -365,11 +373,15 @@ defmodule Geometry.MultiCurveTest do
             010B0000C00100000001010000C0000000000000F03F00000000000000400000\
             0000000008400000000000001040\
             """),
-          invalid_line_string_wkb_ndr:
-            Base.decode16!("010B0000C00100000001020000C002000000FF"),
+          invalid_line_string_wkb_ndr: Base.decode16!("010B0000C00100000001020000C002000000FF"),
           invalid_circular_string_wkb_ndr:
             Base.decode16!("010B0000C00100000001080000C003000000FF"),
-          invalid_compound_curve_wkb_ndr: Base.decode16!("010B0000C00100000001090000C0FF")
+          invalid_compound_curve_wkb_ndr: Base.decode16!("010B0000C00100000001090000C0FF"),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("00C000000700000001"),
+            ndr: Base.decode16!("01070000C001000000")
+          }
         }
       }
     ],
@@ -542,6 +554,38 @@ defmodule Geometry.MultiCurveTest do
 
           assert {:error, %DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :invalid_length
+        end
+
+        test "returns a geometry for a multi curve inside a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(code[:xdr]) <> unquote(data[:wkb_xdr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns a geometry for a multi curve inside a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(code[:ndr]) <> unquote(data[:wkb_ndr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid multi curve in a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(data[:unexpected_wkb_xdr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid multi curve in a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(data[:unexpected_wkb_ndr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
         end
       end
 

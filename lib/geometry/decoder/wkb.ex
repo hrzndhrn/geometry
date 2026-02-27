@@ -15,10 +15,6 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.CurvePolygonM
   alias Geometry.CurvePolygonZ
   alias Geometry.CurvePolygonZM
-  alias Geometry.MultiCurve
-  alias Geometry.MultiCurveM
-  alias Geometry.MultiCurveZ
-  alias Geometry.MultiCurveZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -27,6 +23,10 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
   alias Geometry.LineStringZM
+  alias Geometry.MultiCurve
+  alias Geometry.MultiCurveM
+  alias Geometry.MultiCurveZ
+  alias Geometry.MultiCurveZM
   alias Geometry.MultiLineString
   alias Geometry.MultiLineStringM
   alias Geometry.MultiLineStringZ
@@ -1001,6 +1001,12 @@ defmodule Geometry.Decoder.WKB do
               {:ok, :curve_polygon, bin} ->
                 case curve_polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, curve_polygon, bin} -> {curve_polygon, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :multi_curve, bin} ->
+                case multi_curve(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, multi_curve, bin} -> {multi_curve, bin}
                   error -> throw(error)
                 end
 
