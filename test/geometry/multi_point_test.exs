@@ -47,7 +47,14 @@ defmodule Geometry.MultiPointTest do
             Base.decode16!("""
             020000000101000000000000000000F03F9A9999999999014001010000000000000000\
             0008409A99999999991140\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("000000000700000001"),
+            ndr: Base.decode16!("010700000001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("000000000400000001FF"),
+          invalid_wkb_ndr: Base.decode16!("010400000001000000FF")
         }
       },
       %{
@@ -74,7 +81,14 @@ defmodule Geometry.MultiPointTest do
             Base.decode16!("""
             020000000101000040000000000000F03F9A9999999999014000000000000008400101\
             00004000000000000008409A999999999911400000000000001440\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("004000000700000001"),
+            ndr: Base.decode16!("010700004001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("004000000400000001FF"),
+          invalid_wkb_ndr: Base.decode16!("010400004001000000FF")
         }
       },
       %{
@@ -101,7 +115,14 @@ defmodule Geometry.MultiPointTest do
             Base.decode16!("""
             0200000001010000800000000000000840000000000000084000000000000008400101\
             000080000000000000104000000000000010400000000000001040\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("008000000700000001"),
+            ndr: Base.decode16!("010700008001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("008000000400000001FF"),
+          invalid_wkb_ndr: Base.decode16!("010400008001000000FF")
         }
       },
       %{
@@ -130,7 +151,14 @@ defmodule Geometry.MultiPointTest do
             0200000001010000C00000000000000840000000000000084000000000000008400000\
             00000000224001010000C0000000000000104000000000000010400000000000001040\
             0000000000002440\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("00C000000700000001"),
+            ndr: Base.decode16!("01070000C001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("00C000000400000001FF"),
+          invalid_wkb_ndr: Base.decode16!("01040000C001000000FF")
         }
       }
     ],
@@ -380,6 +408,38 @@ defmodule Geometry.MultiPointTest do
 
           assert offset in [35, 43, 51]
           assert byte_size(rest) in [14, 22, 30]
+        end
+
+        test "returns a geometry for a multi-point inside a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(code[:xdr]) <> unquote(data[:xdr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns a geometry for a multi-point inside a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(code[:ndr]) <> unquote(data[:ndr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid multi-point in a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(data[:invalid_wkb_xdr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid multi-point in a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(data[:invalid_wkb_ndr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
         end
       end
 

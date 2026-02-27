@@ -283,6 +283,47 @@ defmodule GeometryTest do
                  }
                }
     end
+
+    test "returns an error tuple for unexpected geometry in a multi curve" do
+      wkt = "MultiCurve Z (LineString ZM (5 9 2 5, 7 8 4 5))"
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {1, 0},
+                   message: "unexpected geometry in multi curve",
+                   offset: 28,
+                   reason: nil,
+                   rest: "(5 9 2 5, 7 8 4 5))"
+                 }
+               }
+    end
+
+    test "returns an error tuple for an invalid srid in a multi curve" do
+      wkt = """
+      MultiCurve ZM (\
+        LineString ZM (5 9 2 1, 7 8 4 2),
+        SRID=77;LineString ZM (7 8 4 2, 1 2 3 4, 5 5 5 5),
+      )
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {2, 51},
+                   message: "unexpected SRID in multi curve",
+                   offset: 75,
+                   reason: nil,
+                   rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5),\n)\n"
+                 }
+               }
+    end
   end
 
   describe "from_wkt!/1" do

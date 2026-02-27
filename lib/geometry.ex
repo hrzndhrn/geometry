@@ -28,6 +28,9 @@ defmodule Geometry do
   + CurvePolygon
     + `Geometry.CurvePolygon`, `Geometry.CurvePolygonM`,
       `Geometry.CurvePolygonZ`, `Geometry.CurvePolygonZM`
+  + MultiCurve
+    + `Geometry.MultiCurve`, `Geometry.MultiCurveM`,
+      `Geometry.MultiCurveZ`, `Geometry.MultiCurveZM`
 
   Collections:
   + MultiPoint
@@ -75,6 +78,10 @@ defmodule Geometry do
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
   alias Geometry.LineStringZM
+  alias Geometry.MultiCurve
+  alias Geometry.MultiCurveM
+  alias Geometry.MultiCurveZ
+  alias Geometry.MultiCurveZM
   alias Geometry.MultiLineString
   alias Geometry.MultiLineStringM
   alias Geometry.MultiLineStringZ
@@ -122,6 +129,10 @@ defmodule Geometry do
           | LineStringM.t()
           | LineStringZ.t()
           | LineStringZM.t()
+          | MultiCurve.t()
+          | MultiCurveM.t()
+          | MultiCurveZ.t()
+          | MultiCurveZM.t()
           | MultiLineString.t()
           | MultiLineStringM.t()
           | MultiLineStringZ.t()

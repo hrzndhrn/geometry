@@ -51,7 +51,14 @@ defmodule Geometry.CircularStringTest do
             Base.decode16!("""
             03000000000000000000F03F295C8FC2F528004000000000000008409A\
             9999999999114000000000000014400000000000001840\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("000000000700000001"),
+            ndr: Base.decode16!("010700000001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("000000000800000003FF"),
+          invalid_wkb_ndr: Base.decode16!("010800000003000000FF")
         }
       },
       %{
@@ -84,7 +91,14 @@ defmodule Geometry.CircularStringTest do
             03000000000000000000F03F9A999999999901400000000000000840000000000000\
             08409A99999999991140000000000000144000000000000018400000000000001C40\
             6ABC749318042040\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("004000000700000001"),
+            ndr: Base.decode16!("010700004001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("004000000800000003FF"),
+          invalid_wkb_ndr: Base.decode16!("010800004003000000FF")
         }
       },
       %{
@@ -117,7 +131,14 @@ defmodule Geometry.CircularStringTest do
             03000000000000000000084000000000000008400000000000000840000000000000\
             10400000000000001040000000000000104000000000000014400000000000001440\
             0000000000001440\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("008000000700000001"),
+            ndr: Base.decode16!("010700008001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("008000000800000003FF"),
+          invalid_wkb_ndr: Base.decode16!("010800008003000000FF")
         }
       },
       %{
@@ -150,7 +171,14 @@ defmodule Geometry.CircularStringTest do
             03000000000000000000084000000000000008400000000000000840000000000000\
             22400000000000001040000000000000104000000000000010400000000000002440\
             5C8FC2F5281C3540B81E85EB5138364014AE47E17A5437409A99999999F95840\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("00C000000700000001"),
+            ndr: Base.decode16!("01070000C001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("00C000000800000003FF"),
+          invalid_wkb_ndr: Base.decode16!("01080000C003000000FF")
         }
       }
     ],
@@ -361,6 +389,38 @@ defmodule Geometry.CircularStringTest do
                  } = Geometry.from_wkb(wkb)
 
           assert offset in [57, 81, 105]
+        end
+
+        test "returns a geometry for a circular string inside a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(code[:xdr]) <> unquote(data[:xdr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns a geometry for a circular string inside a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(code[:ndr]) <> unquote(data[:ndr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid circular string in a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(data[:invalid_wkb_xdr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid circular string in a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(data[:invalid_wkb_ndr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
         end
       end
 

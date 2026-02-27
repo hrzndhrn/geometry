@@ -52,7 +52,14 @@ defmodule Geometry.MultiLineStringTest do
             02000000010200000002000000000000000000F03F9A99999999990140000000000000\
             08409A9999999999114001020000000200000000000000000014400000000000001840\
             0000000000001C400000000000002040\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("000000000700000001"),
+            ndr: Base.decode16!("010700000001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("000000000500000001FF"),
+          invalid_wkb_ndr: Base.decode16!("010500000001000000FF")
         }
       },
       %{
@@ -86,7 +93,14 @@ defmodule Geometry.MultiLineStringTest do
             084000000000000008409A999999999911400000000000001440010200004002000000\
             000000000000F03F9A9999999999014000000000000008400000000000001840000000\
             0000001C400000000000002040\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("004000000700000001"),
+            ndr: Base.decode16!("010700004001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("004000000500000001FF"),
+          invalid_wkb_ndr: Base.decode16!("010500004001000000FF")
         }
       },
       %{
@@ -120,7 +134,14 @@ defmodule Geometry.MultiLineStringTest do
             0840000000000000104000000000000010400000000000001040010200008002000000\
             0000000000002040000000000000204000000000000020400000000000002240000000\
             00000022400000000000002240\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("008000000700000001"),
+            ndr: Base.decode16!("010700008001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("008000000500000001FF"),
+          invalid_wkb_ndr: Base.decode16!("010500008001000000FF")
         }
       },
       %{
@@ -156,7 +177,14 @@ defmodule Geometry.MultiLineStringTest do
             0000000000244001020000C0020000000000000000002A400000000000002A40000000\
             0000002A40000000000000334000000000000038400000000000003840000000000000\
             38400000000000003440\
-            """)
+            """),
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("00C000000700000001"),
+            ndr: Base.decode16!("01070000C001000000")
+          },
+          invalid_wkb_xdr: Base.decode16!("00C000000500000001FF"),
+          invalid_wkb_ndr: Base.decode16!("01050000C001000000FF")
         }
       }
     ],
@@ -421,6 +449,38 @@ defmodule Geometry.MultiLineStringTest do
                    <<0, 0, 0, 0, 0, 0, 56, 64, 0, 0, 0, 0, 0, 0, 56, 64, 0, 0, 0, 0, 0, 0, 56, 64,
                      0, 0, 0, 0, 0, 0, 52>>
                  ]
+        end
+
+        test "returns a geometry for a multi-line-string inside a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(code[:xdr]) <> unquote(data[:xdr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns a geometry for a multi-line-string inside a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(code[:ndr]) <> unquote(data[:ndr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid multi-line-string in a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(data[:invalid_wkb_xdr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid multi-line-string in a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(data[:invalid_wkb_ndr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
         end
       end
 

@@ -81,7 +81,12 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("010900000001000000010800000003000000FF"),
           just_coords:
             {"COMPOUNDCURVE(CIRCULARSTRING(0 0, 1 1, 1 0),(1 0, 0 1))",
-             "COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 1 0), LINESTRING (1 0, 0 1))"}
+             "COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 1 0), LINESTRING (1 0, 0 1))"},
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("000000000700000001"),
+            ndr: Base.decode16!("010700000001000000")
+          }
         }
       },
       %{
@@ -138,7 +143,12 @@ defmodule Geometry.CompoundCurveTest do
             Base.decode16!("010900004001000000010800004003000000FF"),
           just_coords:
             {"COMPOUNDCURVEM(CIRCULARSTRINGM(0 0 0, 1 1 1, 1 0 0),(1 0 0, 0 1 1))",
-             "COMPOUNDCURVE M (CIRCULARSTRING M (0 0 0, 1 1 1, 1 0 0), LINESTRING M (1 0 0, 0 1 1))"}
+             "COMPOUNDCURVE M (CIRCULARSTRING M (0 0 0, 1 1 1, 1 0 0), LINESTRING M (1 0 0, 0 1 1))"},
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("004000000700000001"),
+            ndr: Base.decode16!("010700004001000000")
+          }
         }
       },
       %{
@@ -196,6 +206,11 @@ defmodule Geometry.CompoundCurveTest do
           just_coords: {
             "COMPOUNDCURVEZ(CIRCULARSTRINGZ(0 0 0, 1 1 1, 1 0 0),(1 0 0, 0 1 1))",
             "COMPOUNDCURVE Z (CIRCULARSTRING Z (0 0 0, 1 1 1, 1 0 0), LINESTRING Z (1 0 0, 0 1 1))"
+          },
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("008000000700000001"),
+            ndr: Base.decode16!("010700008001000000")
           }
         }
       },
@@ -259,6 +274,11 @@ defmodule Geometry.CompoundCurveTest do
           just_coords: {
             "COMPOUNDCURVEZM(CIRCULARSTRINGZM(0 0 0 0, 1 1 1 1, 1 0 0 0),(1 0 0 0, 0 1 1 1))",
             "COMPOUNDCURVE ZM (CIRCULARSTRING ZM (0 0 0 0, 1 1 1 1, 1 0 0 0), LINESTRING ZM (1 0 0 0, 0 1 1 1))"
+          },
+          geometry_collection_code: %{
+            # A prefix for a geometry collection with one element.
+            xdr: Base.decode16!("00C000000700000001"),
+            ndr: Base.decode16!("01070000C001000000")
           }
         }
       }
@@ -424,6 +444,38 @@ defmodule Geometry.CompoundCurveTest do
 
           assert {:error, %Geometry.DecodeError{} = error} = Geometry.from_wkb(wkb)
           assert error.reason == :expected_compound_curve_segment
+        end
+
+        test "returns a geometry for a compound curve inside a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(code[:xdr]) <> unquote(data[:wkb_xdr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns a geometry for a compound curve inside a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(code[:ndr]) <> unquote(data[:wkb_ndr])
+
+          assert {:ok, _geometry} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid compound curve in a geometry collection (xdr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:xdr]) <>
+              unquote(data[:unexpected_wkb_xdr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
+        end
+
+        test "returns an error for an invalid compound curve in a geometry collection (ndr)" do
+          wkb =
+            unquote(data[:geometry_collection_code][:ndr]) <>
+              unquote(data[:unexpected_wkb_ndr])
+
+          assert {:error, _reason} = Geometry.from_wkb(wkb)
         end
       end
 

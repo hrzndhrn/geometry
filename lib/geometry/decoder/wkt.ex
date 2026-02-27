@@ -25,6 +25,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
   alias Geometry.LineStringZM
+  alias Geometry.MultiCurve
+  alias Geometry.MultiCurveM
+  alias Geometry.MultiCurveZ
+  alias Geometry.MultiCurveZM
   alias Geometry.MultiLineString
   alias Geometry.MultiLineStringM
   alias Geometry.MultiLineStringZ
@@ -166,6 +170,38 @@ defmodule Geometry.Decoder.WKT do
       Enum.map(rings, fn {type, ring} -> geometry(type, :xyzm, ring, srid) end)
 
     %CurvePolygonZM{rings: rings, srid: srid}
+  end
+
+  defp geometry(:multi_curve, dim, {:curves, curves}, srid) do
+    geometry(:multi_curve, dim, curves, srid)
+  end
+
+  defp geometry(:multi_curve, :xy, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xy, curve, srid) end)
+
+    %MultiCurve{curves: curves, srid: srid}
+  end
+
+  defp geometry(:multi_curve, :xym, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xym, curve, srid) end)
+
+    %MultiCurveM{curves: curves, srid: srid}
+  end
+
+  defp geometry(:multi_curve, :xyz, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xyz, curve, srid) end)
+
+    %MultiCurveZ{curves: curves, srid: srid}
+  end
+
+  defp geometry(:multi_curve, :xyzm, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xyzm, curve, srid) end)
+
+    %MultiCurveZM{curves: curves, srid: srid}
   end
 
   defp geometry(:multi_point, :xy, coordinates, srid),
