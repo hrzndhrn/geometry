@@ -11,6 +11,7 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     "CircularString",
     "CompoundCurve",
     "CurvePolygon",
+    "MultiCurve",
     "MultiPoint",
     "MultiLineString",
     "MultiPolygon",

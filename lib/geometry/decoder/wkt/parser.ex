@@ -96,7 +96,8 @@ defmodule Geometry.Decoder.WKT.Parser do
         :multi_point,
         :multi_line_string,
         :multi_polygon,
-        :geometry_collection
+        :geometry_collection,
+        :multi_curve
       ] do
     defp geometry_text({unquote(parser), :xy}, rest, opts) do
       unquote(:"#{parser}_xy")(rest, Keyword.put(opts, :tag, :xy))
@@ -219,6 +220,62 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:halt], rest, context, line, byte_offset} ->
           {:ok, {:rings, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp multi_curve_curve(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_line_string(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry}
+        when geometry in [:line_string, :circular_string, :compound_curve] ->
+          multi_curve_curve_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected curve in multi curve", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in multi curve", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in multi curve", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp multi_curve_curve_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
+  for multi_curve <- [
+        :multi_curve_xy,
+        :multi_curve_xyz,
+        :multi_curve_xyzm
+      ] do
+    defp unquote(multi_curve)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:curves, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 multi_curve_curve(rest, line: line, byte_offset: byte_offset, tag: tag) do
+            unquote(multi_curve)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:curves, Enum.reverse(acc)}, rest, context, line, byte_offset}
       end
     end
   end
