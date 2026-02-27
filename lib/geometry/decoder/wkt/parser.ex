@@ -224,12 +224,12 @@ defmodule Geometry.Decoder.WKT.Parser do
     end
   end
 
-  defp multi_curve_curve(string, opts) do
+  defp multi_curve_item(string, opts) do
     with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_line_string(string, opts) do
       case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
         {true, nil, geometry}
         when geometry in [:line_string, :circular_string, :compound_curve] ->
-          multi_curve_curve_text({info.geometry, info.tag}, rest,
+          multi_curve_item_text({info.geometry, info.tag}, rest,
             line: line,
             byte_offset: byte_offset
           )
@@ -246,7 +246,7 @@ defmodule Geometry.Decoder.WKT.Parser do
     end
   end
 
-  defp multi_curve_curve_text({geometry, _tag} = info, str, opts) do
+  defp multi_curve_item_text({geometry, _tag} = info, str, opts) do
     with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
       {:ok, {geometry, data}, rest, context, line, byte_offset}
     end
@@ -266,7 +266,7 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:next], rest, _context, line, byte_offset} ->
           with {:ok, geometry, rest, _context, line, byte_offset} <-
-                 multi_curve_curve(rest, line: line, byte_offset: byte_offset, tag: tag) do
+                 multi_curve_item(rest, line: line, byte_offset: byte_offset, tag: tag) do
             unquote(multi_curve)(
               rest,
               [line: line, byte_offset: byte_offset, tag: tag],
