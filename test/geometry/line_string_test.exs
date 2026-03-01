@@ -2,24 +2,22 @@ defmodule Geometry.LineStringTest do
   use ExUnit.Case, async: true
 
   import Assertions
+  import GeometryHelpers
 
   alias Geometry.DecodeError
-
   alias Geometry.LineString
-  alias Geometry.LineStringM
-  alias Geometry.LineStringZ
-  alias Geometry.LineStringZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
   alias Geometry.PointZM
+  alias Geometry.LineStringM
+  alias Geometry.LineStringZ
+  alias Geometry.LineStringZM
 
   doctest Geometry.LineString, import: true
   doctest Geometry.LineStringM, import: true
   doctest Geometry.LineStringZ, import: true
   doctest Geometry.LineStringZM, import: true
-
-  @blank "\s"
 
   Enum.each(
     [
@@ -582,32 +580,7 @@ defmodule Geometry.LineStringTest do
     end
   )
 
-  defp wkt(name, data \\ [], srid \\ "")
-
-  defp wkt(name, [], ""), do: "#{String.upcase(name)} EMPTY"
-
-  defp wkt(name, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
-
-  defp wkt(name, data, srid) do
-    coordinates = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
-
-    srid = if srid == "", do: "", else: "SRID=#{srid};"
-
-    "#{srid}#{String.upcase(name)} (#{coordinates})"
-  end
-
   defp line(module, data, dim, srid \\ 0) do
-    module.new(coordinates(data, dim), srid)
-  end
-
-  defp coordinates(data, dim) do
-    Enum.map(data, fn point ->
-      case dim do
-        :xy -> Point.new(point)
-        :xym -> PointM.new(point)
-        :xyz -> PointZ.new(point)
-        :xyzm -> PointZM.new(point)
-      end
-    end)
+    module.new(Enum.map(data, &create_point(&1, dim)), srid)
   end
 end

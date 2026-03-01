@@ -2,28 +2,17 @@ defmodule Geometry.MultiSurfaceTest do
   use ExUnit.Case, async: true
 
   import Assertions
+  import GeometryHelpers, except: [wkt: 1, wkt: 2, wkt: 3]
 
-  alias Geometry.CircularString
-  alias Geometry.CircularStringM
-  alias Geometry.CircularStringZ
-  alias Geometry.CircularStringZM
   alias Geometry.CurvePolygon
   alias Geometry.CurvePolygonM
   alias Geometry.CurvePolygonZ
   alias Geometry.CurvePolygonZM
   alias Geometry.DecodeError
-  alias Geometry.LineString
-  alias Geometry.LineStringM
-  alias Geometry.LineStringZ
-  alias Geometry.LineStringZM
   alias Geometry.MultiSurface
   alias Geometry.MultiSurfaceM
   alias Geometry.MultiSurfaceZ
   alias Geometry.MultiSurfaceZM
-  alias Geometry.Point
-  alias Geometry.PointM
-  alias Geometry.PointZ
-  alias Geometry.PointZM
   alias Geometry.Polygon
   alias Geometry.PolygonM
   alias Geometry.PolygonZ
@@ -33,8 +22,6 @@ defmodule Geometry.MultiSurfaceTest do
   doctest Geometry.MultiSurfaceM, import: true
   doctest Geometry.MultiSurfaceZ, import: true
   doctest Geometry.MultiSurfaceZM, import: true
-
-  @blank "\s"
 
   Enum.each(
     [
@@ -1087,20 +1074,6 @@ defmodule Geometry.MultiSurfaceTest do
     "LINESTRING#{wkt_dim(dim)}(#{wkt_coords(coords)})"
   end
 
-  defp wkt_dim(:xy), do: " "
-  defp wkt_dim(:xyz), do: " Z "
-  defp wkt_dim(:xym), do: " M "
-  defp wkt_dim(:xyzm), do: " ZM "
-
-  defp wkt_coords(coordinates) do
-    Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-  end
-
-  defp dim(MultiSurface), do: :xy
-  defp dim(MultiSurfaceM), do: :xym
-  defp dim(MultiSurfaceZ), do: :xyz
-  defp dim(MultiSurfaceZM), do: :xyzm
-
   defp multi_surface(module, surface_data, srid \\ 0) do
     surface_data
     |> surfaces(dim(module), srid)
@@ -1112,7 +1085,7 @@ defmodule Geometry.MultiSurfaceTest do
   end
 
   defp create_surface({:polygon, rings}, dim, srid) do
-    rings = Enum.map(rings, fn coords -> create_cp_ring({:coords, coords}, dim, srid) end)
+    rings = Enum.map(rings, fn coords -> create_line_string(coords, dim, srid) end)
 
     case dim do
       :xy -> Polygon.new(rings, srid)
@@ -1122,9 +1095,8 @@ defmodule Geometry.MultiSurfaceTest do
     end
   end
 
-  defp create_surface({:rings, rings}, dim, srid) do
-    create_surface({:polygon, rings}, dim, srid)
-  end
+  defp create_surface({:rings, rings}, dim, srid),
+    do: create_surface({:polygon, rings}, dim, srid)
 
   defp create_surface({:curve_polygon, rings_data}, dim, srid) do
     rings = Enum.map(rings_data, fn ring_desc -> create_cp_ring(ring_desc, dim, srid) end)
@@ -1137,41 +1109,12 @@ defmodule Geometry.MultiSurfaceTest do
     end
   end
 
-  defp create_surface({:circular_string_s, coords}, dim, srid) do
-    points = Enum.map(coords, &create_point(&1, dim))
+  defp create_surface({:circular_string_s, coords}, dim, srid),
+    do: create_circular_string(coords, dim, srid)
 
-    case dim do
-      :xy -> CircularString.new(points, srid)
-      :xym -> CircularStringM.new(points, srid)
-      :xyz -> CircularStringZ.new(points, srid)
-      :xyzm -> CircularStringZM.new(points, srid)
-    end
-  end
+  defp create_cp_ring({:circular_string, coords}, dim, srid),
+    do: create_circular_string(coords, dim, srid)
 
-  defp create_cp_ring({:circular_string, coords}, dim, srid) do
-    points = Enum.map(coords, &create_point(&1, dim))
-
-    case dim do
-      :xy -> CircularString.new(points, srid)
-      :xym -> CircularStringM.new(points, srid)
-      :xyz -> CircularStringZ.new(points, srid)
-      :xyzm -> CircularStringZM.new(points, srid)
-    end
-  end
-
-  defp create_cp_ring({:coords, coords}, dim, srid) do
-    points = Enum.map(coords, &create_point(&1, dim))
-
-    case dim do
-      :xy -> LineString.new(points, srid)
-      :xym -> LineStringM.new(points, srid)
-      :xyz -> LineStringZ.new(points, srid)
-      :xyzm -> LineStringZM.new(points, srid)
-    end
-  end
-
-  defp create_point(coord, :xy), do: Point.new(coord)
-  defp create_point(coord, :xym), do: PointM.new(coord)
-  defp create_point(coord, :xyz), do: PointZ.new(coord)
-  defp create_point(coord, :xyzm), do: PointZM.new(coord)
+  defp create_cp_ring({:coords, coords}, dim, srid),
+    do: create_line_string(coords, dim, srid)
 end

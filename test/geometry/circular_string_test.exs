@@ -2,13 +2,13 @@ defmodule Geometry.CircularStringTest do
   use ExUnit.Case, async: true
 
   import Assertions
-
-  alias Geometry.DecodeError
+  import GeometryHelpers
 
   alias Geometry.CircularString
   alias Geometry.CircularStringM
   alias Geometry.CircularStringZ
   alias Geometry.CircularStringZM
+  alias Geometry.DecodeError
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
@@ -18,8 +18,6 @@ defmodule Geometry.CircularStringTest do
   doctest Geometry.CircularStringM, import: true
   doctest Geometry.CircularStringZ, import: true
   doctest Geometry.CircularStringZM, import: true
-
-  @blank "\s"
 
   Enum.each(
     [
@@ -632,34 +630,7 @@ defmodule Geometry.CircularStringTest do
     end
   )
 
-  defp wkt(name, data \\ [], srid \\ "")
-
-  defp wkt(name, [], ""), do: "#{String.upcase(name)} EMPTY"
-
-  defp wkt(name, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
-
-  defp wkt(name, data, srid) do
-    coordinates = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
-
-    srid = if srid == "", do: "", else: "SRID=#{srid};"
-
-    "#{srid}#{String.upcase(name)} (#{coordinates})"
-  end
-
   defp circular_string(module, data, dim, srid \\ 0) do
-    module.new(coordinates(data, dim), srid)
-  end
-
-  defp coordinates(data, dim) do
-    Enum.map(data, fn point ->
-      case dim do
-        :xy -> Point.new(point)
-        :xym -> PointM.new(point)
-        :xyz -> PointZ.new(point)
-        :xyzm -> PointZM.new(point)
-      end
-    end)
+    module.new(Enum.map(data, &create_point(&1, dim)), srid)
   end
 end
-
-"010A0000000300000000000000000000000000000000000000000000000000F03F000000000000F03F00000000000000000000000000000000"

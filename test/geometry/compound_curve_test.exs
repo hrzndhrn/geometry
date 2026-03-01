@@ -2,32 +2,18 @@ defmodule Geometry.CompoundCurveTest do
   use ExUnit.Case, async: true
 
   import Assertions
+  import GeometryHelpers, except: [wkt: 1, wkt: 2, wkt: 3]
 
-  alias Geometry.DecodeError
-
-  alias Geometry.CircularString
-  alias Geometry.CircularStringM
-  alias Geometry.CircularStringZ
-  alias Geometry.CircularStringZM
   alias Geometry.CompoundCurve
   alias Geometry.CompoundCurveM
   alias Geometry.CompoundCurveZ
   alias Geometry.CompoundCurveZM
-  alias Geometry.LineString
-  alias Geometry.LineStringM
-  alias Geometry.LineStringZ
-  alias Geometry.LineStringZM
-  alias Geometry.Point
-  alias Geometry.PointM
-  alias Geometry.PointZ
-  alias Geometry.PointZM
+  alias Geometry.DecodeError
 
   doctest Geometry.CompoundCurve, import: true
   doctest Geometry.CompoundCurveM, import: true
   doctest Geometry.CompoundCurveZ, import: true
   doctest Geometry.CompoundCurveZM, import: true
-
-  @blank "\s"
 
   Enum.each(
     [
@@ -739,23 +725,8 @@ defmodule Geometry.CompoundCurveTest do
   defp wkt_type(:circular_string), do: "CIRCULARSTRING"
   defp wkt_type(:point), do: "POINT"
 
-  defp wkt_dim(:xy), do: " "
-  defp wkt_dim(:xyz), do: " Z "
-  defp wkt_dim(:xym), do: " M "
-  defp wkt_dim(:xyzm), do: " ZM "
-
-  defp dim(CompoundCurve), do: :xy
-  defp dim(CompoundCurveM), do: :xym
-  defp dim(CompoundCurveZ), do: :xyz
-  defp dim(CompoundCurveZM), do: :xyzm
-
-  defp wkt_coords(:point, coordinate) do
-    Enum.join(coordinate, @blank)
-  end
-
-  defp wkt_coords(_type, coordinates) do
-    Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-  end
+  defp wkt_coords(:point, coordinate), do: Enum.join(coordinate, " ")
+  defp wkt_coords(_type, coordinates), do: wkt_coords(coordinates)
 
   defp compound_curve(module, segment_data, srid \\ 0) do
     segment_data
@@ -769,30 +740,9 @@ defmodule Geometry.CompoundCurveTest do
     end)
   end
 
-  defp create_segment(:line_string, coordinates, dim, srid) do
-    points = Enum.map(coordinates, fn coord -> create_point(coord, dim) end)
+  defp create_segment(:line_string, coordinates, dim, srid),
+    do: create_line_string(coordinates, dim, srid)
 
-    case dim do
-      :xy -> LineString.new(points, srid)
-      :xym -> LineStringM.new(points, srid)
-      :xyz -> LineStringZ.new(points, srid)
-      :xyzm -> LineStringZM.new(points, srid)
-    end
-  end
-
-  defp create_segment(:circular_string, coordinates, dim, srid) do
-    points = Enum.map(coordinates, fn coord -> create_point(coord, dim) end)
-
-    case dim do
-      :xy -> CircularString.new(points, srid)
-      :xym -> CircularStringM.new(points, srid)
-      :xyz -> CircularStringZ.new(points, srid)
-      :xyzm -> CircularStringZM.new(points, srid)
-    end
-  end
-
-  defp create_point(coord, :xy), do: Point.new(coord)
-  defp create_point(coord, :xym), do: PointM.new(coord)
-  defp create_point(coord, :xyz), do: PointZ.new(coord)
-  defp create_point(coord, :xyzm), do: PointZM.new(coord)
+  defp create_segment(:circular_string, coordinates, dim, srid),
+    do: create_circular_string(coordinates, dim, srid)
 end
