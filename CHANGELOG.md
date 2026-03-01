@@ -1,8 +1,16 @@
 # Changelog
 
-## 1.2.0 - 2026/--/--
+## 1.2.0 - 2026/03/01
 
-...
++ Add geometry types `CircularString`, `CircularStringM`, `CircularStringZ`,
+  `CircularStringZM`.
++ Add geometry types `CompoundCurve`, `CompoundCurveM`, `CompoundCurveZ`,
+  `CompoundCurveZM`.
++ Add geometry types `CurvePolygon`, `CurvePolygonM`, `CurvePolygonZ`,
+  `CurvePolygonZM`.
++ Add geometry types `MultiCurve`, `MultiCurveM`, `MultiCurveZ`, `MultiCurveZM`.
++ Add geometry types `MultiSurface`, `MultiSurfaceM`, `MultiSurfaceZ`,
+  `MultiSurfaceZM`.
 
 ## 1.1.2 - 2026/02/12
 
