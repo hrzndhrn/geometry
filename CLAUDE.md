@@ -26,7 +26,7 @@ Every geometry type exists in 4 dimension variants: base (XY), Z (XYZ), M (XYM),
 Each struct file contains only the struct definition and `use Geometry.Protocols`. The macro in `lib/geometry/protocols.ex` generates all protocol implementations (WKB encoder/decoder, WKT encoder, GeoJSON encoder, `Enumerable`, `Collectable`, `empty?`) at compile time.
 
 `lib/geometry/protocols.ex` contains:
-- `@codes` — sequential WKB type codes (1-indexed): point=1, line_string=2, polygon=3, multi_point=4, multi_line_string=5, multi_polygon=6, geometry_collection=7, circular_string=8, compound_curve=9, curve_polygon=10, multi_curve=11
+- `@codes` — sequential WKB type codes (1-indexed): point=1, line_string=2, polygon=3, multi_point=4, multi_line_string=5, multi_polygon=6, geometry_collection=7, circular_string=8, compound_curve=9, curve_polygon=10, multi_curve=11, multi_surface=12
 - `@geometry_keys` — field names for each type
 - `@multi` — list of collection types (enables `Enumerable`/`Collectable`)
 - `defmacro wkb/2` and `defmacro wkt/2` — code-gen entry points
@@ -50,9 +50,13 @@ WKB type codes use dimension flags: xy=0x00, xym=0x40, xyz=0x80, xyzm=0xC0 (adde
 
 ### Collections with Heterogeneous Sub-geometries
 
-For types like `CurvePolygon`, `CompoundCurve`, `MultiCurve`:
+For types like `CurvePolygon`, `CompoundCurve`, `MultiCurve`, `MultiSurface`:
 - WKB decoder uses a custom loop matching on prefix bytes to dispatch to sub-geometry decoders
 - WKT parser accepts bare `(...)` coordinates as `LineString` via `geometry_or_line_string`
+
+### WKB Decoder `each/4` Helper
+
+`lib/geometry/decoder/wkb.ex` contains a private `each/4` recursive function used by all multi-element decoders. It threads the remaining binary through successive `fun.(bin)` calls that return `{:ok, item, rest}`, accumulating items into a list. Errors propagate via `with`.
 
 ## Adding a New Geometry Type
 
@@ -69,12 +73,13 @@ For types like `CurvePolygon`, `CompoundCurve`, `MultiCurve`:
 Tests in `test/geometry/foo_test.exs` use `Enum.each` over 4 module configs to generate tests for all dimension variants at compile time via `unquote`.
 
 **Two data-key patterns exist across test files:**
-- Files for curve types (multi_curve, compound_curve, curve_polygon) use `data[:wkb_xdr]` / `data[:wkb_ndr]` and have `unexpected_wkb_xdr` / `unexpected_wkb_ndr` for error cases.
+- Files for curve types (multi_curve, compound_curve, curve_polygon, multi_surface) use `data[:wkb_xdr]` / `data[:wkb_ndr]` and have `unexpected_wkb_xdr` / `unexpected_wkb_ndr` for error cases.
 - Files for other types (circular_string, multi_point, multi_line_string, multi_polygon) use `data[:xdr]` / `data[:ndr]` and need explicit `invalid_wkb_xdr` / `invalid_wkb_ndr` entries.
 
 **Test helpers in `test/support/`:**
 - `Binary` — `replace/3`, `take/2`, `drop/2` for manipulating binary WKB data
 - `Assertions` — custom assertions for geometry comparisons
 - `GeoJsonValidator` — validates GeoJSON output against schema
+- `GeometryHelpers` — shared helpers imported by curve-type test files: `wkt/3`, `wkt_dim/1`, `dim/1`, `wkt_coords/1`, `coordinates/2`, `create_point/2`, `create_line_string/3`, `create_circular_string/3`, `create_compound_curve/3`. Test files that define their own `wkt` with different arity use `import GeometryHelpers, except: [wkt: 1, wkt: 2, wkt: 3]`.
 
 Reference WKB hex data is in `zzz/*.md` files.
