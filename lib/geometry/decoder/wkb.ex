@@ -39,6 +39,10 @@ defmodule Geometry.Decoder.WKB do
   alias Geometry.MultiPolygonM
   alias Geometry.MultiPolygonZ
   alias Geometry.MultiPolygonZM
+  alias Geometry.MultiSurface
+  alias Geometry.MultiSurfaceM
+  alias Geometry.MultiSurfaceZ
+  alias Geometry.MultiSurfaceZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
@@ -61,7 +65,8 @@ defmodule Geometry.Decoder.WKB do
       :circular_string,
       :compound_curve,
       :curve_polygon,
-      :multi_curve
+      :multi_curve,
+      :multi_surface
     ]
     |> Enum.with_index(1)
     |> Enum.flat_map(fn {type, index} ->
@@ -368,7 +373,23 @@ defmodule Geometry.Decoder.WKB do
     {:xdr, :multi_curve, :xy} => <<0, 0, 0, 0, 11>>,
     {:xdr, :multi_curve, :xym} => <<0, 64, 0, 0, 11>>,
     {:xdr, :multi_curve, :xyz} => <<0, 128, 0, 0, 11>>,
-    {:xdr, :multi_curve, :xyzm} => <<0, 192, 0, 0, 11>>
+    {:xdr, :multi_curve, :xyzm} => <<0, 192, 0, 0, 11>>,
+    {:ndr, :curve_polygon, :xy} => <<1, 10, 0, 0, 0>>,
+    {:ndr, :curve_polygon, :xym} => <<1, 10, 0, 0, 64>>,
+    {:ndr, :curve_polygon, :xyz} => <<1, 10, 0, 0, 128>>,
+    {:ndr, :curve_polygon, :xyzm} => <<1, 10, 0, 0, 192>>,
+    {:xdr, :curve_polygon, :xy} => <<0, 0, 0, 0, 10>>,
+    {:xdr, :curve_polygon, :xym} => <<0, 64, 0, 0, 10>>,
+    {:xdr, :curve_polygon, :xyz} => <<0, 128, 0, 0, 10>>,
+    {:xdr, :curve_polygon, :xyzm} => <<0, 192, 0, 0, 10>>,
+    {:ndr, :multi_surface, :xy} => <<1, 12, 0, 0, 0>>,
+    {:ndr, :multi_surface, :xym} => <<1, 12, 0, 0, 64>>,
+    {:ndr, :multi_surface, :xyz} => <<1, 12, 0, 0, 128>>,
+    {:ndr, :multi_surface, :xyzm} => <<1, 12, 0, 0, 192>>,
+    {:xdr, :multi_surface, :xy} => <<0, 0, 0, 0, 12>>,
+    {:xdr, :multi_surface, :xym} => <<0, 64, 0, 0, 12>>,
+    {:xdr, :multi_surface, :xyz} => <<0, 128, 0, 0, 12>>,
+    {:xdr, :multi_surface, :xyzm} => <<0, 192, 0, 0, 12>>
   }
 
   for geo <- geos, geo.type == :point, geo.srid? do
@@ -743,6 +764,86 @@ defmodule Geometry.Decoder.WKB do
       )
     end
 
+    defp multi_surface(
+           unquote(geo.dim),
+           unquote(geo.endian),
+           srid,
+           <<length::unquote(geo.mod)-integer-size(32), bin::bits>>
+         ) do
+      try do
+        {data, rest} =
+          multi_surface_surfaces(unquote(geo.dim), unquote(geo.endian), srid, length, bin, [])
+
+        multi_surface = %unquote(
+            case geo.dim do
+              :xy -> MultiSurface
+              :xym -> MultiSurfaceM
+              :xyz -> MultiSurfaceZ
+              :xyzm -> MultiSurfaceZM
+            end
+          ){
+          surfaces: data,
+          srid: srid
+        }
+
+        {:ok, multi_surface, rest}
+      catch
+        error -> error
+      end
+    end
+
+    defp multi_surface(unquote(geo.dim), unquote(geo.endian), _srid, bin) do
+      {:error, :invalid_length, bin}
+    end
+
+    if geo.dim == :xy && geo.endian == :xdr do
+      defp multi_surface_surfaces(_dim, _endian, _srid, 0, bin, acc) do
+        {Enum.reverse(acc), bin}
+      end
+    end
+
+    defp multi_surface_surfaces(
+           unquote(geo.dim),
+           unquote(geo.endian),
+           srid,
+           length,
+           bin,
+           acc
+         ) do
+      {geometry, bin} =
+        case bin do
+          <<unquote(endian_code_bin[{geo.endian, :polygon, geo.dim}]), bin::bits>> ->
+            case polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, polygon, bin} ->
+                {polygon, bin}
+
+              error ->
+                throw(error)
+            end
+
+          <<unquote(endian_code_bin[{geo.endian, :curve_polygon, geo.dim}]), bin::bits>> ->
+            case curve_polygon(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+              {:ok, curve_polygon, bin} ->
+                {curve_polygon, bin}
+
+              error ->
+                throw(error)
+            end
+
+          bin ->
+            throw({:error, :expected_multi_surface_surface, bin})
+        end
+
+      multi_surface_surfaces(
+        unquote(geo.dim),
+        unquote(geo.endian),
+        srid,
+        length - 1,
+        bin,
+        [geometry | acc]
+      )
+    end
+
     defp polygon(
            unquote(geo.dim),
            unquote(geo.endian),
@@ -1007,6 +1108,12 @@ defmodule Geometry.Decoder.WKB do
               {:ok, :multi_curve, bin} ->
                 case multi_curve(unquote(geo.dim), unquote(geo.endian), srid, bin) do
                   {:ok, multi_curve, bin} -> {multi_curve, bin}
+                  error -> throw(error)
+                end
+
+              {:ok, :multi_surface, bin} ->
+                case multi_surface(unquote(geo.dim), unquote(geo.endian), srid, bin) do
+                  {:ok, multi_surface, bin} -> {multi_surface, bin}
                   error -> throw(error)
                 end
 

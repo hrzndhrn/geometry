@@ -31,6 +31,9 @@ defmodule Geometry do
   + MultiCurve
     + `Geometry.MultiCurve`, `Geometry.MultiCurveM`,
       `Geometry.MultiCurveZ`, `Geometry.MultiCurveZM`
+  + MultiSurface
+    + `Geometry.MultiSurface`, `Geometry.MultiSurfaceM`,
+      `Geometry.MultiSurfaceZ`, `Geometry.MultiSurfaceZM`
 
   Collections:
   + MultiPoint
@@ -94,6 +97,10 @@ defmodule Geometry do
   alias Geometry.MultiPolygonM
   alias Geometry.MultiPolygonZ
   alias Geometry.MultiPolygonZM
+  alias Geometry.MultiSurface
+  alias Geometry.MultiSurfaceM
+  alias Geometry.MultiSurfaceZ
+  alias Geometry.MultiSurfaceZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
@@ -145,14 +152,18 @@ defmodule Geometry do
           | MultiPolygonM.t()
           | MultiPolygonZ.t()
           | MultiPolygonZM.t()
-          | Polygon.t()
-          | PolygonM.t()
-          | PolygonZ.t()
-          | PolygonZM.t()
+          | MultiSurface.t()
+          | MultiSurfaceM.t()
+          | MultiSurfaceZ.t()
+          | MultiSurfaceZM.t()
           | Point.t()
           | PointM.t()
           | PointZ.t()
           | PointZM.t()
+          | Polygon.t()
+          | PolygonM.t()
+          | PolygonZ.t()
+          | PolygonZM.t()
 
   @typedoc """
   An n-dimensional point.

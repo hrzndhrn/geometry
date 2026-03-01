@@ -11,7 +11,8 @@ defmodule Geometry.Protocols do
          circular_string: 8,
          compound_curve: 9,
          curve_polygon: 10,
-         multi_curve: 11
+         multi_curve: 11,
+         multi_surface: 12
   @dims xy: 2, xym: 3, xyz: 3, xyzm: 4
   @empty_xdr [127, 248, 0, 0, 0, 0, 0, 0]
   @empty_ndr [0, 0, 0, 0, 0, 0, 248, 127]
@@ -36,13 +37,21 @@ defmodule Geometry.Protocols do
                  geometry_collection: :geometries,
                  compound_curve: :segments,
                  curve_polygon: :rings,
-                 multi_curve: :curves
+                 multi_curve: :curves,
+                 multi_surface: :surfaces
 
   @multi_sub_keys multi_line_string: :path,
                   multi_polygon: :rings,
                   multi_point: :coordinates
 
-  @multi [:multi_point, :multi_line_string, :multi_polygon, :geometry_collection, :multi_curve]
+  @multi [
+    :multi_point,
+    :multi_line_string,
+    :multi_polygon,
+    :geometry_collection,
+    :multi_curve,
+    :multi_surface
+  ]
 
   @geo_json_geoms [
     :point,
@@ -783,6 +792,62 @@ defmodule Geometry.Protocols do
     end
   end
 
+  defmacro wkb(:multi_surface, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{surfaces: surfaces}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, false, :xdr),
+                count(quote(do: surfaces), :xdr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{surfaces: surfaces}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, false, :ndr),
+                count(quote(do: surfaces), :ndr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{surfaces: surfaces, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: surfaces), :xdr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{surfaces: surfaces, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: surfaces), :ndr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
   defmacro wkt(:point, dim) do
     quote do
       defimpl Geometry.Encoder.WKT do
@@ -1384,6 +1449,62 @@ defmodule Geometry.Protocols do
             binary([
               srid_to_string(),
               "MULTICURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:multi_surface, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{surfaces: []}) do
+          unquote(
+            binary([
+              "MULTISURFACE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{surfaces: surfaces}) do
+          data = Enum.map_join(surfaces, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "MULTISURFACE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{surfaces: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "MULTISURFACE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{surfaces: surfaces, srid: srid}) do
+          data = Enum.map_join(surfaces, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "MULTISURFACE",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),

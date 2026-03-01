@@ -41,6 +41,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.MultiPolygonM
   alias Geometry.MultiPolygonZ
   alias Geometry.MultiPolygonZM
+  alias Geometry.MultiSurface
+  alias Geometry.MultiSurfaceM
+  alias Geometry.MultiSurfaceZ
+  alias Geometry.MultiSurfaceZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
@@ -239,6 +243,38 @@ defmodule Geometry.Decoder.WKT do
 
   defp geometry(:multi_polygon, :xyzm, polygons, srid),
     do: %MultiPolygonZM{polygons: polygons, srid: srid}
+
+  defp geometry(:multi_surface, dim, {:surfaces, surfaces}, srid) do
+    geometry(:multi_surface, dim, surfaces, srid)
+  end
+
+  defp geometry(:multi_surface, :xy, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xy, surface, srid) end)
+
+    %MultiSurface{surfaces: surfaces, srid: srid}
+  end
+
+  defp geometry(:multi_surface, :xym, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xym, surface, srid) end)
+
+    %MultiSurfaceM{surfaces: surfaces, srid: srid}
+  end
+
+  defp geometry(:multi_surface, :xyz, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xyz, surface, srid) end)
+
+    %MultiSurfaceZ{surfaces: surfaces, srid: srid}
+  end
+
+  defp geometry(:multi_surface, :xyzm, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xyzm, surface, srid) end)
+
+    %MultiSurfaceZM{surfaces: surfaces, srid: srid}
+  end
 
   defp geometry(:geometry_collection, dim, {:geometries, geometries}, srid) do
     geometry(:geometry_collection, dim, geometries, srid)

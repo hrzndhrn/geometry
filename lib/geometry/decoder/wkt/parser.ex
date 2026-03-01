@@ -97,7 +97,8 @@ defmodule Geometry.Decoder.WKT.Parser do
         :multi_line_string,
         :multi_polygon,
         :geometry_collection,
-        :multi_curve
+        :multi_curve,
+        :multi_surface
       ] do
     defp geometry_text({unquote(parser), :xy}, rest, opts) do
       unquote(:"#{parser}_xy")(rest, Keyword.put(opts, :tag, :xy))
@@ -276,6 +277,69 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:halt], rest, context, line, byte_offset} ->
           {:ok, {:curves, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp geometry_or_polygon(string, opts) do
+    with {:ok, [:no_geometry_found], rest, context, line, byte_offset} <-
+           optional_geometry(string, opts) do
+      {:ok, [%{tag: opts[:tag], geometry: :polygon}], rest, context, line, byte_offset}
+    end
+  end
+
+  defp multi_surface_item(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_polygon(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry}
+        when geometry in [:polygon, :curve_polygon] ->
+          multi_surface_item_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected surface in multi surface", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in multi surface", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in multi surface", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp multi_surface_item_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
+  for multi_surface <- [
+        :multi_surface_xy,
+        :multi_surface_xyz,
+        :multi_surface_xyzm
+      ] do
+    defp unquote(multi_surface)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:surfaces, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 multi_surface_item(rest, line: line, byte_offset: byte_offset, tag: tag) do
+            unquote(multi_surface)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:surfaces, Enum.reverse(acc)}, rest, context, line, byte_offset}
       end
     end
   end
