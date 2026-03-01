@@ -5,14 +5,15 @@ defmodule Geometry.LineStringTest do
   import GeometryHelpers
 
   alias Geometry.DecodeError
+
   alias Geometry.LineString
+  alias Geometry.LineStringM
+  alias Geometry.LineStringZ
+  alias Geometry.LineStringZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
   alias Geometry.PointZM
-  alias Geometry.LineStringM
-  alias Geometry.LineStringZ
-  alias Geometry.LineStringZM
 
   doctest Geometry.LineString, import: true
   doctest Geometry.LineStringM, import: true
