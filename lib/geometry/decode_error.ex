@@ -71,7 +71,7 @@ defmodule Geometry.DecodeError do
   end
 
   def message(%{from: :wkb, reason: :invalid_coordinate} = error) do
-    "invalid coordiante at position #{error.offset}, got: #{inspect_hex(error.rest, 9)}"
+    "invalid coordinate at position #{error.offset}, got: #{inspect_hex(error.rest, 9)}"
   end
 
   def message(%{from: :wkb, reason: :invalid_length} = error) do

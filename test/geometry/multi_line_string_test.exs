@@ -491,7 +491,7 @@ defmodule Geometry.MultiLineStringTest do
           data = unquote(code[:ndr] <> data[:ndr])
           wkb = Binary.take(data, byte_size(data) - 1)
 
-          assert_fail :from_wkb!, wkb, ~r/invalid coordiante at position .*, got: <<.*>>/
+          assert_fail :from_wkb!, wkb, ~r/invalid coordinate at position .*, got: <<.*>>/
         end
 
         test "raises an error tuple for invalid length" do

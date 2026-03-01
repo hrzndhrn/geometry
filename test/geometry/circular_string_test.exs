@@ -435,7 +435,7 @@ defmodule Geometry.CircularStringTest do
           wkb =
             Binary.replace(unquote(code[:ndr] <> data[:ndr]), <<5::little-integer-size(32)>>, 6)
 
-          assert_fail :from_wkb!, wkb, ~r/invalid coordiante at position .*, got: <<>>/
+          assert_fail :from_wkb!, wkb, ~r/invalid coordinate at position .*, got: <<>>/
         end
 
         test "raises an error tuple for extra data (reason: :eos)" do
@@ -620,7 +620,7 @@ defmodule Geometry.CircularStringTest do
           assert Geometry.to_ewkt(circular_string) == wkt
         end
 
-        test "returns ewkt from an empty circulat string" do
+        test "returns ewkt from an empty circular string" do
           wkt = wkt(unquote(text), [], unquote(srid))
           circular_string = unquote(module).new() |> Map.put(:srid, unquote(srid))
 

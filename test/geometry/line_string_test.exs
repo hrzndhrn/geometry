@@ -400,7 +400,7 @@ defmodule Geometry.LineStringTest do
           wkb =
             Binary.replace(unquote(code[:ndr] <> data[:ndr]), <<5::little-integer-size(32)>>, 6)
 
-          assert_fail :from_wkb!, wkb, ~r/invalid coordiante at position .*, got: <<>>/
+          assert_fail :from_wkb!, wkb, ~r/invalid coordinate at position .*, got: <<>>/
         end
 
         test "raises an error tuple for extra data (reason: :eos)" do
