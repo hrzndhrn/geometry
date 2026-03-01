@@ -1,5 +1,6 @@
 defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
   @moduledoc false
+
   import NimbleParsec
 
   @type rest :: String.t()

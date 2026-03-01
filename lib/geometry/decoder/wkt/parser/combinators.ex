@@ -4,6 +4,8 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
   import NimbleParsec
   import Geometry.Decoder.WKT.Parser.CombinatorDefs
 
+  alias Geometry.Decoder.WKT.Parser.CombinatorDefs
+
   @geometries [
     "Point",
     "LineString",
@@ -45,7 +47,7 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     whitespace()
     |> optional(srid())
     |> parsec(:geometry_selection)
-    |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_geometry, []})
+    |> post_traverse({CombinatorDefs, :post_geometry, []})
   )
 
   defparsec(
@@ -53,7 +55,7 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     whitespace()
     |> optional(srid())
     |> optional(parsec(:geometry_selection))
-    |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_optional_geometry, []})
+    |> post_traverse({CombinatorDefs, :post_optional_geometry, []})
   )
 
   @types
