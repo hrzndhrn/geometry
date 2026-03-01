@@ -2,35 +2,18 @@ defmodule Geometry.MultiCurveTest do
   use ExUnit.Case, async: true
 
   import Assertions
+  import GeometryHelpers, except: [wkt: 1, wkt: 2, wkt: 3]
 
-  alias Geometry.CircularString
-  alias Geometry.CircularStringM
-  alias Geometry.CircularStringZ
-  alias Geometry.CircularStringZM
-  alias Geometry.CompoundCurve
-  alias Geometry.CompoundCurveM
-  alias Geometry.CompoundCurveZ
-  alias Geometry.CompoundCurveZM
   alias Geometry.DecodeError
-  alias Geometry.LineString
-  alias Geometry.LineStringM
-  alias Geometry.LineStringZ
-  alias Geometry.LineStringZM
   alias Geometry.MultiCurve
   alias Geometry.MultiCurveM
   alias Geometry.MultiCurveZ
   alias Geometry.MultiCurveZM
-  alias Geometry.Point
-  alias Geometry.PointM
-  alias Geometry.PointZ
-  alias Geometry.PointZM
 
   doctest Geometry.MultiCurve, import: true
   doctest Geometry.MultiCurveM, import: true
   doctest Geometry.MultiCurveZ, import: true
   doctest Geometry.MultiCurveZM, import: true
-
-  @blank "\s"
 
   Enum.each(
     [
@@ -867,20 +850,6 @@ defmodule Geometry.MultiCurveTest do
     "COMPOUNDCURVE#{wkt_dim(dim)}(#{segments_wkt})"
   end
 
-  defp wkt_dim(:xy), do: " "
-  defp wkt_dim(:xyz), do: " Z "
-  defp wkt_dim(:xym), do: " M "
-  defp wkt_dim(:xyzm), do: " ZM "
-
-  defp dim(MultiCurve), do: :xy
-  defp dim(MultiCurveM), do: :xym
-  defp dim(MultiCurveZ), do: :xyz
-  defp dim(MultiCurveZM), do: :xyzm
-
-  defp wkt_coords(coordinates) do
-    Enum.map_join(coordinates, ", ", fn point -> Enum.join(point, @blank) end)
-  end
-
   defp multi_curve(module, curve_data, srid \\ 0) do
     curve_data
     |> curves(dim(module), srid)
@@ -891,46 +860,17 @@ defmodule Geometry.MultiCurveTest do
     Enum.map(curve_data, fn curve_desc -> create_curve(curve_desc, dim, srid) end)
   end
 
-  defp create_curve({:circular_string, coordinates}, dim, srid) do
-    points = Enum.map(coordinates, &create_point(&1, dim))
+  defp create_curve({:circular_string, coordinates}, dim, srid),
+    do: create_circular_string(coordinates, dim, srid)
 
-    case dim do
-      :xy -> CircularString.new(points, srid)
-      :xym -> CircularStringM.new(points, srid)
-      :xyz -> CircularStringZ.new(points, srid)
-      :xyzm -> CircularStringZM.new(points, srid)
-    end
-  end
+  defp create_curve({type, coordinates}, dim, srid) when type in [:line_string, :coords],
+    do: create_line_string(coordinates, dim, srid)
 
-  defp create_curve({type, coordinates}, dim, srid) when type in [:line_string, :coords] do
-    points = Enum.map(coordinates, &create_point(&1, dim))
-
-    case dim do
-      :xy -> LineString.new(points, srid)
-      :xym -> LineStringM.new(points, srid)
-      :xyz -> LineStringZ.new(points, srid)
-      :xyzm -> LineStringZM.new(points, srid)
-    end
-  end
-
-  defp create_curve({:compound_curve, segments_data}, dim, srid) do
-    segments = Enum.map(segments_data, &create_curve(&1, dim, srid))
-
-    case dim do
-      :xy -> CompoundCurve.new(segments, srid)
-      :xym -> CompoundCurveM.new(segments, srid)
-      :xyz -> CompoundCurveZ.new(segments, srid)
-      :xyzm -> CompoundCurveZM.new(segments, srid)
-    end
-  end
+  defp create_curve({:compound_curve, segments_data}, dim, srid),
+    do: create_compound_curve(segments_data, dim, srid)
 
   defp create_curve({:point, _coordinates}, _dim, _srid) do
     # Points are not valid in MultiCurve — used for error tests only
     %Geometry.Point{coordinates: [], srid: 0}
   end
-
-  defp create_point(coord, :xy), do: Point.new(coord)
-  defp create_point(coord, :xym), do: PointM.new(coord)
-  defp create_point(coord, :xyz), do: PointZ.new(coord)
-  defp create_point(coord, :xyzm), do: PointZM.new(coord)
 end
