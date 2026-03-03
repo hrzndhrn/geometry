@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 - 2026/03/01
+## 1.2.0 - 2026/03/03
 
 + Add geometry types `CircularString`, `CircularStringM`, `CircularStringZ`,
   `CircularStringZM`.
