@@ -4,10 +4,17 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
   import NimbleParsec
   import Geometry.Decoder.WKT.Parser.CombinatorDefs
 
+  alias Geometry.Decoder.WKT.Parser.CombinatorDefs
+
   @geometries [
     "Point",
     "LineString",
     "Polygon",
+    "CircularString",
+    "CompoundCurve",
+    "CurvePolygon",
+    "MultiCurve",
+    "MultiSurface",
     "MultiPoint",
     "MultiLineString",
     "MultiPolygon",
@@ -40,7 +47,15 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
     whitespace()
     |> optional(srid())
     |> parsec(:geometry_selection)
-    |> post_traverse({Geometry.Decoder.WKT.Parser.CombinatorDefs, :post_geometry, []})
+    |> post_traverse({CombinatorDefs, :post_geometry, []})
+  )
+
+  defparsec(
+    :optional_geometry,
+    whitespace()
+    |> optional(srid())
+    |> optional(parsec(:geometry_selection))
+    |> post_traverse({CombinatorDefs, :post_optional_geometry, []})
   )
 
   @types
@@ -130,6 +145,24 @@ defmodule Geometry.Decoder.WKT.Parser.Combinators do
       |> times(char(?,) |> parsec(:"coordinate_#{type}"), min: 3)
       |> close()
       |> reduce({List, :wrap, []})
+    )
+
+    defparsec(
+      :"circular_string_#{type}",
+      choice([
+        open()
+        |> parsec(:"coordinate_#{type}")
+        |> times(
+          char(?,)
+          |> parsec(:"coordinate_#{type}")
+          |> char(?,)
+          |> parsec(:"coordinate_#{type}"),
+          min: 1
+        )
+        |> close(),
+        empty_tag()
+      ])
+      |> label("CircularString data")
     )
 
     defcombinator(

@@ -17,6 +17,25 @@ defmodule Geometry do
   + Polygon
     + `Geometry.Polygon`, `Geometry.PolygonM`, `Geometry.PolygonZ`,
       `Geometry.PolygonZM`
+
+  Geometry subtypes containing curves:
+  + CircularString
+    + `Geometry.CircularString`, `Geometry.CircularStringM`,
+      `Geometry.CircularStringZ`, `Geometry.CircularStringZM`
+  + CompoundCurve
+    + `Geometry.CompoundCurve`, `Geometry.CompoundCurveM`,
+      `Geometry.CompoundCurveZ`, `Geometry.CompoundCurveZM`
+  + CurvePolygon
+    + `Geometry.CurvePolygon`, `Geometry.CurvePolygonM`,
+      `Geometry.CurvePolygonZ`, `Geometry.CurvePolygonZM`
+  + MultiCurve
+    + `Geometry.MultiCurve`, `Geometry.MultiCurveM`,
+      `Geometry.MultiCurveZ`, `Geometry.MultiCurveZM`
+  + MultiSurface
+    + `Geometry.MultiSurface`, `Geometry.MultiSurfaceM`,
+      `Geometry.MultiSurfaceZ`, `Geometry.MultiSurfaceZM`
+
+  Collections:
   + MultiPoint
     + `Geometry.MultiPoint`, `Geometry.MultiPointM`, `Geometry.MultiPointZ`,
       `Geometry.MultiPointZM`
@@ -40,6 +59,18 @@ defmodule Geometry do
 
   alias Geometry.DecodeError
 
+  alias Geometry.CircularString
+  alias Geometry.CircularStringM
+  alias Geometry.CircularStringZ
+  alias Geometry.CircularStringZM
+  alias Geometry.CompoundCurve
+  alias Geometry.CompoundCurveM
+  alias Geometry.CompoundCurveZ
+  alias Geometry.CompoundCurveZM
+  alias Geometry.CurvePolygon
+  alias Geometry.CurvePolygonM
+  alias Geometry.CurvePolygonZ
+  alias Geometry.CurvePolygonZM
   alias Geometry.Feature
   alias Geometry.FeatureCollection
   alias Geometry.GeometryCollection
@@ -50,6 +81,10 @@ defmodule Geometry do
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
   alias Geometry.LineStringZM
+  alias Geometry.MultiCurve
+  alias Geometry.MultiCurveM
+  alias Geometry.MultiCurveZ
+  alias Geometry.MultiCurveZM
   alias Geometry.MultiLineString
   alias Geometry.MultiLineStringM
   alias Geometry.MultiLineStringZ
@@ -62,6 +97,10 @@ defmodule Geometry do
   alias Geometry.MultiPolygonM
   alias Geometry.MultiPolygonZ
   alias Geometry.MultiPolygonZM
+  alias Geometry.MultiSurface
+  alias Geometry.MultiSurfaceM
+  alias Geometry.MultiSurfaceZ
+  alias Geometry.MultiSurfaceZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
@@ -77,7 +116,19 @@ defmodule Geometry do
   The supported geometries.
   """
   @type t() ::
-          GeometryCollection.t()
+          CircularString.t()
+          | CircularStringM.t()
+          | CircularStringZ.t()
+          | CircularStringZM.t()
+          | CompoundCurve.t()
+          | CompoundCurveM.t()
+          | CompoundCurveZ.t()
+          | CompoundCurveZM.t()
+          | CurvePolygon.t()
+          | CurvePolygonM.t()
+          | CurvePolygonZ.t()
+          | CurvePolygonZM.t()
+          | GeometryCollection.t()
           | GeometryCollectionM.t()
           | GeometryCollectionZ.t()
           | GeometryCollectionZM.t()
@@ -85,6 +136,10 @@ defmodule Geometry do
           | LineStringM.t()
           | LineStringZ.t()
           | LineStringZM.t()
+          | MultiCurve.t()
+          | MultiCurveM.t()
+          | MultiCurveZ.t()
+          | MultiCurveZM.t()
           | MultiLineString.t()
           | MultiLineStringM.t()
           | MultiLineStringZ.t()
@@ -97,14 +152,18 @@ defmodule Geometry do
           | MultiPolygonM.t()
           | MultiPolygonZ.t()
           | MultiPolygonZM.t()
-          | Polygon.t()
-          | PolygonM.t()
-          | PolygonZ.t()
-          | PolygonZM.t()
+          | MultiSurface.t()
+          | MultiSurfaceM.t()
+          | MultiSurfaceZ.t()
+          | MultiSurfaceZM.t()
           | Point.t()
           | PointM.t()
           | PointZ.t()
           | PointZM.t()
+          | Polygon.t()
+          | PolygonM.t()
+          | PolygonZ.t()
+          | PolygonZM.t()
 
   @typedoc """
   An n-dimensional point.
@@ -115,6 +174,11 @@ defmodule Geometry do
   A list of n-dimensional coordinates.
   """
   @type path :: [coordinates()]
+
+  @typedoc """
+  A list of n-dimensional coordinates.
+  """
+  @type arcs :: [coordinates()]
 
   @typedoc """
   A list of n-dimensional coordinates where the first and last point are equal, creating a ring.

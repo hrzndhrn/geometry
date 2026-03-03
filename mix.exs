@@ -1,7 +1,7 @@
 defmodule Geometry.MixProject do
   use Mix.Project
 
-  @version "1.1.2"
+  @version "1.2.0"
   @source_url "https://github.com/hrzndhrn/geometry"
 
   def project do
@@ -76,6 +76,22 @@ defmodule Geometry.MixProject do
           Geometry.PolygonZM,
           Geometry.PointZ,
           Geometry.PointZM
+        ],
+        "Curves 2D": [
+          Geometry.CircularString,
+          Geometry.CircularStringM,
+          Geometry.CompoundCurve,
+          Geometry.CompoundCurveM,
+          Geometry.CurvePolygon,
+          Geometry.CurvePolygonM
+        ],
+        "Curves 3D": [
+          Geometry.CircularStringZ,
+          Geometry.CircularStringZM,
+          Geometry.CompoundCurveZ,
+          Geometry.CompoundCurveZM,
+          Geometry.CurvePolygonZ,
+          Geometry.CurvePolygonZM
         ],
         "Multipart geometries 2D": [
           Geometry.MultiLineString,

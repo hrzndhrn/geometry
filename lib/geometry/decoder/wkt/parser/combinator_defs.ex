@@ -1,5 +1,6 @@
 defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
   @moduledoc false
+
   import NimbleParsec
 
   @type rest :: String.t()
@@ -185,6 +186,16 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
 
   @spec post_geometry(rest(), args(), context(), line(), offset()) :: {rest(), args(), context()}
   def post_geometry(rest, args, context, _line, _offset) do
+    post_geometry(rest, args, context, {:error, :no_geometry_found})
+  end
+
+  @spec post_optional_geometry(rest(), args(), context(), line(), offset()) ::
+          {rest(), args(), context()}
+  def post_optional_geometry(rest, args, context, _line, _offset) do
+    post_geometry(rest, args, context, {rest, [:no_geometry_found], context})
+  end
+
+  defp post_geometry(rest, args, context, default) do
     case args do
       [tag, geometry, srid] ->
         {rest, [%{geometry: geometry, tag: tag, srid: srid}], context}
@@ -193,7 +204,7 @@ defmodule Geometry.Decoder.WKT.Parser.CombinatorDefs do
         {rest, [%{geometry: geometry, tag: tag}], context}
 
       _missing_data ->
-        {:error, :no_data_found}
+        default
     end
   end
 

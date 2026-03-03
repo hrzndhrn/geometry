@@ -5,6 +5,18 @@ defmodule Geometry.Decoder.WKT do
 
   alias Geometry.DecodeError
 
+  alias Geometry.CircularString
+  alias Geometry.CircularStringM
+  alias Geometry.CircularStringZ
+  alias Geometry.CircularStringZM
+  alias Geometry.CompoundCurve
+  alias Geometry.CompoundCurveM
+  alias Geometry.CompoundCurveZ
+  alias Geometry.CompoundCurveZM
+  alias Geometry.CurvePolygon
+  alias Geometry.CurvePolygonM
+  alias Geometry.CurvePolygonZ
+  alias Geometry.CurvePolygonZM
   alias Geometry.GeometryCollection
   alias Geometry.GeometryCollectionM
   alias Geometry.GeometryCollectionZ
@@ -13,6 +25,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.LineStringM
   alias Geometry.LineStringZ
   alias Geometry.LineStringZM
+  alias Geometry.MultiCurve
+  alias Geometry.MultiCurveM
+  alias Geometry.MultiCurveZ
+  alias Geometry.MultiCurveZM
   alias Geometry.MultiLineString
   alias Geometry.MultiLineStringM
   alias Geometry.MultiLineStringZ
@@ -25,6 +41,10 @@ defmodule Geometry.Decoder.WKT do
   alias Geometry.MultiPolygonM
   alias Geometry.MultiPolygonZ
   alias Geometry.MultiPolygonZM
+  alias Geometry.MultiSurface
+  alias Geometry.MultiSurfaceM
+  alias Geometry.MultiSurfaceZ
+  alias Geometry.MultiSurfaceZM
   alias Geometry.Point
   alias Geometry.PointM
   alias Geometry.PointZ
@@ -83,6 +103,111 @@ defmodule Geometry.Decoder.WKT do
 
   defp geometry(:polygon, :xyzm, rings, srid), do: %PolygonZM{rings: rings, srid: srid}
 
+  defp geometry(:circular_string, :xy, arcs, srid), do: %CircularString{arcs: arcs, srid: srid}
+
+  defp geometry(:circular_string, :xym, arcs, srid), do: %CircularStringM{arcs: arcs, srid: srid}
+
+  defp geometry(:circular_string, :xyz, arcs, srid), do: %CircularStringZ{arcs: arcs, srid: srid}
+
+  defp geometry(:circular_string, :xyzm, arcs, srid),
+    do: %CircularStringZM{arcs: arcs, srid: srid}
+
+  defp geometry(:compound_curve, dim, {:segments, segments}, srid) do
+    geometry(:compound_curve, dim, segments, srid)
+  end
+
+  defp geometry(:compound_curve, :xy, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xy, segment, srid) end)
+
+    %CompoundCurve{segments: segments, srid: srid}
+  end
+
+  defp geometry(:compound_curve, :xym, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xym, segment, srid) end)
+
+    %CompoundCurveM{segments: segments, srid: srid}
+  end
+
+  defp geometry(:compound_curve, :xyz, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xyz, segment, srid) end)
+
+    %CompoundCurveZ{segments: segments, srid: srid}
+  end
+
+  defp geometry(:compound_curve, :xyzm, segments, srid) do
+    segments =
+      Enum.map(segments, fn {type, segment} -> geometry(type, :xyzm, segment, srid) end)
+
+    %CompoundCurveZM{segments: segments, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, dim, {:rings, rings}, srid) do
+    geometry(:curve_polygon, dim, rings, srid)
+  end
+
+  defp geometry(:curve_polygon, :xy, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xy, ring, srid) end)
+
+    %CurvePolygon{rings: rings, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, :xym, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xym, ring, srid) end)
+
+    %CurvePolygonM{rings: rings, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, :xyz, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xyz, ring, srid) end)
+
+    %CurvePolygonZ{rings: rings, srid: srid}
+  end
+
+  defp geometry(:curve_polygon, :xyzm, rings, srid) do
+    rings =
+      Enum.map(rings, fn {type, ring} -> geometry(type, :xyzm, ring, srid) end)
+
+    %CurvePolygonZM{rings: rings, srid: srid}
+  end
+
+  defp geometry(:multi_curve, dim, {:curves, curves}, srid) do
+    geometry(:multi_curve, dim, curves, srid)
+  end
+
+  defp geometry(:multi_curve, :xy, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xy, curve, srid) end)
+
+    %MultiCurve{curves: curves, srid: srid}
+  end
+
+  defp geometry(:multi_curve, :xym, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xym, curve, srid) end)
+
+    %MultiCurveM{curves: curves, srid: srid}
+  end
+
+  defp geometry(:multi_curve, :xyz, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xyz, curve, srid) end)
+
+    %MultiCurveZ{curves: curves, srid: srid}
+  end
+
+  defp geometry(:multi_curve, :xyzm, curves, srid) do
+    curves =
+      Enum.map(curves, fn {type, curve} -> geometry(type, :xyzm, curve, srid) end)
+
+    %MultiCurveZM{curves: curves, srid: srid}
+  end
+
   defp geometry(:multi_point, :xy, coordinates, srid),
     do: %MultiPoint{points: coordinates, srid: srid}
 
@@ -118,6 +243,38 @@ defmodule Geometry.Decoder.WKT do
 
   defp geometry(:multi_polygon, :xyzm, polygons, srid),
     do: %MultiPolygonZM{polygons: polygons, srid: srid}
+
+  defp geometry(:multi_surface, dim, {:surfaces, surfaces}, srid) do
+    geometry(:multi_surface, dim, surfaces, srid)
+  end
+
+  defp geometry(:multi_surface, :xy, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xy, surface, srid) end)
+
+    %MultiSurface{surfaces: surfaces, srid: srid}
+  end
+
+  defp geometry(:multi_surface, :xym, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xym, surface, srid) end)
+
+    %MultiSurfaceM{surfaces: surfaces, srid: srid}
+  end
+
+  defp geometry(:multi_surface, :xyz, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xyz, surface, srid) end)
+
+    %MultiSurfaceZ{surfaces: surfaces, srid: srid}
+  end
+
+  defp geometry(:multi_surface, :xyzm, surfaces, srid) do
+    surfaces =
+      Enum.map(surfaces, fn {type, surface} -> geometry(type, :xyzm, surface, srid) end)
+
+    %MultiSurfaceZM{surfaces: surfaces, srid: srid}
+  end
 
   defp geometry(:geometry_collection, dim, {:geometries, geometries}, srid) do
     geometry(:geometry_collection, dim, geometries, srid)

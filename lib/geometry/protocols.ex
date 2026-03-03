@@ -7,7 +7,12 @@ defmodule Geometry.Protocols do
          multi_point: 4,
          multi_line_string: 5,
          multi_polygon: 6,
-         geometry_collection: 7
+         geometry_collection: 7,
+         circular_string: 8,
+         compound_curve: 9,
+         curve_polygon: 10,
+         multi_curve: 11,
+         multi_surface: 12
   @dims xy: 2, xym: 3, xyz: 3, xyzm: 4
   @empty_xdr [127, 248, 0, 0, 0, 0, 0, 0]
   @empty_ndr [0, 0, 0, 0, 0, 0, 248, 127]
@@ -25,16 +30,38 @@ defmodule Geometry.Protocols do
   @geometry_keys point: :coordinates,
                  line_string: :path,
                  polygon: :rings,
+                 circular_string: :arcs,
                  multi_point: :points,
                  multi_line_string: :line_strings,
                  multi_polygon: :polygons,
-                 geometry_collection: :geometries
+                 geometry_collection: :geometries,
+                 compound_curve: :segments,
+                 curve_polygon: :rings,
+                 multi_curve: :curves,
+                 multi_surface: :surfaces
 
   @multi_sub_keys multi_line_string: :path,
                   multi_polygon: :rings,
                   multi_point: :coordinates
 
-  @multi [:multi_point, :multi_line_string, :multi_polygon, :geometry_collection]
+  @multi [
+    :multi_point,
+    :multi_line_string,
+    :multi_polygon,
+    :geometry_collection,
+    :multi_curve,
+    :multi_surface
+  ]
+
+  @geo_json_geoms [
+    :point,
+    :line_string,
+    :polygon,
+    :multi_point,
+    :multi_line_string,
+    :multi_polygon,
+    :geometry_collection
+  ]
 
   defmacro __using__([]) do
     %{context_modules: [module]} = __CALLER__
@@ -92,7 +119,7 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defmacro geo_json(type) when type in @multi do
+  defmacro geo_json(type) when type in @multi and type in @geo_json_geoms do
     quote do
       defimpl Geometry.Encoder.GeoJson do
         def to_geo_json(unquote(match(@geometry_keys[type], quote(do: coordinates)))) do
@@ -105,7 +132,7 @@ defmodule Geometry.Protocols do
     end
   end
 
-  defmacro geo_json(type) do
+  defmacro geo_json(type) when type in @geo_json_geoms do
     quote do
       defimpl Geometry.Encoder.GeoJson do
         def to_geo_json(unquote(match(@geometry_keys[type], quote(do: coordinates)))) do
@@ -116,6 +143,11 @@ defmodule Geometry.Protocols do
         end
       end
     end
+  end
+
+  defmacro geo_json(_type) do
+    # This geometry is not supported by GeoJson.
+    {:__block__, [], []}
   end
 
   defmacro wkb(:point, dim) do
@@ -306,6 +338,62 @@ defmodule Geometry.Protocols do
               ])
             ),
             unquote(rings_to_binary(dim, :ndr))
+          ])
+        end
+      end
+    end
+  end
+
+  defmacro wkb(:circular_string, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{arcs: coordinates}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:circular_string, dim, false, :xdr),
+                count(quote(do: coordinates), :xdr)
+              ])
+            ),
+            unquote(coordinates_to_binary(dim, :xdr))
+          ])
+        end
+
+        def to_wkb(%{arcs: coordinates}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:circular_string, dim, false, :ndr),
+                count(quote(do: coordinates), :ndr)
+              ])
+            ),
+            unquote(coordinates_to_binary(dim, :ndr))
+          ])
+        end
+
+        def to_ewkb(%{arcs: coordinates, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:circular_string, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: coordinates), :xdr)
+              ])
+            ),
+            unquote(coordinates_to_binary(dim, :xdr))
+          ])
+        end
+
+        def to_ewkb(%{arcs: coordinates, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:circular_string, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: coordinates), :ndr)
+              ])
+            ),
+            unquote(coordinates_to_binary(dim, :ndr))
           ])
         end
       end
@@ -536,6 +624,230 @@ defmodule Geometry.Protocols do
     end
   end
 
+  defmacro wkb(:compound_curve, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{segments: segments}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, false, :xdr),
+                count(quote(do: segments), :xdr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{segments: segments}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, false, :ndr),
+                count(quote(do: segments), :ndr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{segments: segments, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: segments), :xdr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{segments: segments, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:compound_curve, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: segments), :ndr)
+              ])
+            ),
+            Enum.map(segments, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
+  defmacro wkb(:curve_polygon, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{rings: rings}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, false, :xdr),
+                count(quote(do: rings), :xdr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{rings: rings}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, false, :ndr),
+                count(quote(do: rings), :ndr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{rings: rings, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: rings), :xdr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{rings: rings, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:curve_polygon, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: rings), :ndr)
+              ])
+            ),
+            Enum.map(rings, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
+  defmacro wkb(:multi_curve, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{curves: curves}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_curve, dim, false, :xdr),
+                count(quote(do: curves), :xdr)
+              ])
+            ),
+            Enum.map(curves, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{curves: curves}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_curve, dim, false, :ndr),
+                count(quote(do: curves), :ndr)
+              ])
+            ),
+            Enum.map(curves, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{curves: curves, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_curve, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: curves), :xdr)
+              ])
+            ),
+            Enum.map(curves, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{curves: curves, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_curve, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: curves), :ndr)
+              ])
+            ),
+            Enum.map(curves, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
+  defmacro wkb(:multi_surface, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKB do
+        def to_wkb(%{surfaces: surfaces}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, false, :xdr),
+                count(quote(do: surfaces), :xdr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_wkb(%{surfaces: surfaces}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, false, :ndr),
+                count(quote(do: surfaces), :ndr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+
+        def to_ewkb(%{surfaces: surfaces, srid: srid}, :xdr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, true, :xdr),
+                srid_to_binary(:xdr),
+                count(quote(do: surfaces), :xdr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :xdr) end)
+          ])
+        end
+
+        def to_ewkb(%{surfaces: surfaces, srid: srid}, :ndr) do
+          IO.iodata_to_binary([
+            unquote(
+              binary([
+                code(:multi_surface, dim, true, :ndr),
+                srid_to_binary(:ndr),
+                count(quote(do: surfaces), :ndr)
+              ])
+            ),
+            Enum.map(surfaces, fn geometry -> Geometry.to_wkb(geometry, :ndr) end)
+          ])
+        end
+      end
+    end
+  end
+
   defmacro wkt(:point, dim) do
     quote do
       defimpl Geometry.Encoder.WKT do
@@ -633,6 +945,62 @@ defmodule Geometry.Protocols do
             binary([
               srid_to_string(),
               "LINESTRING",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:circular_string, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{arcs: []}) do
+          unquote(
+            binary([
+              "CIRCULARSTRING",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{arcs: coordinates}) do
+          data = unquote(coordinates_to_string(dim))
+
+          unquote(
+            binary([
+              "CIRCULARSTRING",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{arcs: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "CIRCULARSTRING",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{arcs: coordinates, srid: srid}) do
+          data = unquote(coordinates_to_string(dim))
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "CIRCULARSTRING",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),
@@ -913,6 +1281,230 @@ defmodule Geometry.Protocols do
             binary([
               srid_to_string(),
               "GEOMETRYCOLLECTION",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:compound_curve, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{segments: []}) do
+          unquote(
+            binary([
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{segments: segments}) do
+          data = Enum.map_join(segments, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{segments: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{segments: segments, srid: srid}) do
+          data = Enum.map_join(segments, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "COMPOUNDCURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:curve_polygon, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{rings: []}) do
+          unquote(
+            binary([
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{rings: rings}) do
+          data = Enum.map_join(rings, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{rings: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{rings: rings, srid: srid}) do
+          data = Enum.map_join(rings, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "CURVEPOLYGON",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:multi_curve, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{curves: []}) do
+          unquote(
+            binary([
+              "MULTICURVE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{curves: curves}) do
+          data = Enum.map_join(curves, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "MULTICURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{curves: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "MULTICURVE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{curves: curves, srid: srid}) do
+          data = Enum.map_join(curves, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "MULTICURVE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+      end
+    end
+  end
+
+  defmacro wkt(:multi_surface, dim) do
+    quote do
+      defimpl Geometry.Encoder.WKT do
+        def to_wkt(%{surfaces: []}) do
+          unquote(
+            binary([
+              "MULTISURFACE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_wkt(%{surfaces: surfaces}) do
+          data = Enum.map_join(surfaces, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              "MULTISURFACE",
+              @wkt_types[dim],
+              "(",
+              quote(do: data :: binary),
+              ")"
+            ])
+          )
+        end
+
+        def to_ewkt(%{surfaces: [], srid: srid}) do
+          unquote(
+            binary([
+              srid_to_string(),
+              "MULTISURFACE",
+              @wkt_types[dim],
+              "EMPTY"
+            ])
+          )
+        end
+
+        def to_ewkt(%{surfaces: surfaces, srid: srid}) do
+          data = Enum.map_join(surfaces, ", ", fn geometry -> Geometry.to_wkt(geometry) end)
+
+          unquote(
+            binary([
+              srid_to_string(),
+              "MULTISURFACE",
               @wkt_types[dim],
               "(",
               quote(do: data :: binary),

@@ -176,7 +176,7 @@ defmodule GeometryTest do
              }
     end
 
-    test "returns an error tuple for an ivalid srid in collection" do
+    test "returns an error tuple for an invalid srid in collection" do
       wkt = """
       GeometryCollection ZM (\
         LineString ZM (5 9 2 1, 7 8 4 2),
@@ -197,6 +197,132 @@ defmodule GeometryTest do
                    "(4 2 3 1),  Polygon ZM ((1 1 1 1, 9 1 4 2, 9 8 4 3, 1 1 1 4), (6 2 1 5, 7 2 4 6, 7 3 5 7, 6 2 1 8)))\n"
                }
              }
+    end
+
+    test "returns an error tuple for an invalid srid in a compound curve" do
+      wkt = """
+      CompoundCurve ZM (\
+        LineString ZM (5 9 2 1, 7 8 4 2),
+        SRID=77;LineString ZM (7 8 4 2, 1 2 3 4, 5 5 5 5),
+      )
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {:error,
+                %Geometry.DecodeError{
+                  __exception__: true,
+                  from: :wkt,
+                  line: {2, 54},
+                  message: "unexpected SRID in compound curve",
+                  offset: 78,
+                  reason: nil,
+                  rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5),\n)\n"
+                }}
+    end
+
+    test "returns an error tuple for an invalid srid in a curve polygon" do
+      wkt = """
+      CurvePolygon ZM (\
+        LineString ZM (5 9 2 1, 7 8 4 2),
+        SRID=77;LineString ZM (7 8 4 2, 1 2 3 4, 5 5 5 5),
+      )
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {2, 53},
+                   message: "unexpected SRID in curve polygon",
+                   offset: 77,
+                   reason: nil,
+                   rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5),\n)\n"
+                 }
+               }
+    end
+
+    test "returns an error tuple for a unexpected geometry in a compound curve" do
+      wkt = """
+      CompoundCurve Z (\
+        LineString Z (5 9 2, 7 8 4),
+        LineString ZM (7 8 4 2, 1 2 3 4, 5 5 5 5)
+      )
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {:error,
+                %Geometry.DecodeError{
+                  __exception__: true,
+                  from: :wkt,
+                  line: {2, 48},
+                  message: "unexpected geometry in compound curve",
+                  offset: 64,
+                  reason: nil,
+                  rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5)\n)\n"
+                }}
+    end
+
+    test "returns an error tuple for unexpected geometry in a curve polygon" do
+      wkt = """
+      CurvePolygon Z (LineString ZM (5 9 2 5, 7 8 4 5))
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {1, 0},
+                   message: "unexpected geometry in curve polygon",
+                   offset: 30,
+                   reason: nil,
+                   rest: "(5 9 2 5, 7 8 4 5))\n"
+                 }
+               }
+    end
+
+    test "returns an error tuple for unexpected geometry in a multi curve" do
+      wkt = "MultiCurve Z (LineString ZM (5 9 2 5, 7 8 4 5))"
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {1, 0},
+                   message: "unexpected geometry in multi curve",
+                   offset: 28,
+                   reason: nil,
+                   rest: "(5 9 2 5, 7 8 4 5))"
+                 }
+               }
+    end
+
+    test "returns an error tuple for an invalid srid in a multi curve" do
+      wkt = """
+      MultiCurve ZM (\
+        LineString ZM (5 9 2 1, 7 8 4 2),
+        SRID=77;LineString ZM (7 8 4 2, 1 2 3 4, 5 5 5 5),
+      )
+      """
+
+      assert Geometry.from_wkt(wkt) ==
+               {
+                 :error,
+                 %Geometry.DecodeError{
+                   __exception__: true,
+                   from: :wkt,
+                   line: {2, 51},
+                   message: "unexpected SRID in multi curve",
+                   offset: 75,
+                   reason: nil,
+                   rest: "(7 8 4 2, 1 2 3 4, 5 5 5 5),\n)\n"
+                 }
+               }
     end
   end
 
@@ -444,6 +570,15 @@ defmodule GeometryTest do
 
       assert_fail :from_ewkb!, wkb, """
       expected SRID at position 5, got: <<0x0, 0x0, 0x12>>\
+      """
+    end
+
+    test "raises an error for invalid segment" do
+      wkb = Base.decode16!("00000000090000000100000000013FF00000000000004000000000000000")
+
+      assert_fail :from_ewkb!, wkb, """
+      expected geometry code for LINESTRING or CIRCULARSTRING at position 9, got: \
+      <<0x0, 0x0, 0x0, 0x0, 0x1, 0x3F, 0xF0, 0x0, 0x0, ...>>\
       """
     end
   end

@@ -451,7 +451,7 @@ defmodule Geometry.PolygonTest do
               29
             )
 
-          assert_fail :from_wkb!, wkb, ~r/invalid coordiante at position .*, got: <<.*>>/
+          assert_fail :from_wkb!, wkb, ~r/invalid coordinate at position .*, got: <<.*>>/
         end
       end
 

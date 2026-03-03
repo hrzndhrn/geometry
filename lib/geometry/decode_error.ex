@@ -71,7 +71,7 @@ defmodule Geometry.DecodeError do
   end
 
   def message(%{from: :wkb, reason: :invalid_coordinate} = error) do
-    "invalid coordiante at position #{error.offset}, got: #{inspect_hex(error.rest, 9)}"
+    "invalid coordinate at position #{error.offset}, got: #{inspect_hex(error.rest, 9)}"
   end
 
   def message(%{from: :wkb, reason: :invalid_length} = error) do
@@ -84,6 +84,13 @@ defmodule Geometry.DecodeError do
 
   def message(%{from: :wkb, reason: :eos} = error) do
     "expected end of binary at position #{error.offset}, got: #{inspect_hex(error.rest, 9)}"
+  end
+
+  def message(%{from: :wkb, reason: :expected_compound_curve_segment} = error) do
+    """
+    expected geometry code for LINESTRING or CIRCULARSTRING at position #{error.offset}, \
+    got: #{inspect_hex(error.rest, 9)}\
+    """
   end
 
   def message(%{from: :geo_json, reason: [unknown_type: type]}) do

@@ -2,8 +2,7 @@ defmodule Geometry.LineStringTest do
   use ExUnit.Case, async: true
 
   import Assertions
-
-  alias Binary
+  import GeometryHelpers
 
   alias Geometry.DecodeError
 
@@ -20,8 +19,6 @@ defmodule Geometry.LineStringTest do
   doctest Geometry.LineStringM, import: true
   doctest Geometry.LineStringZ, import: true
   doctest Geometry.LineStringZM, import: true
-
-  @blank "\s"
 
   Enum.each(
     [
@@ -403,7 +400,7 @@ defmodule Geometry.LineStringTest do
           wkb =
             Binary.replace(unquote(code[:ndr] <> data[:ndr]), <<5::little-integer-size(32)>>, 6)
 
-          assert_fail :from_wkb!, wkb, ~r/invalid coordiante at position .*, got: <<>>/
+          assert_fail :from_wkb!, wkb, ~r/invalid coordinate at position .*, got: <<>>/
         end
 
         test "raises an error tuple for extra data (reason: :eos)" do
@@ -584,32 +581,7 @@ defmodule Geometry.LineStringTest do
     end
   )
 
-  defp wkt(name, data \\ [], srid \\ "")
-
-  defp wkt(name, [], ""), do: "#{String.upcase(name)} EMPTY"
-
-  defp wkt(name, [], srid), do: "SRID=#{srid};#{String.upcase(name)} EMPTY"
-
-  defp wkt(name, data, srid) do
-    coordinates = Enum.map_join(data, ", ", fn point -> Enum.join(point, @blank) end)
-
-    srid = if srid == "", do: "", else: "SRID=#{srid};"
-
-    "#{srid}#{String.upcase(name)} (#{coordinates})"
-  end
-
   defp line(module, data, dim, srid \\ 0) do
-    module.new(coordinates(data, dim), srid)
-  end
-
-  defp coordinates(data, dim) do
-    Enum.map(data, fn point ->
-      case dim do
-        :xy -> Point.new(point)
-        :xym -> PointM.new(point)
-        :xyz -> PointZ.new(point)
-        :xyzm -> PointZM.new(point)
-      end
-    end)
+    module.new(Enum.map(data, &create_point(&1, dim)), srid)
   end
 end

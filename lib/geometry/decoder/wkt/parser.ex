@@ -52,14 +52,53 @@ defmodule Geometry.Decoder.WKT.Parser do
     end
   end
 
+  defp compound_curve_segment(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_line_string(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry} when geometry in [:line_string, :circular_string] ->
+          compound_curve_segment_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected segment in compound curve", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in compound curve", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in compound curve", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp geometry_or_line_string(string, opts) do
+    with {:ok, [:no_geometry_found], rest, context, line, byte_offset} <-
+           optional_geometry(string, opts) do
+      {:ok, [%{tag: opts[:tag], geometry: :line_string}], rest, context, line, byte_offset}
+    end
+  end
+
+  defp compound_curve_segment_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
   for parser <- [
         :point,
         :polygon,
         :line_string,
+        :circular_string,
+        :compound_curve,
+        :curve_polygon,
         :multi_point,
         :multi_line_string,
         :multi_polygon,
-        :geometry_collection
+        :geometry_collection,
+        :multi_curve,
+        :multi_surface
       ] do
     defp geometry_text({unquote(parser), :xy}, rest, opts) do
       unquote(:"#{parser}_xy")(rest, Keyword.put(opts, :tag, :xy))
@@ -88,11 +127,7 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:next], rest, _context, line, byte_offset} ->
           with {:ok, geometry, rest, _context, line, byte_offset} <-
-                 geometry_collection_item(rest,
-                   line: line,
-                   byte_offset: byte_offset,
-                   tag: tag
-                 ) do
+                 geometry_collection_item(rest, line: line, byte_offset: byte_offset, tag: tag) do
             unquote(geometry_collection)(
               rest,
               [line: line, byte_offset: byte_offset, tag: tag],
@@ -102,6 +137,209 @@ defmodule Geometry.Decoder.WKT.Parser do
 
         {:ok, [:halt], rest, context, line, byte_offset} ->
           {:ok, {:geometries, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  for compound_curve <- [
+        :compound_curve_xy,
+        :compound_curve_xyz,
+        :compound_curve_xyzm
+      ] do
+    defp unquote(compound_curve)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:segments, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 compound_curve_segment(rest, line: line, byte_offset: byte_offset, tag: tag) do
+            unquote(compound_curve)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:segments, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp curve_polygon_ring(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_line_string(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry}
+        when geometry in [:line_string, :circular_string, :compound_curve] ->
+          curve_polygon_ring_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected ring in curve polygon", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in curve polygon", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in curve polygon", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp curve_polygon_ring_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
+  for curve_polygon <- [
+        :curve_polygon_xy,
+        :curve_polygon_xyz,
+        :curve_polygon_xyzm
+      ] do
+    defp unquote(curve_polygon)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:rings, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 curve_polygon_ring(rest, line: line, byte_offset: byte_offset, tag: tag) do
+            unquote(curve_polygon)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:rings, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp multi_curve_item(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_line_string(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry}
+        when geometry in [:line_string, :circular_string, :compound_curve] ->
+          multi_curve_item_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected curve in multi curve", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in multi curve", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in multi curve", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp multi_curve_item_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
+  for multi_curve <- [
+        :multi_curve_xy,
+        :multi_curve_xyz,
+        :multi_curve_xyzm
+      ] do
+    defp unquote(multi_curve)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:curves, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 multi_curve_item(rest, line: line, byte_offset: byte_offset, tag: tag) do
+            unquote(multi_curve)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:curves, Enum.reverse(acc)}, rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp geometry_or_polygon(string, opts) do
+    with {:ok, [:no_geometry_found], rest, context, line, byte_offset} <-
+           optional_geometry(string, opts) do
+      {:ok, [%{tag: opts[:tag], geometry: :polygon}], rest, context, line, byte_offset}
+    end
+  end
+
+  defp multi_surface_item(string, opts) do
+    with {:ok, [info], rest, context, line, byte_offset} <- geometry_or_polygon(string, opts) do
+      case {info.tag == opts[:tag], Map.get(info, :srid), info.geometry} do
+        {true, nil, geometry}
+        when geometry in [:polygon, :curve_polygon] ->
+          multi_surface_item_text({info.geometry, info.tag}, rest,
+            line: line,
+            byte_offset: byte_offset
+          )
+
+        {true, nil, _geometry} ->
+          {:error, "unexpected surface in multi surface", rest, context, line, byte_offset}
+
+        {false, nil, _geometry} ->
+          {:error, "unexpected geometry in multi surface", rest, context, line, byte_offset}
+
+        {_tag, _srid, _geometry} ->
+          {:error, "unexpected SRID in multi surface", rest, context, line, byte_offset}
+      end
+    end
+  end
+
+  defp multi_surface_item_text({geometry, _tag} = info, str, opts) do
+    with {:ok, data, rest, context, line, byte_offset} <- geometry_text(info, str, opts) do
+      {:ok, {geometry, data}, rest, context, line, byte_offset}
+    end
+  end
+
+  for multi_surface <- [
+        :multi_surface_xy,
+        :multi_surface_xyz,
+        :multi_surface_xyzm
+      ] do
+    defp unquote(multi_surface)(string, opts, acc \\ []) do
+      tag = Keyword.get(opts, :tag)
+
+      case next(string, opts) do
+        {:ok, [:empty], rest, context, line, byte_offset} ->
+          {:ok, {:surfaces, acc}, rest, context, line, byte_offset}
+
+        {:ok, [:next], rest, _context, line, byte_offset} ->
+          with {:ok, geometry, rest, _context, line, byte_offset} <-
+                 multi_surface_item(rest, line: line, byte_offset: byte_offset, tag: tag) do
+            unquote(multi_surface)(
+              rest,
+              [line: line, byte_offset: byte_offset, tag: tag],
+              [geometry | acc]
+            )
+          end
+
+        {:ok, [:halt], rest, context, line, byte_offset} ->
+          {:ok, {:surfaces, Enum.reverse(acc)}, rest, context, line, byte_offset}
       end
     end
   end
